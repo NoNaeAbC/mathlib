@@ -1221,8 +1221,8 @@ public:
 		v.sse[0] = _mm_add_pd(v.sse[0], a.v.sse[0]);
 		v.sse[1] = _mm_add_pd(v.sse[1], a.v.sse[1]);
 #elif defined(USE_NEON)
-		v.neon[0] = vaddq_f64(v.neon[0], ret.v.neon[0]);
-		v.neon[1] = vaddq_f64(v.neon[1], ret.v.neon[1]);
+		v.neon[0] = vaddq_f64(v.neon[0], a.v.neon[0]);
+		v.neon[1] = vaddq_f64(v.neon[1], a.v.neon[1]);
 #else
 		v.c[0] += a.v.c[0];
 		v.c[1] += a.v.c[1];
