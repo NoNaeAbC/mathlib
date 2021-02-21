@@ -2,8 +2,10 @@
 // Created by af on 16.01.21.
 //
 
-#ifndef MATH_LIB_A_MATH_LIB_H
+#if  !defined(MATH_LIB_A_MATH_LIB_H) || defined(USE_CUDA)
 #define MATH_LIB_A_MATH_LIB_H
+
+#include <iterator>
 
 #if defined(AML_USE_STD_COMPLEX)
 
@@ -11,12 +13,51 @@
 
 #endif
 
+#if defined(USE_OPENCL)
+
+#define AML_NO_STRING
+
+#endif
+
+#if !defined(AML_NO_STRING)
+
 #include <string>
 #include <sstream>
 
-#define AML_SAVE_MATH
+#endif
+
+#include <stdint.h>
+
+#if !defined(USE_OPENCL)
+
+#include <math.h>
+
+#endif
+
+#define AML_SAFE_MATH
 
 #define AML_LN10 2.3025850929940456840179914546843642076011014886287729760333279009675726096773524802359972050895982983419677840422862486334095254
+
+#if defined(AML_CUDA) && !defined(USE_CUDA)
+#define USE_CUDA
+
+#include "amathlib.h"
+#undef USE_CUDA
+#endif
+
+#if defined(AML_PREFIX)
+#undef AML_PREFIX
+#undef AML_FUNCTION
+#endif
+
+#if defined(USE_CUDA)
+#define AML_PREFIX(name) CU_ ## name
+#define AML_FUNCTION __device__ __forceinline__
+#else
+#define AML_PREFIX(name) name
+#define AML_FUNCTION inline
+
+#endif
 
 #define DEBUG_TO_INDEX(row, column) ((column - 1) * 4 + (row-1))
 
@@ -55,17 +96,6 @@
 
 #endif
 
-
-#if defined(__global__)
-
-#define AML_FUNC __global__
-
-
-#else
-
-#define AML_FUNC inline
-
-#endif
 
 #ifndef DEBUG
 
@@ -187,22 +217,7 @@
 #endif
 
 
-#if !defined(__x86_64__)
-
-#include <math.h>
-#include <stdint.h>
-
-#else
-
-
-#include <cstdint>
-
-#include <cmath>
-
-
-#endif
-
-union doublevec4 {
+union AML_PREFIX(doublevec4) {
 #ifdef USE_AVX
 	__m256d avx;
 #endif
@@ -215,7 +230,7 @@ union doublevec4 {
 	double c[4];
 };
 
-union doublevec8 {
+union AML_PREFIX(doublevec8) {
 #ifdef USE_AVX512
 	__m512d avx512;
 #endif
@@ -231,7 +246,7 @@ union doublevec8 {
 	double c[8];
 };
 
-union doublemat4x4 {
+union AML_PREFIX(doublemat4x4) {
 #ifdef USE_AVX512
 	__m512d avx512[2];
 #endif
@@ -247,7 +262,7 @@ union doublemat4x4 {
 	double c[16];
 };
 
-union doublevec2 {
+union AML_PREFIX(doublevec2) {
 #ifdef USE_SSE
 	__m128d sse;
 #endif
@@ -257,12 +272,12 @@ union doublevec2 {
 	double c[2];
 };
 
-union doublevec1 {
+union AML_PREFIX(doublevec1) {
 	double c;
 };
 
 
-union floatvec4 {
+union AML_PREFIX(floatvec4) {
 #ifdef USE_SSE
 	__m128 sse;
 #endif
@@ -272,7 +287,7 @@ union floatvec4 {
 	float c[4];
 };
 
-union floatvec8 {
+union AML_PREFIX(floatvec8) {
 #ifdef USE_AVX
 	__m256 avx;
 #endif
@@ -286,43 +301,43 @@ union floatvec8 {
 };
 
 
-union floatvec2 {
+union AML_PREFIX(floatvec2) {
 #ifdef USE_NEON
 	float32x2_t neon;
 #endif
 	float c[2];
 };
 
-union floatvec1 {
+union AML_PREFIX(floatvec1) {
 	float c;
 };
 
 
-union u8vec1 { // limited use
+union AML_PREFIX(u8vec1) { // limited use
 	uint8_t c;
 };
 
-union u8vec2 {
+union AML_PREFIX(u8vec2) {
 	uint8_t c[2];
 };
 
 
-union u8vec3 {
+union AML_PREFIX(u8vec3) {
 	uint8_t c[3];
 };
 
 
-union u8vec4 {
+union AML_PREFIX(u8vec4) {
 	uint8_t c[4];
 };
 
 
-union u8vec8 {
+union AML_PREFIX(u8vec8) {
 	uint8_t c[8];
 };
 
 
-union u8vec16 {
+union AML_PREFIX(u8vec16) {
 #if defined(USE_SSE)
 	__m128i sse;
 #endif
@@ -330,7 +345,7 @@ union u8vec16 {
 };
 
 
-union u8vec32 {
+union AML_PREFIX(u8vec32) {
 #if defined(USE_AVX)
 	__m256i avx;
 #endif
@@ -341,7 +356,7 @@ union u8vec32 {
 };
 
 
-union u8vec64 {
+union AML_PREFIX(u8vec64) {
 
 #if defined(USE_AVX512)
 	__m512i avx512;
@@ -355,17 +370,17 @@ union u8vec64 {
 	uint8_t c[64];
 };
 
-union u16vec2 {
+union AML_PREFIX(u16vec2) {
 	uint16_t c[2];
 };
 
 
-union u16vec3 {
+union AML_PREFIX(u16vec3) {
 	uint16_t c[3];
 };
 
 
-union u16vec4 {
+union AML_PREFIX(u16vec4) {
 #if defined(USE_SSE)
 	__m128i sse;
 #endif
@@ -373,7 +388,7 @@ union u16vec4 {
 };
 
 
-union u16vec8 {
+union AML_PREFIX(u16vec8) {
 #if defined(USE_SSE)
 	__m128i sse[2];
 #endif
@@ -381,7 +396,7 @@ union u16vec8 {
 };
 
 
-union u16vec16 {
+union AML_PREFIX(u16vec16) {
 #if defined(USE_SSE)
 	__m128i sse[4];
 #endif
@@ -389,7 +404,7 @@ union u16vec16 {
 };
 
 
-union u16vec32 {
+union AML_PREFIX(u16vec32) {
 #if defined(USE_AVX512)
 	__m512i avx512;
 #endif
@@ -403,7 +418,7 @@ union u16vec32 {
 };
 
 
-union u16vec64 {
+union AML_PREFIX(u16vec64) {
 
 #if defined(USE_AVX512)
 	__m512i avx512[2];
@@ -417,7 +432,7 @@ union u16vec64 {
 	uint16_t c[64];
 };
 
-namespace AML {
+namespace AML_PREFIX(AML) {
 
 #if defined(USE_CONCEPTS)
 	template<class T>
@@ -436,7 +451,7 @@ namespace AML {
 #else
 	template<class T>
 #endif
-	inline T
+	AML_FUNCTION T
 	mapLinear(const T value, const T lowerInput, const T upperInput, const T lowerOutput,
 			  const T upperOutput) {
 		return ((value - lowerInput) * ((upperOutput - lowerOutput) / (upperInput - lowerInput))) + lowerOutput;
@@ -449,7 +464,7 @@ namespace AML {
 #else
 	template<class T>
 #endif
-	inline T
+	AML_FUNCTION T
 	mapNonLinear(const T value, const T lowerInput, const T upperInput,
 				 const T lowerOutput, const T upperOutput, const T factor) {
 		return (((pow(((value - lowerInput) / (upperInput - lowerInput)), factor)) * (upperOutput - lowerOutput)) +
@@ -463,7 +478,7 @@ namespace AML {
 #else
 	template<class T>
 #endif
-	inline T interpolate(const T min, const T max, const T ratio) {
+	AML_FUNCTION T interpolate(const T min, const T max, const T ratio) {
 		return (ratio * (min - max) + max);
 	}
 
@@ -473,7 +488,7 @@ namespace AML {
 #else
 	template<class T>
 #endif
-	inline T interpolate(const T val1, const T val2, const T val3, const T ratio) {
+	AML_FUNCTION T interpolate(const T val1, const T val2, const T val3, const T ratio) {
 		return ratio * (ratio * (val1 - val2 - val2 + val3) + val2 + val2 - val3 - val3) + val3;
 	}
 
@@ -483,8 +498,8 @@ namespace AML {
 #else
 	template<class T>
 #endif
-	inline T arithmeticMean(T a1, T a2) {
-#if defined(AML_SAVE_MATH)
+	AML_FUNCTION T arithmeticMean(T a1, T a2) {
+#if defined(AML_SAFE_MATH)
 		return a1 + (a2 - a1) / 2;
 #else
 		return (a1 + a2) / 2;
@@ -493,123 +508,122 @@ namespace AML {
 }
 
 
-class VectorU16_2D {
+class AML_PREFIX(VectorU16_2D) {
 public:
-	u16vec2 v{};
+	AML_PREFIX(u16vec2) v{};
 
-	inline VectorU16_2D() {
+	AML_FUNCTION AML_PREFIX(VectorU16_2D)() {
 		v.c[0] = 0;
 		v.c[1] = 0;
 	}
 
 
-	inline VectorU16_2D(uint16_t a, uint16_t b) {
+	AML_FUNCTION AML_PREFIX(VectorU16_2D)(uint16_t a, uint16_t b) {
 		v.c[0] = a;
 		v.c[1] = b;
 	}
 };
 
-
-class VectorU8_1D {
+class AML_PREFIX(VectorU8_1D) {
 public:
-	u8vec1 v{};
+	AML_PREFIX(u8vec1) v{};
 
-	inline VectorU8_1D() {
+	AML_FUNCTION AML_PREFIX(VectorU8_1D)() {
 		v.c = 0;
 	}
 
-	inline explicit VectorU8_1D(const u8vec1 &vec) {
+	AML_FUNCTION explicit AML_PREFIX(VectorU8_1D)(const AML_PREFIX(u8vec1) &vec) {
 		v = vec;
 	}
 
 
-	inline VectorU8_1D(uint8_t a) {
+	AML_FUNCTION AML_PREFIX(VectorU8_1D)(uint8_t a) {
 		v.c = a;
 	}
 
-	inline uint8_t &operator[]([[maybe_unused]]uint32_t location) {
+	AML_FUNCTION uint8_t &operator[]([[maybe_unused]]uint32_t location) {
 		return v.c;
 	}
 
-	inline bool anyTrue() {
+	AML_FUNCTION bool anyTrue() {
 		if (v.c) {
 			return true;
 		}
 		return false;
 	}
 
-	inline bool anyTrue(VectorU8_1D mask) {
+	AML_FUNCTION bool anyTrue(AML_PREFIX(VectorU8_1D) mask) {
 		if (v.c && mask.v.c) {
 			return true;
 		}
 		return false;
 	}
 
-	inline bool allTrue() {
+	AML_FUNCTION bool allTrue() {
 		if (!v.c) {
 			return false;
 		}
 		return true;
 	}
 
-	inline VectorU8_1D operator!() {
-		VectorU8_1D ret;
+	AML_FUNCTION AML_PREFIX(VectorU8_1D) operator!() {
+		AML_PREFIX(VectorU8_1D) ret;
 		ret.v.c = !v.c;
 		return ret;
 	}
 
-	inline VectorU8_1D *bitNot() {
+	AML_FUNCTION AML_PREFIX(VectorU8_1D) *bitNot() {
 		v.c = !v.c;
 		return this;
 	}
 
-	inline VectorU8_1D operator&(VectorU8_1D o) {
-		VectorU8_1D ret;
+	AML_FUNCTION AML_PREFIX(VectorU8_1D) operator&(AML_PREFIX(VectorU8_1D) o) {
+		AML_PREFIX(VectorU8_1D) ret;
 		ret.v.c = v.c & o.v.c;
 		return ret;
 	}
 
-	inline VectorU8_1D *bitAnd(VectorU8_1D o) {
+	AML_FUNCTION AML_PREFIX(VectorU8_1D) *bitAnd(AML_PREFIX(VectorU8_1D) o) {
 		v.c = v.c & o.v.c;
 		return this;
 	}
 
-	inline VectorU8_1D operator&&(VectorU8_1D o) {
-		VectorU8_1D ret;
+	AML_FUNCTION AML_PREFIX(VectorU8_1D) operator&&(AML_PREFIX(VectorU8_1D) o) {
+		AML_PREFIX(VectorU8_1D) ret;
 		ret.v.c = v.c && o.v.c;
 		return ret;
 	}
 
-	inline VectorU8_1D *boolAnd(VectorU8_1D o) {
+	AML_FUNCTION AML_PREFIX(VectorU8_1D) *boolAnd(AML_PREFIX(VectorU8_1D) o) {
 		v.c = v.c && o.v.c;
 		return this;
 	}
 };
 
-class VectorU8_2D {
+class AML_PREFIX(VectorU8_2D) {
 public:
-	u8vec2 v{};
+	AML_PREFIX(u8vec2) v{};
 
-	inline VectorU8_2D() {
+	AML_FUNCTION AML_PREFIX(VectorU8_2D)() {
 		v.c[0] = 0;
 		v.c[1] = 0;
 	}
 
-	inline explicit VectorU8_2D(const u8vec2 &vec) {
+	AML_FUNCTION explicit AML_PREFIX(VectorU8_2D)(const AML_PREFIX(u8vec2) &vec) {
 		v = vec;
 	}
 
 
-	inline VectorU8_2D(uint8_t a, uint8_t b) {
+	AML_FUNCTION AML_PREFIX(VectorU8_2D)(const uint8_t a, const uint8_t b) {
 		v.c[0] = a;
 		v.c[1] = b;
 	}
 
-	inline uint8_t &operator[](uint32_t location) {
+	AML_FUNCTION uint8_t &operator[](const uint32_t location) {
 		return v.c[location];
 	}
 
-	inline bool anyTrue() {
+	AML_FUNCTION bool anyTrue() {
 		if (v.c[0]) {
 			return true;
 		}
@@ -619,7 +633,7 @@ public:
 		return false;
 	}
 
-	inline bool anyTrue(VectorU8_2D mask) {
+	AML_FUNCTION bool anyTrue(const AML_PREFIX(VectorU8_2D) mask) {
 		if (v.c[0] && mask.v.c[0]) {
 			return true;
 		}
@@ -629,7 +643,7 @@ public:
 		return false;
 	}
 
-	inline bool allTrue() {
+	AML_FUNCTION bool allTrue() {
 		if (!v.c[0]) {
 			return false;
 		}
@@ -639,73 +653,72 @@ public:
 		return true;
 	}
 
-	inline VectorU8_2D operator!() {
-		VectorU8_2D ret;
+	AML_FUNCTION AML_PREFIX(VectorU8_2D) operator!() {
+		AML_PREFIX(VectorU8_2D) ret;
 		ret.v.c[0] = !v.c[0];
 		ret.v.c[1] = !v.c[1];
 		return ret;
 	}
 
-	inline VectorU8_2D *bitNot() {
+	AML_FUNCTION AML_PREFIX(VectorU8_2D) *bitNot() {
 		v.c[0] = !v.c[0];
 		v.c[1] = !v.c[1];
 		return this;
 	}
 
-	inline VectorU8_2D operator&(VectorU8_2D o) {
-		VectorU8_2D ret;
+	AML_FUNCTION AML_PREFIX(VectorU8_2D) operator&(const AML_PREFIX(VectorU8_2D) o) {
+		AML_PREFIX(VectorU8_2D) ret;
 		ret.v.c[0] = v.c[0] & o.v.c[0];
 		ret.v.c[1] = v.c[1] & o.v.c[1];
 		return ret;
 	}
 
-	inline VectorU8_2D *bitAnd(VectorU8_2D o) {
+	AML_FUNCTION AML_PREFIX(VectorU8_2D) *bitAnd(AML_PREFIX(VectorU8_2D) o) {
 		v.c[0] = v.c[0] & o.v.c[0];
 		v.c[1] = v.c[1] & o.v.c[1];
 		return this;
 	}
 
-	inline VectorU8_2D operator&&(VectorU8_2D o) {
-		VectorU8_2D ret;
+	AML_FUNCTION AML_PREFIX(VectorU8_2D) operator&&(const AML_PREFIX(VectorU8_2D) o) {
+		AML_PREFIX(VectorU8_2D) ret;
 		ret.v.c[0] = v.c[0] && o.v.c[0];
 		ret.v.c[1] = v.c[1] && o.v.c[1];
 		return ret;
 	}
 
-	inline VectorU8_2D *boolAnd(VectorU8_2D o) {
+	AML_FUNCTION AML_PREFIX(VectorU8_2D) *boolAnd(const AML_PREFIX(VectorU8_2D) o) {
 		v.c[0] = v.c[0] && o.v.c[0];
 		v.c[1] = v.c[1] && o.v.c[1];
 		return this;
 	}
 };
 
-
-class VectorU8_4D {
+class AML_PREFIX(VectorU8_4D) {
 public:
-	u8vec4 v;
+	AML_PREFIX(u8vec4) v;
 
-	inline VectorU8_4D() {
+	AML_FUNCTION AML_PREFIX(VectorU8_4D)() {
 		v.c[0] = 0;
 		v.c[1] = 0;
 	}
 
-	inline explicit VectorU8_4D(const u8vec4 &vec) {
+	AML_FUNCTION explicit AML_PREFIX(VectorU8_4D)(const AML_PREFIX(u8vec4) &vec) {
 		v = vec;
 	}
 
 
-	inline VectorU8_4D(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
+	AML_FUNCTION AML_PREFIX(VectorU8_4D)(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
 		v.c[0] = a;
 		v.c[1] = b;
 		v.c[2] = c;
 		v.c[3] = d;
 	}
 
-	inline uint8_t &operator[](uint32_t location) {
+	AML_FUNCTION uint8_t &operator[](uint32_t location) {
 		return v.c[location];
 	}
 
-	inline bool anyTrue() {
+	AML_FUNCTION bool anyTrue() {
 		if (v.c[0]) {
 			return true;
 		}
@@ -721,7 +734,7 @@ public:
 		return false;
 	}
 
-	inline bool anyTrue(VectorU8_4D mask) {
+	AML_FUNCTION bool anyTrue(AML_PREFIX(VectorU8_4D) mask) {
 		if (v.c[0] && mask.v.c[0]) {
 			return true;
 		}
@@ -737,7 +750,7 @@ public:
 		return false;
 	}
 
-	inline bool allTrue() {
+	AML_FUNCTION bool allTrue() {
 		if (!v.c[0]) {
 			return false;
 		}
@@ -753,8 +766,8 @@ public:
 		return true;
 	}
 
-	inline VectorU8_4D operator!() {
-		VectorU8_4D ret;
+	AML_FUNCTION AML_PREFIX(VectorU8_4D) operator!() {
+		AML_PREFIX(VectorU8_4D) ret;
 		ret.v.c[0] = !v.c[0];
 		ret.v.c[1] = !v.c[1];
 		ret.v.c[2] = !v.c[2];
@@ -762,7 +775,7 @@ public:
 		return ret;
 	}
 
-	inline VectorU8_4D *bitNot() {
+	AML_FUNCTION AML_PREFIX(VectorU8_4D) *bitNot() {
 		v.c[0] = !v.c[0];
 		v.c[1] = !v.c[1];
 		v.c[2] = !v.c[2];
@@ -770,8 +783,8 @@ public:
 		return this;
 	}
 
-	inline VectorU8_4D operator&(VectorU8_4D o) {
-		VectorU8_4D ret;
+	AML_FUNCTION AML_PREFIX(VectorU8_4D) operator&(const AML_PREFIX(VectorU8_4D) o) {
+		AML_PREFIX(VectorU8_4D) ret;
 		ret.v.c[0] = v.c[0] & o.v.c[0];
 		ret.v.c[1] = v.c[1] & o.v.c[1];
 		ret.v.c[2] = v.c[2] & o.v.c[2];
@@ -779,7 +792,7 @@ public:
 		return ret;
 	}
 
-	inline VectorU8_4D *bitAnd(VectorU8_4D o) {
+	AML_FUNCTION AML_PREFIX(VectorU8_4D) *bitAnd(const AML_PREFIX(VectorU8_4D) o) {
 		v.c[0] = v.c[0] & o.v.c[0];
 		v.c[1] = v.c[1] & o.v.c[1];
 		v.c[2] = v.c[2] & o.v.c[2];
@@ -787,8 +800,8 @@ public:
 		return this;
 	}
 
-	inline VectorU8_4D operator&&(VectorU8_4D o) {
-		VectorU8_4D ret;
+	AML_FUNCTION AML_PREFIX(VectorU8_4D) operator&&(const AML_PREFIX(VectorU8_4D) o) {
+		AML_PREFIX(VectorU8_4D) ret;
 		ret.v.c[0] = v.c[0] && o.v.c[0];
 		ret.v.c[1] = v.c[1] && o.v.c[1];
 		ret.v.c[2] = v.c[2] && o.v.c[2];
@@ -796,7 +809,7 @@ public:
 		return ret;
 	}
 
-	inline VectorU8_4D *boolAnd(VectorU8_4D o) {
+	AML_FUNCTION AML_PREFIX(VectorU8_4D) *boolAnd(const AML_PREFIX(VectorU8_4D) o) {
 		v.c[0] = v.c[0] && o.v.c[0];
 		v.c[1] = v.c[1] && o.v.c[1];
 		v.c[2] = v.c[2] && o.v.c[2];
@@ -805,12 +818,11 @@ public:
 	}
 };
 
-
-class VectorU8_8D {
+class AML_PREFIX(VectorU8_8D) {
 public:
-	u8vec8 v{};
+	AML_PREFIX(u8vec8) v{};
 
-	inline VectorU8_8D() {
+	AML_FUNCTION AML_PREFIX(VectorU8_8D)() {
 		v.c[0] = 0;
 		v.c[1] = 0;
 		v.c[2] = 0;
@@ -821,12 +833,13 @@ public:
 		v.c[7] = 0;
 	}
 
-	inline explicit VectorU8_8D(const u8vec8 &vec) {
+	AML_FUNCTION explicit AML_PREFIX(VectorU8_8D)(const AML_PREFIX(u8vec8) &vec) {
 		v = vec;
 	}
 
 
-	inline VectorU8_8D(uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint8_t e, uint8_t f, uint8_t g, uint8_t h) {
+	AML_FUNCTION AML_PREFIX(VectorU8_8D)(uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint8_t e, uint8_t f, uint8_t g,
+										 uint8_t h) {
 		v.c[0] = a;
 		v.c[1] = b;
 		v.c[2] = c;
@@ -837,11 +850,11 @@ public:
 		v.c[7] = h;
 	}
 
-	inline uint8_t &operator[](uint32_t location) {
+	AML_FUNCTION uint8_t &operator[](uint32_t location) {
 		return v.c[location];
 	}
 
-	inline bool anyTrue() {
+	AML_FUNCTION bool anyTrue() {
 		if (v.c[0]) {
 			return true;
 		}
@@ -869,7 +882,7 @@ public:
 		return false;
 	}
 
-	inline bool anyTrue(VectorU8_8D mask) {
+	AML_FUNCTION bool anyTrue(AML_PREFIX(VectorU8_8D) mask) {
 		if (v.c[0] && mask.v.c[0]) {
 			return true;
 		}
@@ -897,7 +910,7 @@ public:
 		return false;
 	}
 
-	inline bool allTrue() {
+	AML_FUNCTION bool allTrue() {
 		if (!v.c[0]) {
 			return false;
 		}
@@ -925,8 +938,8 @@ public:
 		return true;
 	}
 
-	inline VectorU8_8D operator!() {
-		VectorU8_8D ret;
+	AML_FUNCTION AML_PREFIX(VectorU8_8D) operator!() {
+		AML_PREFIX(VectorU8_8D) ret;
 		ret.v.c[0] = !v.c[0];
 		ret.v.c[1] = !v.c[1];
 		ret.v.c[2] = !v.c[2];
@@ -938,7 +951,7 @@ public:
 		return ret;
 	}
 
-	inline VectorU8_8D *bitNot() {
+	AML_FUNCTION AML_PREFIX(VectorU8_8D) *bitNot() {
 		v.c[0] = !v.c[0];
 		v.c[1] = !v.c[1];
 		v.c[2] = !v.c[2];
@@ -950,8 +963,8 @@ public:
 		return this;
 	}
 
-	inline VectorU8_8D operator&(VectorU8_8D o) {
-		VectorU8_8D ret;
+	AML_FUNCTION AML_PREFIX(VectorU8_8D) operator&(const AML_PREFIX(VectorU8_8D) o) {
+		AML_PREFIX(VectorU8_8D) ret;
 		ret.v.c[0] = v.c[0] & o.v.c[0];
 		ret.v.c[1] = v.c[1] & o.v.c[1];
 		ret.v.c[2] = v.c[2] & o.v.c[2];
@@ -963,7 +976,7 @@ public:
 		return ret;
 	}
 
-	inline VectorU8_8D *bitAnd(VectorU8_8D o) {
+	AML_FUNCTION AML_PREFIX(VectorU8_8D) *bitAnd(const AML_PREFIX(VectorU8_8D) o) {
 		v.c[0] = v.c[0] & o.v.c[0];
 		v.c[1] = v.c[1] & o.v.c[1];
 		v.c[2] = v.c[2] & o.v.c[2];
@@ -975,8 +988,8 @@ public:
 		return this;
 	}
 
-	inline VectorU8_8D operator&&(VectorU8_8D o) {
-		VectorU8_8D ret;
+	AML_FUNCTION AML_PREFIX(VectorU8_8D) operator&&(const AML_PREFIX(VectorU8_8D) o) {
+		AML_PREFIX(VectorU8_8D) ret;
 		ret.v.c[0] = v.c[0] && o.v.c[0];
 		ret.v.c[1] = v.c[1] && o.v.c[1];
 		ret.v.c[2] = v.c[2] && o.v.c[2];
@@ -988,7 +1001,7 @@ public:
 		return ret;
 	}
 
-	inline VectorU8_8D *boolAnd(VectorU8_8D o) {
+	AML_FUNCTION AML_PREFIX(VectorU8_8D) *boolAnd(AML_PREFIX(VectorU8_8D) o) {
 		v.c[0] = v.c[0] && o.v.c[0];
 		v.c[1] = v.c[1] && o.v.c[1];
 		v.c[2] = v.c[2] && o.v.c[2];
@@ -1001,93 +1014,92 @@ public:
 	}
 };
 
-
-class VectorDouble1D {
+class AML_PREFIX(VectorDouble1D) {
 public:
-	doublevec1 v{};
+	AML_PREFIX(doublevec1) v{};
 
-	inline VectorDouble1D *set(double value, VectorU8_1D mask) {
+	AML_FUNCTION AML_PREFIX(VectorDouble1D) *set(double value, AML_PREFIX(VectorU8_1D) mask) {
 		if (mask.v.c) { v.c = value; }
 		return this;
 	}
 
-	inline VectorDouble1D(const double *const values) {
+	AML_FUNCTION AML_PREFIX(VectorDouble1D)(const double *const values) {
 		v.c = values[0];
 	}
 
-	inline VectorDouble1D() {
+	AML_FUNCTION AML_PREFIX(VectorDouble1D)() {
 		v.c = 0.0f;
 	}
 
-	inline VectorDouble1D(double value) {
+	AML_FUNCTION AML_PREFIX(VectorDouble1D)(double value) {
 		v.c = value;
 	}
 
-	inline double &operator[]([[maybe_unused]]uint32_t location) {
+	AML_FUNCTION double &operator[]([[maybe_unused]]uint32_t location) {
 		return v.c;
 	}
 
 };
 
-class VectorFloat1D {
+class AML_PREFIX(VectorFloat1D) {
 public:
-	floatvec1 v{};
+	AML_PREFIX(floatvec1) v{};
 
-	inline VectorFloat1D *set(float value, VectorU8_1D mask) {
+	AML_FUNCTION AML_PREFIX(VectorFloat1D) *set(float value, AML_PREFIX(VectorU8_1D) mask) {
 		if (mask.v.c) { v.c = value; }
 		return this;
 	}
 
-	inline VectorFloat1D(const float *const values) {
+	AML_FUNCTION AML_PREFIX(VectorFloat1D)(const float *const values) {
 		v.c = values[0];
 	}
 
-	inline VectorFloat1D() {
+	AML_FUNCTION AML_PREFIX(VectorFloat1D)() {
 		v.c = 0.0f;
 	}
 
-	inline VectorFloat1D(float value) {
+	AML_FUNCTION AML_PREFIX(VectorFloat1D)(float value) {
 		v.c = value;
 	}
 
-	inline float &operator[]([[maybe_unused]]uint32_t location) {
+	AML_FUNCTION float &operator[]([[maybe_unused]]uint32_t location) {
 		return v.c;
 	}
 
 };
 
-class VectorDouble2D {
+class AML_PREFIX(VectorDouble2D) {
 public:
-	doublevec2 v{};
+	AML_PREFIX(doublevec2) v{};
 
-	inline VectorDouble2D *set(double value, VectorU8_2D mask) {
+	AML_FUNCTION AML_PREFIX(VectorDouble2D) *set(double value, const AML_PREFIX(VectorU8_2D) mask) {
 		if (mask.v.c[0]) { v.c[0] = value; }
 		if (mask.v.c[1]) { v.c[1] = value; }
 		return this;
 	}
 
-	inline VectorDouble2D(const double *const values) {
+	AML_FUNCTION AML_PREFIX(VectorDouble2D)(const double *const values) {
 		v.c[0] = values[0];
 		v.c[1] = values[1];
 	}
 
-	inline VectorDouble2D() {
+	AML_FUNCTION AML_PREFIX(VectorDouble2D)() {
 		v.c[0] = 0.0f;
 		v.c[1] = 0.0f;
 	}
 
-	inline VectorDouble2D(double value) {
+	AML_FUNCTION AML_PREFIX(VectorDouble2D)(double value) {
 		v.c[0] = value;
 		v.c[1] = value;
 	}
 
-	inline double &operator[](uint32_t location) {
+	AML_FUNCTION double &operator[](uint32_t location) {
 		return v.c[location];
 	}
 
 #if defined(USE_SSE)
 
-	inline VectorDouble2D(const __m128d value) {
+	AML_FUNCTION VectorDouble2D(const __m128d value) {
 		v.sse = value;
 	}
 
@@ -1095,49 +1107,48 @@ public:
 
 };
 
-
-class VectorFloat2D {
+class AML_PREFIX(VectorFloat2D) {
 public:
-	floatvec2 v{};
+	AML_PREFIX(floatvec2) v{};
 
-	inline VectorFloat2D *set(float value, VectorU8_2D mask) {
+	AML_FUNCTION AML_PREFIX(VectorFloat2D) *set(float value, AML_PREFIX(VectorU8_2D) mask) {
 		if (mask.v.c[0]) { v.c[0] = value; }
 		if (mask.v.c[1]) { v.c[1] = value; }
 		return this;
 	}
 
-	inline VectorFloat2D(const float *const values) {
+	AML_FUNCTION AML_PREFIX(VectorFloat2D)(const float *const values) {
 		v.c[0] = values[0];
 		v.c[1] = values[1];
 	}
 
-	inline VectorFloat2D() {
+	AML_FUNCTION AML_PREFIX(VectorFloat2D)() {
 		v.c[0] = 0.0f;
 		v.c[1] = 0.0f;
 	}
 
-	inline VectorFloat2D(float value) {
+	AML_FUNCTION AML_PREFIX(VectorFloat2D)(float value) {
 		v.c[0] = value;
 		v.c[1] = value;
 	}
 
-	inline float &operator[](uint32_t location) {
+	AML_FUNCTION float &operator[](uint32_t location) {
 		return v.c[location];
 	}
 
 };
 
-class VectorDouble4D {
+class AML_PREFIX(VectorDouble4D) {
 private:
 
 public:
-	doublevec4 v{};
+	AML_PREFIX(doublevec4) v{};
 
-	inline double &operator[](uint32_t position) {
+	AML_FUNCTION double &operator[](uint32_t position) {
 		return v.c[position];
 	}
 
-	inline void operator+=(VectorDouble4D vec2) {
+	AML_FUNCTION void operator+=(AML_PREFIX(VectorDouble4D) vec2) {
 #if defined(USE_AVX)
 		v.avx = _mm256_add_pd(v.avx, vec2.v.avx);
 #elif defined(USE_SSE) // SSE2
@@ -1156,60 +1167,60 @@ public:
 
 	}
 
-	inline VectorDouble4D operator+(VectorDouble4D vec2) {
+	AML_FUNCTION AML_PREFIX(VectorDouble4D) operator+(const AML_PREFIX(VectorDouble4D) vec2) {
 #if defined(USE_AVX)
-		VectorDouble4D ret;
+		AML_PREFIX(VectorDouble4D) ret;
 		ret.v.avx = _mm256_add_pd(v.avx, vec2.v.avx);
 		return ret;
 #elif defined(USE_SSE2)
-		VectorDouble4D ret;
+		AML_PREFIX(VectorDouble4D) ret;
 		ret.v.sse[0] = _mm_add_pd(v.sse[0], vec2.v.sse[0]);
 		ret.v.sse[1] = _mm_add_pd(v.sse[1], vec2.v.sse[1]);
 		return ret;
 #elif defined(USE_NEON)
-		VectorDouble4D ret;
+		AML_PREFIX(VectorDouble4D) ret;
 		ret.v.neon[0] = vaddq_f64(v.neon[0], vec2.v.neon[0]);
 		ret.v.neon[1] = vaddq_f64(v.neon[1], vec2.v.neon[1]);
 		return ret;
 #else
-		VectorDouble4D ret(v.c[0] + vec2.v.c[0], v.c[1] + vec2.v.c[1], v.c[2] + vec2.v.c[2], v.c[3] + vec2.v.c[3]);
+		AML_PREFIX(VectorDouble4D) ret(v.c[0] + vec2.v.c[0], v.c[1] + vec2.v.c[1], v.c[2] + vec2.v.c[2],
+									   v.c[3] + vec2.v.c[3]);
 		return ret;
 #endif
 
 
 	}
 
-	inline VectorDouble4D operator+(double a) {
+	AML_FUNCTION AML_PREFIX(VectorDouble4D) operator+(double a) {
 #if defined(USE_AVX)
-		VectorDouble4D ret(a);
+		AML_PREFIX(VectorDouble4D) ret(a);
 		ret.v.avx = _mm256_add_pd(v.avx, ret.v.avx);
 		return ret;
 #elif defined(USE_SSE2)
-		VectorDouble4D ret(a);
+		AML_PREFIX(VectorDouble4D) ret(a);
 		ret.v.sse[0] = _mm_add_pd(v.sse[0], ret.v.sse[0]);
 		ret.v.sse[1] = _mm_add_pd(v.sse[1], ret.v.sse[1]);
 		return ret;
 #elif defined(USE_NEON)
-		VectorDouble4D ret(a);
+		AML_PREFIX(VectorDouble4D) ret(a);
 		ret.v.neon[0] = vaddq_f64(v.neon[0], ret.v.neon[0]);
 		ret.v.neon[1] = vaddq_f64(v.neon[1], ret.v.neon[1]);
 		return ret;
 #else
-		VectorDouble4D ret(v.c[0] + a, v.c[1] + a, v.c[2] + a, v.c[3] + a);
+		AML_PREFIX(VectorDouble4D) ret(v.c[0] + a, v.c[1] + a, v.c[2] + a, v.c[3] + a);
 		return ret;
 #endif
 
 
 	}
 
-	inline VectorDouble4D *add(VectorDouble4D a) {
+	AML_FUNCTION AML_PREFIX(VectorDouble4D) *add(const AML_PREFIX(VectorDouble4D) a) {
 #if defined(USE_AVX)
 		v.avx = _mm256_add_pd(v.avx, a.v.avx);
 #elif defined(USE_SSE) // SSE2
 		v.sse[0] = _mm_add_pd(v.sse[0], a.v.sse[0]);
 		v.sse[1] = _mm_add_pd(v.sse[1], a.v.sse[1]);
 #elif defined(USE_NEON)
-		VectorDouble4D ret(a);
 		v.neon[0] = vaddq_f64(v.neon[0], ret.v.neon[0]);
 		v.neon[1] = vaddq_f64(v.neon[1], ret.v.neon[1]);
 #else
@@ -1221,10 +1232,10 @@ public:
 		return this;
 	}
 
-	inline void inverse() {
+	AML_FUNCTION void inverse() {
 
 #if defined(USE_AVX)
-		doublevec4 a = {0.0f, 0.0f, 0.0f, 0.0f};
+		AML_PREFIX(doublevec4) a = {0.0f, 0.0f, 0.0f, 0.0f};
 		v.avx = _mm256_sub_pd(a.avx, v.avx);
 #elif defined(USE_SSE) // SSE2
 		double a[2] = {0.0f, 0.0f};
@@ -1239,7 +1250,7 @@ public:
 #endif
 	}
 
-	inline void operator-=(VectorDouble4D vec2) {
+	AML_FUNCTION void operator-=(AML_PREFIX(VectorDouble4D) vec2) {
 #if defined(USE_AVX)
 		v.avx = _mm256_sub_pd(v.avx, vec2.v.avx);
 #else
@@ -1253,37 +1264,38 @@ public:
 	}
 
 
-	inline VectorDouble4D operator-(VectorDouble4D vec2) {
+	AML_FUNCTION AML_PREFIX(VectorDouble4D) operator-(const AML_PREFIX(VectorDouble4D) vec2) {
 #if defined(USE_AVX)
-		VectorDouble4D ret;
+		AML_PREFIX(VectorDouble4D) ret;
 		ret.v.avx = _mm256_sub_pd(v.avx, vec2.v.avx);
 		return ret;
 #else
-		VectorDouble4D ret(v.c[0] - vec2.v.c[0], v.c[1] - vec2.v.c[1], v.c[2] - vec2.v.c[2], v.c[3] - vec2.v.c[3]);
+		AML_PREFIX(VectorDouble4D) ret(v.c[0] - vec2.v.c[0], v.c[1] - vec2.v.c[1], v.c[2] - vec2.v.c[2],
+									   v.c[3] - vec2.v.c[3]);
 		return ret;
 #endif
 
 
 	}
 
-	inline VectorDouble4D operator-(double a) {
-		VectorDouble4D ret(a);
+	AML_FUNCTION AML_PREFIX(VectorDouble4D) operator-(double a) {
+		AML_PREFIX(VectorDouble4D) ret(a);
 #if defined(USE_AVX)
 		ret.v.avx = _mm256_sub_pd(v.avx, ret.v.avx);
 		return ret;
 #else
-		ret = VectorDouble4D(v.c[0] - a, v.c[1] - a, v.c[2] - a, v.c[3] - a);
+		ret = AML_PREFIX(VectorDouble4D)(v.c[0] - a, v.c[1] - a, v.c[2] - a, v.c[3] - a);
 		return ret;
 #endif
 
 
 	}
 
-	inline double length() {
+	AML_FUNCTION double length() {
 		return sqrt(v.c[0] * v.c[0] + v.c[1] * v.c[1] + v.c[2] * v.c[2] + v.c[3] * v.c[3]);
 	}
 
-	inline void normalize() {
+	AML_FUNCTION void normalize() {
 		double vecLength = 1 / length();
 		v.c[0] *= vecLength;
 		v.c[1] *= vecLength;
@@ -1291,7 +1303,7 @@ public:
 		v.c[3] *= vecLength;
 	}
 
-	inline VectorDouble4D *forEachSin() {
+	AML_FUNCTION AML_PREFIX(VectorDouble4D) *forEachSin() {
 #if defined(USE_AVX) && defined(__INTEL_COMPILER)
 		v.avx = _mm256_sin_pd(v.avx);
 #else
@@ -1303,7 +1315,7 @@ public:
 		return this;
 	}
 
-	inline void operator*=(double scalar) {
+	AML_FUNCTION void operator*=(double scalar) {
 		v.c[0] *= scalar;
 		v.c[1] *= scalar;
 		v.c[2] *= scalar;
@@ -1311,7 +1323,7 @@ public:
 	}
 
 	// for each multiply
-	inline void operator*=(VectorDouble4D vec2) {
+	AML_FUNCTION void operator*=(AML_PREFIX(VectorDouble4D) vec2) {
 #if defined(USE_AVX)
 		v.avx = _mm256_mul_pd(v.avx, vec2.v.avx);
 #elif defined(USE_NEON)
@@ -1325,7 +1337,7 @@ public:
 #endif
 	}
 
-	inline VectorDouble4D *forEachSqrt() {
+	AML_FUNCTION AML_PREFIX(VectorDouble4D) *forEachSqrt() {
 #if defined(USE_AVX)
 		v.avx = _mm256_sqrt_pd(v.avx);
 #elif defined(USE_SSE)
@@ -1341,10 +1353,10 @@ public:
 
 	}
 
-	inline VectorDouble4D operator*(double a) {
-		VectorDouble4D ret;
+	AML_FUNCTION AML_PREFIX(VectorDouble4D) operator*(double a) {
+		AML_PREFIX(VectorDouble4D) ret;
 #if defined(USE_AVX)
-		doublevec4 b = {a, a, a, a};
+		AML_PREFIX(doublevec4) b = {a, a, a, a};
 		ret.v.avx = _mm256_mul_pd(v.avx, b.avx);
 #else
 		ret.v.c[0] *= v.c[0] * a;
@@ -1355,10 +1367,10 @@ public:
 		return ret;
 	}
 
-	inline VectorDouble4D operator/(double a) {
-		VectorDouble4D ret;
+	AML_FUNCTION AML_PREFIX(VectorDouble4D) operator/(double a) {
+		AML_PREFIX(VectorDouble4D) ret;
 #if defined(USE_AVX)
-		doublevec4 b = {a, a, a, a};
+		AML_PREFIX(doublevec4) b = {a, a, a, a};
 		ret.v.avx = _mm256_div_pd(v.avx, b.avx);
 #else
 		ret.v.c[0] /= v.c[0] * a;
@@ -1370,9 +1382,9 @@ public:
 	}
 
 
-	inline VectorDouble4D *capBetween1_0() {
+	AML_FUNCTION AML_PREFIX(VectorDouble4D) *capBetween1_0() {
 #if defined(USE_AVX)
-		doublevec4 one = {1.0f, 1.0f, 1.0f, 1.0f};
+		AML_PREFIX(doublevec4) one = {1.0f, 1.0f, 1.0f, 1.0f};
 		v.avx = _mm256_max_pd(v.avx, one.avx);
 		v.avx = _mm256_min_pd(v.avx, _mm256_setzero_pd());
 #else
@@ -1400,10 +1412,10 @@ public:
 		return this;
 	}
 
-	inline VectorDouble4D *capBetweenX_Y(const double upperBoundary, const double lowerBoundary) {
+	AML_FUNCTION AML_PREFIX(VectorDouble4D) *capBetweenX_Y(const double upperBoundary, const double lowerBoundary) {
 #if defined(USE_AVX)
-		doublevec4 upper = {upperBoundary, upperBoundary, upperBoundary, upperBoundary};
-		doublevec4 lower = {lowerBoundary, lowerBoundary, lowerBoundary, lowerBoundary};
+		AML_PREFIX(doublevec4) upper = {upperBoundary, upperBoundary, upperBoundary, upperBoundary};
+		AML_PREFIX(doublevec4) lower = {lowerBoundary, lowerBoundary, lowerBoundary, lowerBoundary};
 		v.avx = _mm256_max_pd(v.avx, upper.avx);
 		v.avx = _mm256_min_pd(v.avx, lower.avx);
 #else
@@ -1431,15 +1443,15 @@ public:
 		return this;
 	}
 
-	inline VectorDouble4D *
+	AML_FUNCTION AML_PREFIX(VectorDouble4D) *
 	map(const double lowerInput, const double upperInput, const double lowerOutput, const double upperOutput) {
 #if defined(USE_AVX)
-		doublevec4 a = {lowerInput, lowerInput, lowerInput, lowerInput};
+		AML_PREFIX(doublevec4) a = {lowerInput, lowerInput, lowerInput, lowerInput};
 		a.avx = _mm256_sub_pd(v.avx, a.avx);
 		double factor = (upperOutput - lowerOutput) / (upperInput - lowerInput);
-		doublevec4 b = {factor, factor, factor, factor};
+		AML_PREFIX(doublevec4) b = {factor, factor, factor, factor};
 		a.avx = _mm256_mul_pd(a.avx, b.avx);
-		doublevec4 c = {lowerOutput, lowerOutput, lowerOutput, lowerOutput};
+		AML_PREFIX(doublevec4) c = {lowerOutput, lowerOutput, lowerOutput, lowerOutput};
 		v.avx = _mm256_add_pd(a.avx, c.avx);
 #else
 		v.c[0] = ((v.c[0] - lowerInput) * ((upperOutput - lowerOutput) / (upperInput - lowerInput))) + lowerOutput;
@@ -1450,8 +1462,9 @@ public:
 		return this;
 	}
 
-	inline VectorDouble4D *mapNonLinear(const double lowerInput, const double upperInput,
-										const double lowerOutput, const double upperOutput, const double factor) {
+	AML_FUNCTION AML_PREFIX(VectorDouble4D) *mapNonLinear(const double lowerInput, const double upperInput,
+														  const double lowerOutput, const double upperOutput,
+														  const double factor) {
 		v.c[0] = (((pow(((v.c[0] - lowerInput) / (upperInput - lowerInput)), factor)) * (upperOutput - lowerOutput)) +
 				  lowerOutput);
 		v.c[1] = (((pow(((v.c[1] - lowerInput) / (upperInput - lowerInput)), factor)) * (upperOutput - lowerOutput)) +
@@ -1463,7 +1476,7 @@ public:
 		return this;
 	}
 
-	inline VectorDouble4D *forEachInterpolate(const double min, const double max) {
+	AML_FUNCTION AML_PREFIX(VectorDouble4D) *forEachInterpolate(const double min, const double max) {
 		v.c[0] = (v.c[0] * (min - max) + max);
 		v.c[1] = (v.c[1] * (min - max) + max);
 		v.c[2] = (v.c[2] * (min - max) + max);
@@ -1471,7 +1484,7 @@ public:
 		return this;
 	}
 
-	inline VectorDouble4D *interpolate(const VectorDouble4D max, double ratio) {
+	AML_FUNCTION AML_PREFIX(VectorDouble4D) *interpolate(const AML_PREFIX(VectorDouble4D) max, double ratio) {
 		v.c[0] = (ratio * (v.c[0] - max.v.c[0]) + max.v.c[0]);
 		v.c[1] = (ratio * (v.c[1] - max.v.c[1]) + max.v.c[1]);
 		v.c[2] = (ratio * (v.c[2] - max.v.c[2]) + max.v.c[2]);
@@ -1479,7 +1492,8 @@ public:
 		return this;
 	}
 
-	inline VectorDouble4D *interpolate(const VectorDouble4D val2, const VectorDouble4D val3, double ratio) {
+	AML_FUNCTION AML_PREFIX(VectorDouble4D) *
+	interpolate(const AML_PREFIX(VectorDouble4D) val2, const AML_PREFIX(VectorDouble4D) val3, double ratio) {
 		v.c[0] = ratio *
 				 (ratio * (v.c[0] - val2.v.c[0] - val2.v.c[0] + val3.v.c[0]) + val2.v.c[0] + val2.v.c[0] - val3.v.c[0] -
 				  val3.v.c[0]) + val3.v.c[0];
@@ -1495,7 +1509,7 @@ public:
 		return this;
 	}
 
-	inline VectorDouble4D *set(double value, VectorU8_4D mask) {
+	AML_FUNCTION AML_PREFIX(VectorDouble4D) *set(double value, AML_PREFIX(VectorU8_4D) mask) {
 		if (mask.v.c[0]) { v.c[0] = value; }
 		if (mask.v.c[1]) { v.c[1] = value; }
 		if (mask.v.c[2]) { v.c[2] = value; }
@@ -1503,7 +1517,7 @@ public:
 		return this;
 	}
 
-	inline VectorDouble4D *set(VectorDouble4D value, VectorU8_4D mask) {
+	AML_FUNCTION AML_PREFIX(VectorDouble4D) *set(const AML_PREFIX(VectorDouble4D) value, AML_PREFIX(VectorU8_4D) mask) {
 		if (mask.v.c[0]) { v.c[0] = value.v.c[0]; }
 		if (mask.v.c[1]) { v.c[1] = value.v.c[1]; }
 		if (mask.v.c[2]) { v.c[2] = value.v.c[2]; }
@@ -1512,7 +1526,7 @@ public:
 	}
 
 	template<const int a, const int b, const int c, const int d>
-	inline VectorDouble4D *permutation() {
+	AML_FUNCTION AML_PREFIX(VectorDouble4D) *permutation() {
 #if defined(USE_AVX2)
 		v.avx = _mm256_permute4x64_pd(v.avx,a + (b << 2) + (c << 4) + (d << 6));
 #else
@@ -1529,21 +1543,21 @@ public:
 	}
 
 
-	inline VectorDouble4D(double a, double b, double c, double d) {
+	AML_FUNCTION AML_PREFIX(VectorDouble4D)(double a, double b, double c, double d) {
 		v.c[0] = a;
 		v.c[1] = b;
 		v.c[2] = c;
 		v.c[3] = d;
 	}
 
-	inline VectorDouble4D() {
+	AML_FUNCTION AML_PREFIX(VectorDouble4D)() {
 		v.c[0] = 0;
 		v.c[1] = 0;
 		v.c[2] = 0;
 		v.c[3] = 0;
 	}
 
-	inline explicit VectorDouble4D(const double a) {
+	AML_FUNCTION explicit AML_PREFIX(VectorDouble4D)(const double a) {
 		v.c[0] = a;
 		v.c[1] = a;
 		v.c[2] = a;
@@ -1552,7 +1566,7 @@ public:
 
 #ifdef USE_AVX
 
-	inline explicit VectorDouble4D(const __m256d a) {
+	AML_FUNCTION explicit AML_PREFIX(VectorDouble4D)(const __m256d a) {
 		v.avx = a;
 	}
 
@@ -1560,14 +1574,14 @@ public:
 
 #if defined(USE_SSE)
 
-	inline explicit VectorDouble4D(const __m128d *const values) {
+	AML_FUNCTION explicit AML_PREFIX(VectorDouble4D)(const __m128d *const values) {
 		v.sse[0] = values[0];
 		v.sse[1] = values[1];
 	}
 
 #endif
 
-	inline explicit VectorDouble4D(const double *const values) {
+	AML_FUNCTION explicit AML_PREFIX(VectorDouble4D)(const double *const values) {
 		v.c[0] = values[0];
 		v.c[1] = values[1];
 		v.c[2] = values[2];
@@ -1576,36 +1590,35 @@ public:
 
 };
 
-class VectorFloat4D {
-private:
-
+class AML_PREFIX(VectorFloat4D) {
 public:
-	floatvec4 v{};
+	AML_PREFIX(floatvec4) v{};
 
-	inline float &operator[](uint32_t position) {
+	AML_FUNCTION float &operator[](uint32_t position) {
 		return v.c[position];
 	}
 
-	inline void operator+=(VectorFloat4D vec2) {
-		v.c[0] += vec2[0];
-		v.c[1] += vec2[1];
-		v.c[2] += vec2[2];
-		v.c[3] += vec2[3];
+	AML_FUNCTION void operator+=(const AML_PREFIX(VectorFloat4D) vec2) {
+		v.c[0] += vec2.v.c[0];
+		v.c[1] += vec2.v.c[1];
+		v.c[2] += vec2.v.c[2];
+		v.c[3] += vec2.v.c[3];
 	}
 
-	inline VectorFloat4D operator+(VectorFloat4D vec2) {
-		VectorFloat4D ret(v.c[0] + vec2.v.c[0], v.c[1] + vec2.v.c[1], v.c[2] + vec2.v.c[2], v.c[3] + vec2.v.c[3]);
+	AML_FUNCTION AML_PREFIX(VectorFloat4D) operator+(const AML_PREFIX(VectorFloat4D) vec2) {
+		AML_PREFIX(VectorFloat4D) ret(v.c[0] + vec2.v.c[0], v.c[1] + vec2.v.c[1], v.c[2] + vec2.v.c[2],
+									  v.c[3] + vec2.v.c[3]);
 		return ret;
 	}
 
-	inline VectorFloat4D operator+(float a) {
-		VectorFloat4D ret(v.c[0] + a, v.c[1] + a, v.c[2] + a, v.c[3] + a);
+	AML_FUNCTION AML_PREFIX(VectorFloat4D) operator+(float a) {
+		AML_PREFIX(VectorFloat4D) ret(v.c[0] + a, v.c[1] + a, v.c[2] + a, v.c[3] + a);
 		return ret;
 
 
 	}
 
-	inline VectorFloat4D *add(VectorFloat4D a) {
+	AML_FUNCTION AML_PREFIX(VectorFloat4D) *add(const AML_PREFIX(VectorFloat4D) a) {
 		v.c[0] += a.v.c[0];
 		v.c[1] += a.v.c[1];
 		v.c[2] += a.v.c[2];
@@ -1613,42 +1626,43 @@ public:
 		return this;
 	}
 
-	inline void inverse() {
+	AML_FUNCTION void inverse() {
 		v.c[0] = 0 - v.c[0];
 		v.c[1] = 0 - v.c[1];
 		v.c[2] = 0 - v.c[2];
 		v.c[3] = 0 - v.c[3];
 	}
 
-	inline void operator-=(VectorFloat4D vec2) {
-		v.c[0] -= vec2[0];
-		v.c[1] -= vec2[1];
-		v.c[2] -= vec2[2];
-		v.c[3] -= vec2[3];
+	AML_FUNCTION void operator-=(const AML_PREFIX(VectorFloat4D) vec2) {
+		v.c[0] -= vec2.v.c[0];
+		v.c[1] -= vec2.v.c[1];
+		v.c[2] -= vec2.v.c[2];
+		v.c[3] -= vec2.v.c[3];
 
 	}
 
 
-	inline VectorFloat4D operator-(VectorFloat4D vec2) {
-		VectorFloat4D ret(v.c[0] - vec2.v.c[0], v.c[1] - vec2.v.c[1], v.c[2] - vec2.v.c[2], v.c[3] - vec2.v.c[3]);
+	AML_FUNCTION AML_PREFIX(VectorFloat4D) operator-(const AML_PREFIX(VectorFloat4D) vec2) {
+		AML_PREFIX(VectorFloat4D) ret(v.c[0] - vec2.v.c[0], v.c[1] - vec2.v.c[1], v.c[2] - vec2.v.c[2],
+									  v.c[3] - vec2.v.c[3]);
 		return ret;
 
 
 	}
 
-	inline VectorFloat4D operator-(float a) {
-		VectorFloat4D ret(a);
-		ret = VectorFloat4D(v.c[0] - a, v.c[1] - a, v.c[2] - a, v.c[3] - a);
+	AML_FUNCTION AML_PREFIX(VectorFloat4D) operator-(float a) {
+		AML_PREFIX(VectorFloat4D) ret(a);
+		ret = AML_PREFIX(VectorFloat4D)(v.c[0] - a, v.c[1] - a, v.c[2] - a, v.c[3] - a);
 		return ret;
 
 
 	}
 
-	inline double length() {
+	AML_FUNCTION double length() {
 		return sqrt(v.c[0] * v.c[0] + v.c[1] * v.c[1] + v.c[2] * v.c[2] + v.c[3] * v.c[3]);
 	}
 
-	inline void normalize() {
+	AML_FUNCTION void normalize() {
 		float vecLength = 1 / length();
 		v.c[0] *= vecLength;
 		v.c[1] *= vecLength;
@@ -1656,7 +1670,7 @@ public:
 		v.c[3] *= vecLength;
 	}
 
-	inline VectorFloat4D *forEachSin() {
+	AML_FUNCTION AML_PREFIX(VectorFloat4D) *forEachSin() {
 		v.c[0] = sin(v.c[0]);
 		v.c[1] = sin(v.c[1]);
 		v.c[2] = sin(v.c[2]);
@@ -1664,7 +1678,7 @@ public:
 		return this;
 	}
 
-	inline void operator*=(float scalar) {
+	AML_FUNCTION void operator*=(float scalar) {
 		v.c[0] *= scalar;
 		v.c[1] *= scalar;
 		v.c[2] *= scalar;
@@ -1672,14 +1686,14 @@ public:
 	}
 
 	// for each multiply
-	inline void operator*=(VectorFloat4D vec2) {
+	AML_FUNCTION void operator*=(const AML_PREFIX(VectorFloat4D) vec2) {
 		v.c[0] *= vec2.v.c[0];
 		v.c[1] *= vec2.v.c[1];
 		v.c[2] *= vec2.v.c[2];
 		v.c[3] *= vec2.v.c[3];
 	}
 
-	inline VectorFloat4D *forEachSqrt() {
+	AML_FUNCTION AML_PREFIX(VectorFloat4D) *forEachSqrt() {
 		v.c[0] = sqrt(v.c[0]);
 		v.c[1] = sqrt(v.c[1]);
 		v.c[2] = sqrt(v.c[2]);
@@ -1688,8 +1702,8 @@ public:
 
 	}
 
-	inline VectorFloat4D operator*(float a) {
-		VectorFloat4D ret;
+	AML_FUNCTION AML_PREFIX(VectorFloat4D) operator*(float a) {
+		AML_PREFIX(VectorFloat4D) ret;
 		ret.v.c[0] *= v.c[0] * a;
 		ret.v.c[1] *= v.c[1] * a;
 		ret.v.c[2] *= v.c[2] * a;
@@ -1697,8 +1711,8 @@ public:
 		return ret;
 	}
 
-	inline VectorFloat4D operator/(float a) {
-		VectorFloat4D ret;
+	AML_FUNCTION AML_PREFIX(VectorFloat4D) operator/(float a) {
+		AML_PREFIX(VectorFloat4D) ret;
 		ret.v.c[0] /= v.c[0] * a;
 		ret.v.c[1] /= v.c[1] * a;
 		ret.v.c[2] /= v.c[2] * a;
@@ -1707,7 +1721,7 @@ public:
 	}
 
 
-	inline VectorFloat4D *capBetween1_0() {
+	AML_FUNCTION AML_PREFIX(VectorFloat4D) *capBetween1_0() {
 		if (v.c[0] > 1) UNLIKELY {
 			v.c[0] = 1;
 		} else if (v.c[0] < 0) UNLIKELY {
@@ -1731,7 +1745,7 @@ public:
 		return this;
 	}
 
-	inline VectorFloat4D *capBetweenX_Y(const float upperBoundary, const float lowerBoundary) {
+	AML_FUNCTION AML_PREFIX(VectorFloat4D) *capBetweenX_Y(const float upperBoundary, const float lowerBoundary) {
 		if (v.c[0] > upperBoundary) {
 			v.c[0] = upperBoundary;
 		} else if (v.c[0] < lowerBoundary) {
@@ -1755,7 +1769,7 @@ public:
 		return this;
 	}
 
-	inline VectorFloat4D *
+	AML_FUNCTION AML_PREFIX(VectorFloat4D) *
 	map(const float lowerInput, const float upperInput, const float lowerOutput, const float upperOutput) {
 		v.c[0] = ((v.c[0] - lowerInput) * ((upperOutput - lowerOutput) / (upperInput - lowerInput))) + lowerOutput;
 		v.c[1] = ((v.c[1] - lowerInput) * ((upperOutput - lowerOutput) / (upperInput - lowerInput))) + lowerOutput;
@@ -1764,8 +1778,9 @@ public:
 		return this;
 	}
 
-	inline VectorFloat4D *mapNonLinear(const float lowerInput, const float upperInput,
-									   const float lowerOutput, const float upperOutput, const float factor) {
+	AML_FUNCTION AML_PREFIX(VectorFloat4D) *mapNonLinear(const float lowerInput, const float upperInput,
+														 const float lowerOutput, const float upperOutput,
+														 const float factor) {
 		v.c[0] = (((pow(((v.c[0] - lowerInput) / (upperInput - lowerInput)), factor)) * (upperOutput - lowerOutput)) +
 				  lowerOutput);
 		v.c[1] = (((pow(((v.c[1] - lowerInput) / (upperInput - lowerInput)), factor)) * (upperOutput - lowerOutput)) +
@@ -1777,7 +1792,7 @@ public:
 		return this;
 	}
 
-	inline VectorFloat4D *forEachInterpolate(const float min, const float max) {
+	AML_FUNCTION AML_PREFIX(VectorFloat4D) *forEachInterpolate(const float min, const float max) {
 		v.c[0] = (v.c[0] * (min - max) + max);
 		v.c[1] = (v.c[1] * (min - max) + max);
 		v.c[2] = (v.c[2] * (min - max) + max);
@@ -1785,7 +1800,7 @@ public:
 		return this;
 	}
 
-	inline VectorFloat4D *interpolate(const VectorFloat4D max, float ratio) {
+	AML_FUNCTION AML_PREFIX(VectorFloat4D) *interpolate(const AML_PREFIX(VectorFloat4D) max, float ratio) {
 		v.c[0] = (ratio * (v.c[0] - max.v.c[0]) + max.v.c[0]);
 		v.c[1] = (ratio * (v.c[1] - max.v.c[1]) + max.v.c[1]);
 		v.c[2] = (ratio * (v.c[2] - max.v.c[2]) + max.v.c[2]);
@@ -1793,7 +1808,8 @@ public:
 		return this;
 	}
 
-	inline VectorFloat4D *interpolate(const VectorFloat4D val2, const VectorFloat4D val3, float ratio) {
+	AML_FUNCTION AML_PREFIX(VectorFloat4D) *
+	interpolate(const AML_PREFIX(VectorFloat4D) val2, const AML_PREFIX(VectorFloat4D) val3, float ratio) {
 		v.c[0] = ratio *
 				 (ratio * (v.c[0] - val2.v.c[0] - val2.v.c[0] + val3.v.c[0]) + val2.v.c[0] + val2.v.c[0] - val3.v.c[0] -
 				  val3.v.c[0]) + val3.v.c[0];
@@ -1809,7 +1825,7 @@ public:
 		return this;
 	}
 
-	inline VectorFloat4D *set(float value, VectorU8_4D mask) {
+	AML_FUNCTION AML_PREFIX(VectorFloat4D) *set(float value, AML_PREFIX(VectorU8_4D) mask) {
 		if (mask.v.c[0]) { v.c[0] = value; }
 		if (mask.v.c[1]) { v.c[1] = value; }
 		if (mask.v.c[2]) { v.c[2] = value; }
@@ -1817,7 +1833,7 @@ public:
 		return this;
 	}
 
-	inline VectorFloat4D *set(VectorFloat4D value, VectorU8_4D mask) {
+	AML_FUNCTION AML_PREFIX(VectorFloat4D) *set(const AML_PREFIX(VectorFloat4D) value, AML_PREFIX(VectorU8_4D) mask) {
 		if (mask.v.c[0]) { v.c[0] = value.v.c[0]; }
 		if (mask.v.c[1]) { v.c[1] = value.v.c[1]; }
 		if (mask.v.c[2]) { v.c[2] = value.v.c[2]; }
@@ -1826,7 +1842,7 @@ public:
 	}
 
 	template<const int a, const int b, const int c, const int d>
-	inline VectorFloat4D *permutation() {
+	AML_FUNCTION AML_PREFIX(VectorFloat4D) *permutation() {
 		float a1 = v.c[a];
 		float b1 = v.c[b];
 		float c1 = v.c[c];
@@ -1839,28 +1855,28 @@ public:
 	}
 
 
-	inline VectorFloat4D(float a, float b, float c, float d) {
+	AML_FUNCTION AML_PREFIX(VectorFloat4D)(float a, float b, float c, float d) {
 		v.c[0] = a;
 		v.c[1] = b;
 		v.c[2] = c;
 		v.c[3] = d;
 	}
 
-	inline VectorFloat4D() {
+	AML_FUNCTION AML_PREFIX(VectorFloat4D)() {
 		v.c[0] = 0;
 		v.c[1] = 0;
 		v.c[2] = 0;
 		v.c[3] = 0;
 	}
 
-	inline VectorFloat4D(const float a) {
+	AML_FUNCTION AML_PREFIX(VectorFloat4D)(const float a) {
 		v.c[0] = a;
 		v.c[1] = a;
 		v.c[2] = a;
 		v.c[3] = a;
 	}
 
-	inline VectorFloat4D(const float *const values) {
+	AML_FUNCTION AML_PREFIX(VectorFloat4D)(const float *const values) {
 		v.c[0] = values[0];
 		v.c[1] = values[1];
 		v.c[2] = values[2];
@@ -1869,12 +1885,12 @@ public:
 
 };
 
-class MatrixDouble4X4 {
+class AML_PREFIX(MatrixDouble4X4) {
 public:
-	doublemat4x4 m{};
+	AML_PREFIX(doublemat4x4) m{};
 
-	inline VectorDouble4D operator[](uint32_t column) {
-		VectorDouble4D ret;
+	AML_FUNCTION AML_PREFIX(VectorDouble4D) operator[](uint32_t column) {
+		AML_PREFIX(VectorDouble4D) ret;
 #if defined(USE_AVX)
 		ret.v.avx = m.avx[column];
 #else
@@ -1886,7 +1902,7 @@ public:
 		return ret;
 	}
 
-	inline MatrixDouble4X4 *identity() {
+	AML_FUNCTION AML_PREFIX(MatrixDouble4X4) *identity() {
 		m.c[0] = 1.0f;
 		m.c[1] = 0.0f;
 		m.c[2] = 0.0f;
@@ -1906,8 +1922,8 @@ public:
 		return this;
 	}
 
-	inline MatrixDouble4X4 operator*(MatrixDouble4X4 &b) {
-		MatrixDouble4X4 ret;
+	AML_FUNCTION AML_PREFIX(MatrixDouble4X4) operator*(const AML_PREFIX(MatrixDouble4X4) &b) {
+		AML_PREFIX(MatrixDouble4X4) ret;
 #if defined(USE_AVX512F)
 		__m512d O0 = (__m512d) {b.m.c[0], b.m.c[0], b.m.c[0], b.m.c[0], b.m.c[4], b.m.c[4], b.m.c[4], b.m.c[4]};
 		__m512d O1 = (__m512d) {b.m.c[1], b.m.c[1], b.m.c[1], b.m.c[1], b.m.c[5], b.m.c[5], b.m.c[5], b.m.c[5]};
@@ -2115,8 +2131,8 @@ public:
 		return ret;
 	}
 
-	inline VectorDouble4D operator*(VectorDouble4D b) {
-		VectorDouble4D ret;
+	AML_FUNCTION AML_PREFIX(VectorDouble4D) operator*(const AML_PREFIX(VectorDouble4D) b) {
+		AML_PREFIX(VectorDouble4D) ret;
 		ret.v.c[0] = m.c[0] * b.v.c[0] + m.c[4] * b.v.c[1] + m.c[8] * b.v.c[2] + m.c[12] * b.v.c[3];
 		ret.v.c[1] = m.c[1] * b.v.c[0] + m.c[5] * b.v.c[1] + m.c[9] * b.v.c[2] + m.c[13] * b.v.c[3];
 		ret.v.c[2] = m.c[2] * b.v.c[0] + m.c[6] * b.v.c[1] + m.c[10] * b.v.c[2] + m.c[14] * b.v.c[3];
@@ -2124,7 +2140,7 @@ public:
 		return ret;
 	}
 
-	inline MatrixDouble4X4() {
+	AML_FUNCTION AML_PREFIX(MatrixDouble4X4)() {
 		m.c[0] = 0.0f;
 		m.c[1] = 0.0f;
 		m.c[2] = 0.0f;
@@ -2143,8 +2159,9 @@ public:
 		m.c[15] = 0.0f;
 	}
 
-	inline MatrixDouble4X4(const VectorDouble4D &a, const VectorDouble4D &b, const VectorDouble4D &c,
-						   const VectorDouble4D &d) {
+	AML_FUNCTION AML_PREFIX(MatrixDouble4X4)(const AML_PREFIX(VectorDouble4D) &a, const AML_PREFIX(VectorDouble4D) &b,
+											 const AML_PREFIX(VectorDouble4D) &c,
+											 const AML_PREFIX(VectorDouble4D) &d) {
 #if defined(USE_AVX)
 		m.avx[0] = a.v.avx;
 		m.avx[1] = b.v.avx;
@@ -2170,7 +2187,7 @@ public:
 #endif
 	}
 
-	inline MatrixDouble4X4(MatrixDouble4X4 const &b) {
+	AML_FUNCTION AML_PREFIX(MatrixDouble4X4)(const AML_PREFIX(MatrixDouble4X4) &b) {
 #if defined(USE_AVX512)
 		m.avx512[0] = b.m.avx512[0];
 		m.avx512[1] = b.m.avx512[1];
@@ -2195,15 +2212,15 @@ public:
 	}
 };
 
-class VectorDouble8D {
+class AML_PREFIX(VectorDouble8D) {
 public:
-	doublevec8 v{};
+	AML_PREFIX(doublevec8) v{};
 
-	inline double operator[](uint32_t position) {
+	AML_FUNCTION double operator[](uint32_t position) {
 		return v.c[position];
 	}
 
-	inline void operator+=(const VectorDouble8D &vec2) {
+	AML_FUNCTION void operator+=(const AML_PREFIX(VectorDouble8D) &vec2) {
 #if defined(USE_AVX512F) || defined(KNCNI)
 		v.avx512 = _mm512_add_pd(v.avx512, vec2.v.avx512);
 #elif defined(USE_AVX)
@@ -2228,7 +2245,8 @@ public:
 
 	}
 
-	inline VectorDouble8D(double a, double b, double c, double d, double e, double f, double g, double h) {
+	AML_FUNCTION AML_PREFIX(VectorDouble8D)(double a, double b, double c, double d, double e, double f, double g,
+											double h) {
 		v.c[0] = a;
 		v.c[1] = b;
 		v.c[2] = c;
@@ -2239,7 +2257,7 @@ public:
 		v.c[7] = h;
 	}
 
-	inline VectorDouble8D(VectorDouble4D a, VectorDouble4D b) {
+	AML_FUNCTION AML_PREFIX(VectorDouble8D)(const AML_PREFIX(VectorDouble4D) a, const AML_PREFIX(VectorDouble4D) b) {
 #if defined(USE_AVX)
 		v.avx[0] = a.v.avx;
 		v.avx[1] = b.v.avx;
@@ -2255,7 +2273,7 @@ public:
 #endif
 	}
 
-	inline VectorDouble8D() {
+	AML_FUNCTION AML_PREFIX(VectorDouble8D)() {
 		v.c[0] = 0.0f;
 		v.c[1] = 0.0f;
 		v.c[2] = 0.0f;
@@ -2268,7 +2286,7 @@ public:
 
 #if defined(USE_AVX)
 
-	inline explicit VectorDouble8D(__m256d *values) {
+	AML_FUNCTION explicit AML_PREFIX(VectorDouble8D)(__m256d *values) {
 		v.avx[0] = values[0];
 		v.avx[1] = values[1];
 	}
@@ -2276,7 +2294,7 @@ public:
 #endif
 #if defined(USE_SSE)
 
-	inline explicit VectorDouble8D(__m128d *values) {
+	AML_FUNCTION explicit AML_PREFIX(VectorDouble8D)(__m128d *values) {
 		v.sse[0] = values[0];
 		v.sse[1] = values[1];
 		v.sse[2] = values[2];
@@ -2287,13 +2305,13 @@ public:
 
 #if defined(USE_AVX512)
 
-	inline VectorDouble8D(__m512d value) {
+	AML_FUNCTION AML_PREFIX(VectorDouble8D)(__m512d value) {
 		v.avx512 = value;
 	}
 
 #endif
 
-	inline explicit VectorDouble8D(const double *const values) {
+	AML_FUNCTION explicit AML_PREFIX(VectorDouble8D)(const double *const values) {
 		v.c[0] = values[0];
 		v.c[1] = values[1];
 		v.c[2] = values[2];
@@ -2304,7 +2322,7 @@ public:
 		v.c[7] = values[7];
 	}
 
-	inline explicit VectorDouble8D(const double value) {
+	AML_FUNCTION AML_PREFIX(VectorDouble8D)(const double value) {
 		v.c[0] = value;
 		v.c[1] = value;
 		v.c[2] = value;
@@ -2315,7 +2333,7 @@ public:
 		v.c[7] = value;
 	}
 
-	inline VectorDouble8D *set(double value, VectorU8_8D mask) {
+	AML_FUNCTION AML_PREFIX(VectorDouble8D) *set(double value, AML_PREFIX(VectorU8_8D) mask) {
 		if (mask.v.c[0]) { v.c[0] = value; }
 		if (mask.v.c[1]) { v.c[1] = value; }
 		if (mask.v.c[2]) { v.c[2] = value; }
@@ -2328,16 +2346,15 @@ public:
 	}
 };
 
-
-class VectorFloat8D {
+class AML_PREFIX(VectorFloat8D) {
 public:
-	floatvec8 v{};
+	AML_PREFIX(floatvec8) v{};
 
-	inline float operator[](uint32_t position) {
+	AML_FUNCTION float operator[](uint32_t position) {
 		return v.c[position];
 	}
 
-	inline void operator+=(const VectorFloat8D &vec2) {
+	AML_FUNCTION void operator+=(const AML_PREFIX(VectorFloat8D) &vec2) {
 		v.c[0] += vec2.v.c[0];
 		v.c[1] += vec2.v.c[1];
 		v.c[2] += vec2.v.c[2];
@@ -2349,7 +2366,7 @@ public:
 
 	}
 
-	inline VectorFloat8D(float a, float b, float c, float d, float e, float f, float g, float h) {
+	AML_FUNCTION AML_PREFIX(VectorFloat8D)(float a, float b, float c, float d, float e, float f, float g, float h) {
 		v.c[0] = a;
 		v.c[1] = b;
 		v.c[2] = c;
@@ -2360,7 +2377,7 @@ public:
 		v.c[7] = h;
 	}
 
-	inline VectorFloat8D(VectorDouble4D a, VectorDouble4D b) {
+	AML_FUNCTION AML_PREFIX(VectorFloat8D)(const AML_PREFIX(VectorDouble4D) a, const AML_PREFIX(VectorDouble4D) b) {
 		v.c[0] = a.v.c[0];
 		v.c[1] = a.v.c[1];
 		v.c[2] = a.v.c[2];
@@ -2371,7 +2388,7 @@ public:
 		v.c[7] = b.v.c[3];
 	}
 
-	inline VectorFloat8D() {
+	AML_FUNCTION AML_PREFIX(VectorFloat8D)() {
 		v.c[0] = 0.0f;
 		v.c[1] = 0.0f;
 		v.c[2] = 0.0f;
@@ -2382,7 +2399,7 @@ public:
 		v.c[7] = 0.0f;
 	}
 
-	inline explicit VectorFloat8D(const float *const values) {
+	AML_FUNCTION explicit AML_PREFIX(VectorFloat8D)(const float *const values) {
 		v.c[0] = values[0];
 		v.c[1] = values[1];
 		v.c[2] = values[2];
@@ -2393,7 +2410,7 @@ public:
 		v.c[7] = values[7];
 	}
 
-	inline explicit VectorFloat8D(const float value) {
+	AML_FUNCTION explicit AML_PREFIX(VectorFloat8D)(const float value) {
 		v.c[0] = value;
 		v.c[1] = value;
 		v.c[2] = value;
@@ -2404,7 +2421,7 @@ public:
 		v.c[7] = value;
 	}
 
-	inline VectorFloat8D *set(const float value, VectorU8_8D mask) {
+	AML_FUNCTION AML_PREFIX(VectorFloat8D) *set(const float value, const AML_PREFIX(VectorU8_8D) mask) {
 		if (mask.v.c[0]) { v.c[0] = value; }
 		if (mask.v.c[1]) { v.c[1] = value; }
 		if (mask.v.c[2]) { v.c[2] = value; }
@@ -2566,44 +2583,44 @@ public:
 
 #endif
 
-class Complex64 {
+class AML_PREFIX(Complex64) {
 public:
-	doublevec2 c{};
+	AML_PREFIX(doublevec2) c{};
 
-	inline constexpr Complex64(const double real, const double img = 0.0) {
+	AML_FUNCTION constexpr AML_PREFIX(Complex64)(const double real, const double img = 0.0) {
 		c.c[0] = real;
 		c.c[1] = img;
 	}
 
-	inline explicit Complex64(double *values) {
+	AML_FUNCTION explicit AML_PREFIX(Complex64)(double *values) {
 		c.c[0] = values[0];
 		c.c[1] = values[1];
 	}
 
 #if defined(AML_USE_STD_COMPLEX)
 
-	inline Complex64(std::complex<double> sc) {
+	AML_FUNCTION AML_PREFIX(Complex64)(std::complex<double> sc) {
 		c.c[0] = sc.real();
 		c.c[1] = sc.imag();
 	}
 
 #endif
 
-	inline Complex64() = default;
+	AML_FUNCTION AML_PREFIX(Complex64)() = default;
 
-	inline void set([[maybe_unused]]uint64_t location, Complex64 value) {
+	AML_FUNCTION void set([[maybe_unused]]uint64_t location, AML_PREFIX(Complex64) value) {
 		c.c[0] = value.c.c[0];
 		c.c[1] = value.c.c[1];
 	}
 
 //add sub
-	inline Complex64 *add(Complex64 a) {
+	AML_FUNCTION AML_PREFIX(Complex64) *add(const AML_PREFIX(Complex64) a) {
 		c.c[0] += a.c.c[0];
 		c.c[1] += a.c.c[1];
 		return this;
 	}
 
-	inline Complex64 *add(Complex64 a, VectorU8_1D mask) {
+	AML_FUNCTION AML_PREFIX(Complex64) *add(const AML_PREFIX(Complex64) a, AML_PREFIX(VectorU8_1D) mask) {
 		if (mask.v.c) LIKELY {
 			c.c[1] += a.c.c[1];
 			c.c[0] += a.c.c[0];
@@ -2611,49 +2628,48 @@ public:
 		return this;
 	}
 
-	inline Complex64 operator+(const Complex64 a) const {
-		Complex64 ret(c.c[0] + a.c.c[0], c.c[1] + a.c.c[1]);
+	AML_FUNCTION AML_PREFIX(Complex64) operator+(const AML_PREFIX(Complex64) a) const {
+		AML_PREFIX(Complex64) ret(c.c[0] + a.c.c[0], c.c[1] + a.c.c[1]);
 		return ret;
 	}
 
-	inline Complex64 operator-(const Complex64 a) const {
-		Complex64 ret(c.c[0] - a.c.c[0], c.c[1] - a.c.c[1]);
+	AML_FUNCTION AML_PREFIX(Complex64) operator-(const AML_PREFIX(Complex64) a) const {
+		AML_PREFIX(Complex64) ret(c.c[0] - a.c.c[0], c.c[1] - a.c.c[1]);
 		return ret;
 	}
 
 
-	inline void operator+=(Complex64 a) {
+	AML_FUNCTION void operator+=(const AML_PREFIX(Complex64) a) {
 		c.c[0] += a.c.c[0];
 		c.c[1] += a.c.c[1];
 	}
 
-	inline void operator-=(Complex64 a) {
+	AML_FUNCTION void operator-=(const AML_PREFIX(Complex64) a) {
 		c.c[0] -= a.c.c[0];
 		c.c[1] -= a.c.c[1];
 	}
 
-	inline Complex64 *subtract(Complex64 a) {
+	AML_FUNCTION AML_PREFIX(Complex64) *subtract(const AML_PREFIX(Complex64) a) {
 		c.c[0] -= a.c.c[0];
 		c.c[1] -= a.c.c[1];
 		return this;
 	}
 
-	inline Complex64 *subtract(Complex64 a, VectorU8_1D mask) {
+	AML_FUNCTION AML_PREFIX(Complex64) *subtract(const AML_PREFIX(Complex64) a, AML_PREFIX(VectorU8_1D) mask) {
 		if (mask.v.c) LIKELY {
 			c.c[0] -= a.c.c[0];
 			c.c[1] -= a.c.c[1];
-
 		}
 		return this;
 	}
 
-	inline Complex64 *conjugate() {
+	AML_FUNCTION AML_PREFIX(Complex64) *conjugate() {
 		c.c[1] = -c.c[1];
 		return this;
 	}
 
 //mul
-	inline Complex64 *multiply(Complex64 a) {
+	AML_FUNCTION AML_PREFIX(Complex64) *multiply(const AML_PREFIX(Complex64) a) {
 		double d1 = c.c[0] * a.c.c[0] - c.c[1] * a.c.c[1];
 		double d2 = c.c[0] * a.c.c[1] + c.c[1] * a.c.c[0];
 		c.c[0] = d1;
@@ -2662,7 +2678,7 @@ public:
 	}
 
 
-	inline Complex64 *multiply(const Complex64 &a, const VectorU8_1D &mask) {
+	AML_FUNCTION AML_PREFIX(Complex64) *multiply(const AML_PREFIX(Complex64) &a, const AML_PREFIX(VectorU8_1D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c) LIKELY {
@@ -2676,25 +2692,25 @@ public:
 
 	}
 
-	inline Complex64 operator*(Complex64 a) const {
-		Complex64 ret(c.c[0] * a.c.c[0] - c.c[1] * a.c.c[1], c.c[0] * a.c.c[1] + c.c[1] * a.c.c[0]);
+	AML_FUNCTION AML_PREFIX(Complex64) operator*(const AML_PREFIX(Complex64) a) const {
+		AML_PREFIX(Complex64) ret(c.c[0] * a.c.c[0] - c.c[1] * a.c.c[1], c.c[0] * a.c.c[1] + c.c[1] * a.c.c[0]);
 		return ret;
 	}
 
-	inline void operator*=(Complex64 a) {
+	AML_FUNCTION void operator*=(const AML_PREFIX(Complex64) a) {
 		double d1 = c.c[0] * a.c.c[0] - c.c[1] * a.c.c[1];
 		double d2 = c.c[0] * a.c.c[1] + c.c[1] * a.c.c[0];
 		c.c[0] = d1;
 		c.c[1] = d2;
 	}
 
-	inline void operator*=(double a) {
+	AML_FUNCTION void operator*=(double a) {
 		c.c[0] = c.c[0] * a;
 		c.c[1] = c.c[1] * a;
 	}
 
 
-	inline Complex64 *square() {
+	AML_FUNCTION AML_PREFIX(Complex64) *square() {
 		double d1 = c.c[0] * c.c[0] - c.c[1] * c.c[1];
 		double d2 = c.c[0] * c.c[1] + c.c[1] * c.c[0];
 		c.c[0] = d1;
@@ -2702,7 +2718,7 @@ public:
 		return this;
 	}
 
-	inline Complex64 *square(const VectorU8_1D mask) {
+	AML_FUNCTION AML_PREFIX(Complex64) *square(const AML_PREFIX(VectorU8_1D) mask) {
 		if (mask.v.c) LIKELY {
 			double d1 = c.c[0] * c.c[0] - c.c[1] * c.c[1];
 			double d2 = c.c[0] * c.c[1] + c.c[1] * c.c[0];
@@ -2713,28 +2729,28 @@ public:
 	}
 
 //division
-	inline Complex64 operator/(const Complex64 a) const {
-		Complex64 ret;
+	AML_FUNCTION AML_PREFIX(Complex64) operator/(const AML_PREFIX(Complex64) a) const {
+		AML_PREFIX(Complex64) ret;
 		ret.c.c[0] = (c.c[0] * a.c.c[0] + c.c[1] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		ret.c.c[1] = (c.c[1] * a.c.c[0] - c.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		return ret;
 	}
 
-	inline void operator/=(Complex64 a) {
+	AML_FUNCTION void operator/=(const AML_PREFIX(Complex64) a) {
 		double d1 = (c.c[0] * a.c.c[0] + c.c[1] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		double d2 = (c.c[1] * a.c.c[0] - c.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		c.c[0] = d1;
 		c.c[1] = d2;
 	}
 
-	inline void operator/=(double a) {
+	AML_FUNCTION void operator/=(double a) {
 		double d1 = c.c[0] / a;
 		double d2 = c.c[1] / a;
 		c.c[0] = d1;
 		c.c[1] = d2;
 	}
 
-	inline Complex64 *divide(Complex64 a) {
+	AML_FUNCTION AML_PREFIX(Complex64) *divide(const AML_PREFIX(Complex64) a) {
 		double d1 = (c.c[0] * a.c.c[0] + c.c[1] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		double d2 = (c.c[1] * a.c.c[0] - c.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		c.c[0] = d1;
@@ -2742,14 +2758,14 @@ public:
 		return this;
 	}
 
-	inline Complex64 operator/(double a) {
-		Complex64 ret;
+	AML_FUNCTION AML_PREFIX(Complex64) operator/(double a) {
+		AML_PREFIX(Complex64) ret;
 		ret.c.c[0] = c.c[0] / a;
 		ret.c.c[1] = c.c[1] / a;
 		return ret;
 	}
 
-	inline Complex64 *divide(double a) {
+	AML_FUNCTION AML_PREFIX(Complex64) *divide(double a) {
 		double d1 = c.c[0] / a;
 		double d2 = c.c[1] / a;
 		c.c[0] = d1;
@@ -2757,7 +2773,7 @@ public:
 		return this;
 	}
 
-	inline Complex64 *divide(const double a, const VectorU8_1D mask) {
+	AML_FUNCTION AML_PREFIX(Complex64) *divide(const double a, const AML_PREFIX(VectorU8_1D) mask) {
 		if (mask.v.c) LIKELY {
 			double d1 = c.c[0] / a;
 			double d2 = c.c[1] / a;
@@ -2770,7 +2786,7 @@ public:
 		return this;
 	}
 
-	inline Complex64 *divide(const Complex64 a, const VectorU8_1D mask) {
+	AML_FUNCTION AML_PREFIX(Complex64) *divide(const AML_PREFIX(Complex64) a, const AML_PREFIX(VectorU8_1D) mask) {
 		if (mask.v.c) LIKELY {
 			double d1 = (c.c[0] * a.c.c[0] + c.c[1] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 			double d2 = (c.c[1] * a.c.c[0] - c.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
@@ -2784,7 +2800,7 @@ public:
 	}
 
 //sqrt
-	inline Complex64 *sqrt() {
+	AML_FUNCTION AML_PREFIX(Complex64) *sqrt() {
 		double d2 = ::sqrt((-c.c[0] + ::sqrt(c.c[0] * c.c[0] + c.c[1] * c.c[1])) / (2));
 		double d1;
 		if (d2 == 0) UNLIKELY {
@@ -2797,7 +2813,7 @@ public:
 		return this;
 	}
 
-	inline Complex64 *sqrt(const VectorU8_1D mask) {
+	AML_FUNCTION AML_PREFIX(Complex64) *sqrt(const AML_PREFIX(VectorU8_1D) mask) {
 		if (mask.v.c) LIKELY {
 			double d2 = ::sqrt((-c.c[0] + ::sqrt(c.c[0] * c.c[0] + c.c[1] * c.c[1])) / (2));
 			double d1;
@@ -2812,7 +2828,7 @@ public:
 		return this;
 	}
 
-	inline Complex64 *sin() {
+	AML_FUNCTION AML_PREFIX(Complex64) *sin() {
 		double d1 = ::sin(c.c[0]) * ::cosh(c.c[1]);
 		double d2 = ::cos(c.c[1]) * ::sinh(c.c[0]);
 
@@ -2821,7 +2837,7 @@ public:
 		return this;
 	}
 
-	inline Complex64 *cos() {
+	AML_FUNCTION AML_PREFIX(Complex64) *cos() {
 		double d1 = ::cos(c.c[0]) * ::cosh(c.c[1]);
 		double d2 = -::sin(c.c[1]) * ::sinh(c.c[0]);
 
@@ -2830,7 +2846,7 @@ public:
 		return this;
 	}
 
-	inline Complex64 *tan() {
+	AML_FUNCTION AML_PREFIX(Complex64) *tan() {
 		double d1 = ::sin(c.c[0] + c.c[0]) / (::cos(c.c[0] + c.c[0]) * ::cosh(c.c[1] + c.c[1]));
 		double d2 = ::sinh(c.c[1] + c.c[1]) / (::cos(c.c[0] + c.c[0]) * ::cosh(c.c[1] + c.c[1]));
 
@@ -2839,7 +2855,7 @@ public:
 		return this;
 	}
 
-	inline Complex64 *sin(const VectorU8_1D mask) {
+	AML_FUNCTION AML_PREFIX(Complex64) *sin(const AML_PREFIX(VectorU8_1D) mask) {
 		if (mask.v.c) {
 			double d1 = ::sin(c.c[0]) * ::cosh(c.c[1]);
 			double d2 = ::cos(c.c[1]) * ::sinh(c.c[0]);
@@ -2849,7 +2865,7 @@ public:
 		return this;
 	}
 
-	inline Complex64 *cos(const VectorU8_1D mask) {
+	AML_FUNCTION AML_PREFIX(Complex64) *cos(const AML_PREFIX(VectorU8_1D) mask) {
 		if (mask.v.c) {
 			double d1 = ::cos(c.c[0]) * ::cosh(c.c[1]);
 			double d2 = -::sin(c.c[1]) * ::sinh(c.c[0]);
@@ -2859,7 +2875,7 @@ public:
 		return this;
 	}
 
-	inline Complex64 *tan(const VectorU8_1D mask) {
+	AML_FUNCTION AML_PREFIX(Complex64) *tan(const AML_PREFIX(VectorU8_1D) mask) {
 		if (mask.v.c) {
 			double d1 = ::sin(c.c[0] + c.c[0]) / (::cos(c.c[0] + c.c[0]) * ::cosh(c.c[1] + c.c[1]));
 			double d2 = ::sinh(c.c[1] + c.c[1]) / (::cos(c.c[0] + c.c[0]) * ::cosh(c.c[1] + c.c[1]));
@@ -2870,7 +2886,7 @@ public:
 	}
 
 
-	inline Complex64 *exp() {
+	AML_FUNCTION AML_PREFIX(Complex64) *exp() {
 		double d1 = ::exp(c.c[0]) * ::cos(c.c[1]);
 		double d2 = ::exp(c.c[0]) * ::sin(c.c[1]);
 
@@ -2880,7 +2896,7 @@ public:
 		return this;
 	}
 
-	inline Complex64 *exp(double n) {
+	AML_FUNCTION AML_PREFIX(Complex64) *exp(double n) {
 		double d1 = ::pow(n, c.c[0]) * ::cos(c.c[1] * ::log(n));
 		double d2 = ::pow(n, c.c[0]) * ::sin(c.c[1] * ::log(n));
 		c.c[0] = d1;
@@ -2888,7 +2904,7 @@ public:
 		return this;
 	}
 
-	inline Complex64 *pow(double n) {
+	AML_FUNCTION AML_PREFIX(Complex64) *pow(double n) {
 		double d1 = ::pow(c.c[0] * c.c[0] + c.c[1] * c.c[1], n / 2) * ::cos(n * atan2(c.c[1], c.c[0]));
 		double d2 = ::pow(c.c[0] * c.c[0] + c.c[1] * c.c[1], n / 2) * ::sin(n * atan2(c.c[1], c.c[0]));
 		c.c[0] = d1;
@@ -2896,7 +2912,7 @@ public:
 		return this;
 	}
 
-	inline Complex64 *pow(Complex64 n) {
+	AML_FUNCTION AML_PREFIX(Complex64) *pow(const AML_PREFIX(Complex64) n) {
 		double d1 = ::log(c.c[0] * c.c[0] + c.c[1] * c.c[1]) / 2;
 		double d2 = ::atan2(c.c[1], c.c[0]);
 		double d3 = ::exp(d1 * n.c.c[0] - d2 * n.c.c[1]);
@@ -2908,7 +2924,7 @@ public:
 		return this;
 	}
 
-	inline Complex64 *pow(double n, const VectorU8_1D &mask) {
+	AML_FUNCTION AML_PREFIX(Complex64) *pow(double n, const AML_PREFIX(VectorU8_1D) &mask) {
 		if (mask.v.c) LIKELY {
 			double d1 = ::pow(c.c[0] * c.c[0] + c.c[1] * c.c[1], n / 2) * ::cos(n * atan2(c.c[1], c.c[0]));
 			double d2 = ::pow(c.c[0] * c.c[0] + c.c[1] * c.c[1], n / 2) * ::sin(n * atan2(c.c[1], c.c[0]));
@@ -2918,7 +2934,7 @@ public:
 		return this;
 	}
 
-	inline Complex64 *pow(Complex64 n, const VectorU8_1D mask) {
+	AML_FUNCTION AML_PREFIX(Complex64) *pow(const AML_PREFIX(Complex64) n, const AML_PREFIX(VectorU8_1D) mask) {
 		if (mask.v.c) LIKELY {
 			double d1 = ::log(c.c[0] * c.c[0] + c.c[1] * c.c[1]) / 2;
 			double d2 = ::atan2(c.c[1], c.c[0]);
@@ -2932,36 +2948,36 @@ public:
 		return this;
 	}
 
-	inline double abs() {
+	AML_FUNCTION double abs() {
 		return ::sqrt(c.c[0] * c.c[0] + c.c[1] * c.c[1]);
 	}
 
-	inline bool abs_gt(double a) {
+	AML_FUNCTION bool abs_gt(double a) {
 		return a * a < c.c[0] * c.c[0] + c.c[1] * c.c[1];
 	}
 
-	inline bool abs_lt(double a) {
+	AML_FUNCTION bool abs_lt(double a) {
 		return a * a > c.c[0] * c.c[0] + c.c[1] * c.c[1];
 	}
 
-	inline bool abs_eq(double a) {
+	AML_FUNCTION bool abs_eq(double a) {
 		return a * a == c.c[0] * c.c[0] + c.c[1] * c.c[1];
 	}
 
-	inline bool abs_gt(Complex64 a) {
+	AML_FUNCTION bool abs_gt(const AML_PREFIX(Complex64) a) {
 		return a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1] < c.c[0] * c.c[0] + c.c[1] * c.c[1];
 	}
 
-	inline bool abs_lt(Complex64 a) {
+	AML_FUNCTION bool abs_lt(const AML_PREFIX(Complex64) a) {
 		return a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1] > c.c[0] * c.c[0] + c.c[1] * c.c[1];
 	}
 
-	inline bool abs_eq(Complex64 a) {
+	AML_FUNCTION bool abs_eq(const AML_PREFIX(Complex64) a) {
 		return a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1] == c.c[0] * c.c[0] + c.c[1] * c.c[1];
 	}
 
 
-	inline Complex64 *ln() {
+	AML_FUNCTION AML_PREFIX(Complex64) *ln() {
 		double d1 = ::log(c.c[0] * c.c[0] + c.c[1] * c.c[1]) / 2;
 		double d2 = ::atan2(c.c[1], c.c[0]);
 		c.c[0] = d1;
@@ -2969,7 +2985,7 @@ public:
 		return this;
 	}
 
-	inline Complex64 *log() {
+	AML_FUNCTION AML_PREFIX(Complex64) *log() {
 		double d1 = ::log(c.c[0] * c.c[0] + c.c[1] * c.c[1]) / 2;
 		double d2 = ::atan2(c.c[1], c.c[0]);
 		c.c[0] = d1;
@@ -2977,7 +2993,7 @@ public:
 		return this;
 	}
 
-	inline Complex64 *log10() {
+	AML_FUNCTION AML_PREFIX(Complex64) *log10() {
 		double d1 = ::log(c.c[0] * c.c[0] + c.c[1] * c.c[1]) / (2 * AML_LN10);
 		double d2 = ::atan2(c.c[1], c.c[0]) / AML_LN10;
 		c.c[0] = d1;
@@ -2985,7 +3001,7 @@ public:
 		return this;
 	}
 
-	inline Complex64 *ln(const VectorU8_1D mask) {
+	AML_FUNCTION AML_PREFIX(Complex64) *ln(const AML_PREFIX(VectorU8_1D) mask) {
 		if (mask.v.c) LIKELY {
 			double d1 = ::log(c.c[0] * c.c[0] + c.c[1] * c.c[1]) / 2;
 			double d2 = ::atan2(c.c[1], c.c[0]);
@@ -2995,7 +3011,7 @@ public:
 		return this;
 	}
 
-	inline Complex64 *log(const VectorU8_1D mask) {
+	AML_FUNCTION AML_PREFIX(Complex64) *log(const AML_PREFIX(VectorU8_1D) mask) {
 		if (mask.v.c) LIKELY {
 			double d1 = ::log(c.c[0] * c.c[0] + c.c[1] * c.c[1]) / 2;
 			double d2 = ::atan2(c.c[1], c.c[0]);
@@ -3005,7 +3021,7 @@ public:
 		return this;
 	}
 
-	inline Complex64 *log10(const VectorU8_1D mask) {
+	AML_FUNCTION AML_PREFIX(Complex64) *log10(const AML_PREFIX(VectorU8_1D) mask) {
 		if (mask.v.c) LIKELY {
 			double d1 = ::log(c.c[0] * c.c[0] + c.c[1] * c.c[1]) / (2 * AML_LN10);
 			double d2 = ::atan2(c.c[1], c.c[0]) / AML_LN10;
@@ -3016,29 +3032,29 @@ public:
 	}
 
 
-	inline double imaginary() {
+	AML_FUNCTION double imaginary() {
 		return c.c[1];
 	}
 
-	inline double real() {
+	AML_FUNCTION double real() {
 		return c.c[0];
 	}
 
-	inline double angle() {
+	AML_FUNCTION double angle() {
 		return ::atan2(c.c[1], c.c[0]);
 	}
 
-	inline double length() {
+	AML_FUNCTION double length() {
 		return ::sqrt(c.c[0] * c.c[0] + c.c[1] * c.c[1]);
 	}
 
-	inline Complex64 *polar(double length, double angle) {
+	AML_FUNCTION AML_PREFIX(Complex64) *polar(double length, double angle) {
 		c.c[0] = length * ::cos(angle);
 		c.c[1] = length * ::sin(angle);
 		return this;
 	}
 
-	inline Complex64 operator[]([[maybe_unused]]uint64_t location) {
+	AML_FUNCTION AML_PREFIX(Complex64) operator[]([[maybe_unused]]uint64_t location) {
 		return *this;
 	}
 
@@ -3046,47 +3062,48 @@ public:
 };
 
 
-class Complex64Ptr : public Complex64 {
+class AML_PREFIX(Complex64Ptr) : public AML_PREFIX(Complex64) {
 	double *r;
 	double *i;
 	uint32_t index = 0;
 
-	inline void update() {
+	AML_FUNCTION void update() {
 		*r = c.c[0];
 		*i = c.c[1];
 	}
 
 public:
-	inline Complex64Ptr(double *real, double *imag) : Complex64(*real, *imag) {
+	AML_FUNCTION AML_PREFIX(Complex64Ptr)(double *real, double *imag) : AML_PREFIX(Complex64)(*real, *imag) {
 		r = real;
 		i = imag;
 	}
 
-	inline Complex64Ptr(double *real, double *imag, uint32_t position) : Complex64(*real, *imag) {
+	AML_FUNCTION AML_PREFIX(Complex64Ptr)(double *real, double *imag, uint32_t position) : AML_PREFIX(Complex64)(*real,
+																												 *imag) {
 		r = real;
 		i = imag;
 		index = position;
 	}
 
-	inline Complex64 &operator*() {
+	AML_FUNCTION AML_PREFIX(Complex64) &operator*() {
 		return *this;
 	}
 
-	inline ~Complex64Ptr() {
+	AML_FUNCTION ~AML_PREFIX(Complex64Ptr)() {
 		*r = c.c[0];
 		*i = c.c[1];
 	}
 
-	inline void operator()() {
+	AML_FUNCTION void operator()() {
 		*r = c.c[0];
 		*i = c.c[1];
 	}
 
-	inline uint32_t getIndex() {
+	AML_FUNCTION uint32_t getIndex() {
 		return index;
 	}
 
-	inline void operator=(Complex64 newVal) {
+	AML_FUNCTION void operator=(const AML_PREFIX(Complex64) newVal) {
 		c.c[0] = newVal.c.c[0];
 		c.c[1] = newVal.c.c[1];
 		update();
@@ -3094,14 +3111,15 @@ public:
 
 };
 
+#if !defined(AML_NO_STRING)
 
-inline std::string operator<<(std::string &lhs, const Complex64 &rhs) {
+AML_FUNCTION std::string operator<<(std::string &lhs, const AML_PREFIX(Complex64) &rhs) {
 	std::ostringstream string;
 	string << lhs << rhs.c.c[0] << " + " << rhs.c.c[1] << "i";
 	return string.str();
 }
 
-inline std::string operator<<(const char *lhs, const Complex64 &rhs) {
+AML_FUNCTION std::string operator<<(const char *lhs, const AML_PREFIX(Complex64) &rhs) {
 	std::ostringstream string;
 	string << lhs << rhs.c.c[0] << " + " << rhs.c.c[1] << "i";
 	return string.str();
@@ -3109,7 +3127,7 @@ inline std::string operator<<(const char *lhs, const Complex64 &rhs) {
 
 template<class charT, class traits>
 std::basic_ostream<charT, traits> &
-operator<<(std::basic_ostream<charT, traits> &o, const Complex64 &x) {
+operator<<(std::basic_ostream<charT, traits> &o, const AML_PREFIX(Complex64) &x) {
 	std::basic_ostringstream<charT, traits> s;
 	s.flags(o.flags());
 	s.imbue(o.getloc());
@@ -3118,23 +3136,25 @@ operator<<(std::basic_ostream<charT, traits> &o, const Complex64 &x) {
 	return o << s.str();
 }
 
-inline Complex64 operator+(const double &lhs, const Complex64 &rhs) {
-	Complex64 ret(lhs + rhs.c.c[0], 0.0 + rhs.c.c[1]);
+#endif
+
+AML_FUNCTION AML_PREFIX(Complex64) operator+(const double &lhs, const AML_PREFIX(Complex64) &rhs) {
+	AML_PREFIX(Complex64) ret(lhs + rhs.c.c[0], 0.0 + rhs.c.c[1]);
 	return ret;
 }
 
-inline Complex64 operator-(const double &lhs, const Complex64 &rhs) {
-	Complex64 ret(lhs - rhs.c.c[0], 0.0 - rhs.c.c[1]);
+AML_FUNCTION AML_PREFIX(Complex64) operator-(const double &lhs, const AML_PREFIX(Complex64) &rhs) {
+	AML_PREFIX(Complex64) ret(lhs - rhs.c.c[0], 0.0 - rhs.c.c[1]);
 	return ret;
 }
 
-inline Complex64 operator*(const double &lhs, const Complex64 &rhs) {
-	Complex64 ret(lhs * rhs.c.c[0], lhs * rhs.c.c[1]);
+AML_FUNCTION AML_PREFIX(Complex64) operator*(const double &lhs, const AML_PREFIX(Complex64) &rhs) {
+	AML_PREFIX(Complex64) ret(lhs * rhs.c.c[0], lhs * rhs.c.c[1]);
 	return ret;
 }
 
-inline Complex64 operator/(const double &lhs, const Complex64 &rhs) {
-	Complex64 ret;
+AML_FUNCTION AML_PREFIX(Complex64) operator/(const double &lhs, const AML_PREFIX(Complex64) &rhs) {
+	AML_PREFIX(Complex64) ret;
 	ret.c.c[0] = (lhs * rhs.c.c[0]) / (rhs.c.c[0] * rhs.c.c[0] + rhs.c.c[1] * rhs.c.c[1]);
 	ret.c.c[1] = (-lhs * rhs.c.c[1]) / (rhs.c.c[0] * rhs.c.c[0] + rhs.c.c[1] * rhs.c.c[1]);
 	return ret;
@@ -3142,32 +3162,35 @@ inline Complex64 operator/(const double &lhs, const Complex64 &rhs) {
 
 #if defined(AML_USE_STD_COMPLEX)
 
-inline Complex64 operator+(const std::complex<double> &lhs, const Complex64 &rhs) {
-	Complex64 ret = lhs;
+AML_FUNCTION AML_PREFIX(Complex64) operator+(const std::complex<double> &lhs, const AML_PREFIX(Complex64) &rhs) {
+	AML_PREFIX(Complex64) ret = lhs;
 	return ret + rhs;
 }
 
-inline Complex64 operator-(const std::complex<double> &lhs, const Complex64 &rhs) {
-	Complex64 ret = lhs;
+AML_FUNCTION AML_PREFIX(Complex64) operator-(const std::complex<double> &lhs, const AML_PREFIX(Complex64) &rhs) {
+	AML_PREFIX(Complex64) ret = lhs;
 	return ret - rhs;
 }
 
-inline Complex64 operator*(const std::complex<double> &lhs, const Complex64 &rhs) {
-	Complex64 ret = lhs;
+AML_FUNCTION AML_PREFIX(Complex64) operator*(const std::complex<double> &lhs, const AML_PREFIX(Complex64) &rhs) {
+	AML_PREFIX(Complex64) ret = lhs;
 	return ret * rhs;
 }
 
-inline Complex64 operator/(const std::complex<double> &lhs, const Complex64 &rhs) {
-	Complex64 ret = lhs;
+AML_FUNCTION AML_PREFIX(Complex64) operator/(const std::complex<double> &lhs, const AML_PREFIX(Complex64) &rhs) {
+	AML_PREFIX(Complex64) ret = lhs;
 	return ret / rhs;
 }
 
-class STD_COMPLEX64_CAST : public std::complex<double> {
+class AML_PREFIX(STD_COMPLEX64_CAST) : public std::complex<double> {
 public:
-	inline STD_COMPLEX64_CAST(const Complex64 &other) : std::complex<double>(other.c.c[0], other.c.c[1]) {}
+	AML_FUNCTION AML_PREFIX(STD_COMPLEX64_CAST)(const AML_PREFIX(Complex64) &other) : std::complex<double>(other.c.c[0],
+																										   other.c.c[1]) {}
 };
 
 #endif
+
+#if !defined(USE_CUDA)
 
 constexpr Complex64 operator ""_i(long double d) {
 	return Complex64(0.0f, (double) d);
@@ -3177,23 +3200,25 @@ constexpr Complex64 operator ""_i(unsigned long long d) {
 	return Complex64(0.0f, (double) d);
 }
 
+#endif
+
 #if defined(AML_USE_STD_COMPLEX)
 
-inline std::complex<double> toStdComplex(Complex64 a) {
+AML_FUNCTION std::complex<double> toStdComplex(const AML_PREFIX(Complex64) a) {
 	std::complex<double> ret(a.c.c[0], a.c.c[1]);
 	return ret;
 }
 
 #endif
 
-class Array2Complex64 {
+class AML_PREFIX(Array2Complex64) {
 public:
-	doublevec2 r{};
-	doublevec2 i{};
+	AML_PREFIX(doublevec2) r{};
+	AML_PREFIX(doublevec2) i{};
 
-	inline Array2Complex64() {}
+	AML_FUNCTION AML_PREFIX(Array2Complex64)() {}
 
-	inline Array2Complex64(Complex64 value) {
+	AML_FUNCTION AML_PREFIX(Array2Complex64)(const AML_PREFIX(Complex64) value) {
 		r.c[0] = value.c.c[0];
 		i.c[0] = value.c.c[1];
 		r.c[1] = value.c.c[0];
@@ -3201,24 +3226,24 @@ public:
 	}
 
 
-	inline VectorDouble2D real() {
-		return VectorDouble2D(r.c);
+	AML_FUNCTION AML_PREFIX(VectorDouble2D) real() {
+		return AML_PREFIX(VectorDouble2D)(r.c);
 	}
 
-	inline VectorDouble2D complex() {
-		return VectorDouble2D(i.c);
+	AML_FUNCTION AML_PREFIX(VectorDouble2D) complex() {
+		return AML_PREFIX(VectorDouble2D)(i.c);
 	}
 
-	inline Complex64 operator[](uint64_t location) {
-		return Complex64(r.c[location], i.c[location]);
+	AML_FUNCTION AML_PREFIX(Complex64) operator[](uint64_t location) {
+		return AML_PREFIX(Complex64)(r.c[location], i.c[location]);
 	}
 
-	inline void set(uint64_t location, Complex64 value) {
+	AML_FUNCTION void set(uint64_t location, AML_PREFIX(Complex64) value) {
 		r.c[location] = value.c.c[0];
 		i.c[location] = value.c.c[1];
 	}
 
-	inline Array2Complex64 *add(Array2Complex64 a) {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *add(const AML_PREFIX(Array2Complex64) a) {
 		i.c[0] += a.i.c[0];
 		i.c[1] += a.i.c[1];
 		r.c[0] += a.r.c[0];
@@ -3226,7 +3251,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex64 *add(Complex64 a) {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *add(const AML_PREFIX(Complex64) a) {
 		i.c[0] += a.c.c[1];
 		i.c[1] += a.c.c[1];
 		r.c[0] += a.c.c[0];
@@ -3234,14 +3259,14 @@ public:
 		return this;
 	}
 
-	inline void operator+=(Array2Complex64 a) {
+	AML_FUNCTION void operator+=(const AML_PREFIX(Array2Complex64) a) {
 		i.c[0] += a.i.c[0];
 		i.c[1] += a.i.c[1];
 		r.c[0] += a.r.c[0];
 		r.c[1] += a.r.c[1];
 	}
 
-	inline void operator+=(Complex64 a) {
+	AML_FUNCTION void operator+=(const AML_PREFIX(Complex64) a) {
 		i.c[0] += a.c.c[1];
 		i.c[1] += a.c.c[1];
 		r.c[0] += a.c.c[0];
@@ -3249,8 +3274,8 @@ public:
 	}
 
 
-	inline Array2Complex64 operator+(Array2Complex64 a) const {
-		Array2Complex64 ret;
+	AML_FUNCTION AML_PREFIX(Array2Complex64) operator+(const AML_PREFIX(Array2Complex64) a) const {
+		AML_PREFIX(Array2Complex64) ret;
 		ret.i.c[0] = i.c[0] + a.i.c[0];
 		ret.i.c[1] = i.c[1] + a.i.c[1];
 		ret.r.c[0] = r.c[0] + a.r.c[0];
@@ -3258,8 +3283,8 @@ public:
 		return ret;
 	}
 
-	inline Array2Complex64 operator+(Complex64 a) const {
-		Array2Complex64 ret;
+	AML_FUNCTION AML_PREFIX(Array2Complex64) operator+(const AML_PREFIX(Complex64) a) const {
+		AML_PREFIX(Array2Complex64) ret;
 		ret.i.c[0] = i.c[0] + a.c.c[1];
 		ret.i.c[1] = i.c[1] + a.c.c[1];
 		ret.r.c[0] = r.c[0] + a.c.c[0];
@@ -3267,7 +3292,7 @@ public:
 		return ret;
 	}
 
-	inline Array2Complex64 *add(Array2Complex64 a, VectorU8_2D mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *add(const AML_PREFIX(Array2Complex64) a, AML_PREFIX(VectorU8_2D) mask) {
 		if (mask.v.c[0]) {
 			i.c[0] += a.i.c[0];
 			r.c[0] += a.r.c[0];
@@ -3279,7 +3304,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex64 *add(Complex64 a, VectorU8_2D mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *add(const AML_PREFIX(Complex64) a, AML_PREFIX(VectorU8_2D) mask) {
 		if (mask.v.c[0]) {
 			i.c[0] += a.c.c[1];
 			r.c[0] += a.c.c[0];
@@ -3292,7 +3317,7 @@ public:
 	}
 
 
-	inline Array2Complex64 *subtract(Array2Complex64 a) {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *subtract(const AML_PREFIX(Array2Complex64) a) {
 		i.c[0] -= a.i.c[0];
 		i.c[1] -= a.i.c[1];
 		r.c[0] -= a.r.c[0];
@@ -3300,7 +3325,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex64 *subtract(Complex64 a) {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *subtract(const AML_PREFIX(Complex64) a) {
 		i.c[0] -= a.c.c[1];
 		i.c[1] -= a.c.c[1];
 		r.c[0] -= a.c.c[0];
@@ -3308,22 +3333,22 @@ public:
 		return this;
 	}
 
-	inline void operator-=(Array2Complex64 a) {
+	AML_FUNCTION void operator-=(const AML_PREFIX(Array2Complex64) a) {
 		i.c[0] -= a.i.c[0];
 		i.c[1] -= a.i.c[1];
 		r.c[0] -= a.r.c[0];
 		r.c[1] -= a.r.c[1];
 	}
 
-	inline void operator-=(Complex64 a) {
+	AML_FUNCTION void operator-=(const AML_PREFIX(Complex64) a) {
 		i.c[0] -= a.c.c[1];
 		i.c[1] -= a.c.c[1];
 		r.c[0] -= a.c.c[0];
 		r.c[1] -= a.c.c[0];
 	}
 
-	inline Array2Complex64 operator-(Array2Complex64 a) const {
-		Array2Complex64 ret;
+	AML_FUNCTION AML_PREFIX(Array2Complex64) operator-(const AML_PREFIX(Array2Complex64) a) const {
+		AML_PREFIX(Array2Complex64) ret;
 		ret.i.c[0] = i.c[0] - a.i.c[0];
 		ret.i.c[1] = i.c[1] - a.i.c[1];
 		ret.r.c[0] = r.c[0] - a.r.c[0];
@@ -3331,8 +3356,8 @@ public:
 		return ret;
 	}
 
-	inline Array2Complex64 operator-(Complex64 a) const {
-		Array2Complex64 ret;
+	AML_FUNCTION AML_PREFIX(Array2Complex64) operator-(const AML_PREFIX(Complex64) a) const {
+		AML_PREFIX(Array2Complex64) ret;
 		ret.i.c[0] = i.c[0] - a.c.c[1];
 		ret.i.c[1] = i.c[1] - a.c.c[1];
 		ret.r.c[0] = r.c[0] - a.c.c[0];
@@ -3340,7 +3365,8 @@ public:
 		return ret;
 	}
 
-	inline Array2Complex64 *subtract(Array2Complex64 a, VectorU8_2D mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *
+	subtract(const AML_PREFIX(Array2Complex64) a, AML_PREFIX(VectorU8_2D) mask) {
 		if (mask.v.c[0]) {
 			i.c[0] -= a.i.c[0];
 			r.c[0] -= a.r.c[0];
@@ -3352,7 +3378,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex64 *subtract(Complex64 a, VectorU8_2D mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *subtract(const AML_PREFIX(Complex64) a, AML_PREFIX(VectorU8_2D) mask) {
 		if (mask.v.c[0]) {
 			i.c[0] -= a.c.c[1];
 			r.c[0] -= a.c.c[0];
@@ -3365,8 +3391,8 @@ public:
 	}
 
 
-	inline Array2Complex64 operator*(const Array2Complex64 &a) const {
-		Array2Complex64 ret;
+	AML_FUNCTION AML_PREFIX(Array2Complex64) operator*(const AML_PREFIX(Array2Complex64) &a) const {
+		AML_PREFIX(Array2Complex64) ret;
 		ret.r.c[0] = r.c[0] * a.r.c[0] - i.c[0] * a.i.c[0];
 		ret.i.c[0] = r.c[0] * a.i.c[0] + i.c[0] * a.r.c[0];
 		ret.r.c[1] = r.c[1] * a.r.c[1] - i.c[1] * a.i.c[1];
@@ -3376,7 +3402,7 @@ public:
 		return ret;
 	}
 
-	inline Array2Complex64 *multiply(const Array2Complex64 &a) {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *multiply(const AML_PREFIX(Array2Complex64) &a) {
 		double d1;
 		double d2;
 		d1 = r.c[0] * a.r.c[0] - i.c[0] * a.i.c[0];
@@ -3391,8 +3417,8 @@ public:
 		return this;
 	}
 
-	inline Array2Complex64 operator*(const Complex64 &a) const {
-		Array2Complex64 ret;
+	AML_FUNCTION AML_PREFIX(Array2Complex64) operator*(const AML_PREFIX(Complex64) &a) const {
+		AML_PREFIX(Array2Complex64) ret;
 		ret.r.c[0] = r.c[0] * a.c.c[0] - i.c[0] * a.c.c[1];
 		ret.i.c[0] = r.c[0] * a.c.c[1] + i.c[0] * a.c.c[0];
 		ret.r.c[1] = r.c[1] * a.c.c[0] - i.c[1] * a.c.c[1];
@@ -3401,7 +3427,7 @@ public:
 		return ret;
 	}
 
-	inline void operator*=(const Array2Complex64 &a) {
+	AML_FUNCTION void operator*=(const AML_PREFIX(Array2Complex64) &a) {
 		double d1;
 		double d2;
 		d1 = r.c[0] * a.r.c[0] - i.c[0] * a.i.c[0];
@@ -3413,7 +3439,7 @@ public:
 		d2 = r.c[1] * a.i.c[1] + i.c[1] * a.r.c[1];
 	}
 
-	inline void operator*=(const Complex64 &a) {
+	AML_FUNCTION void operator*=(const AML_PREFIX(Complex64) &a) {
 		double d1;
 		double d2;
 		d1 = r.c[0] * a.c.c[0] - i.c[0] * a.c.c[1];
@@ -3426,7 +3452,7 @@ public:
 		i.c[1] = d2;
 	}
 
-	inline Array2Complex64 *multiply(const Complex64 &a) {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *multiply(const AML_PREFIX(Complex64) &a) {
 		double d1;
 		double d2;
 		d1 = r.c[0] * a.c.c[0] - i.c[0] * a.c.c[1];
@@ -3440,7 +3466,8 @@ public:
 		return this;
 	}
 
-	inline Array2Complex64 *multiply(const Complex64 &a, const VectorU8_2D &mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *
+	multiply(const AML_PREFIX(Complex64) &a, const AML_PREFIX(VectorU8_2D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -3460,7 +3487,8 @@ public:
 
 	}
 
-	inline Array2Complex64 *multiply(const Array2Complex64 &a, const VectorU8_2D &mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *
+	multiply(const AML_PREFIX(Array2Complex64) &a, const AML_PREFIX(VectorU8_2D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -3478,7 +3506,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex64 *square() {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *square() {
 		double d1;
 		double d2;
 		d1 = r.c[0] * r.c[0] - i.c[0] * i.c[0];
@@ -3492,7 +3520,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex64 *square(const VectorU8_2D &mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *square(const AML_PREFIX(VectorU8_2D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -3510,7 +3538,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex64 *divide(const Complex64 a) {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *divide(const AML_PREFIX(Complex64) a) {
 		double d1 = (r.c[0] * a.c.c[0] + i.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		double d2 = (i.c[0] * a.c.c[0] - r.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		r.c[0] = d1;
@@ -3522,7 +3550,8 @@ public:
 		return this;
 	}
 
-	inline Array2Complex64 *divide(const Complex64 a, const VectorU8_2D &mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *
+	divide(const AML_PREFIX(Complex64) a, const AML_PREFIX(VectorU8_2D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -3540,7 +3569,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex64 *divide(const Array2Complex64 &a) {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *divide(const AML_PREFIX(Array2Complex64) &a) {
 		double d1 = (r.c[0] * a.r.c[0] + i.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		double d2 = (i.c[0] * a.r.c[0] - r.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		r.c[0] = d1;
@@ -3552,7 +3581,8 @@ public:
 		return this;
 	}
 
-	inline Array2Complex64 *divide(const Array2Complex64 &a, const VectorU8_2D &mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *
+	divide(const AML_PREFIX(Array2Complex64) &a, const AML_PREFIX(VectorU8_2D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -3570,8 +3600,8 @@ public:
 		return this;
 	}
 
-	inline Array2Complex64 operator/(const Complex64 &a) const {
-		Array2Complex64 ret;
+	AML_FUNCTION AML_PREFIX(Array2Complex64) operator/(const AML_PREFIX(Complex64) &a) const {
+		AML_PREFIX(Array2Complex64) ret;
 		double d1 = (r.c[0] * a.c.c[0] + i.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		double d2 = (i.c[0] * a.c.c[0] - r.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		ret.r.c[0] = d1;
@@ -3583,8 +3613,8 @@ public:
 		return ret;
 	}
 
-	inline Array2Complex64 operator/(const Array2Complex64 &a) const {
-		Array2Complex64 ret;
+	AML_FUNCTION AML_PREFIX(Array2Complex64) operator/(const AML_PREFIX(Array2Complex64) &a) const {
+		AML_PREFIX(Array2Complex64) ret;
 		double d1 = (r.c[0] * a.r.c[0] + i.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		double d2 = (i.c[0] * a.r.c[0] - r.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		ret.r.c[0] = d1;
@@ -3596,7 +3626,7 @@ public:
 		return ret;
 	}
 
-	inline void operator/=(const Complex64 &a) {
+	AML_FUNCTION void operator/=(const AML_PREFIX(Complex64) &a) {
 		double d1 = (r.c[0] * a.c.c[0] + i.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		double d2 = (i.c[0] * a.c.c[0] - r.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		r.c[0] = d1;
@@ -3607,7 +3637,7 @@ public:
 		i.c[1] = d2;
 	}
 
-	inline void operator/=(const Array2Complex64 &a) {
+	AML_FUNCTION void operator/=(const AML_PREFIX(Array2Complex64) &a) {
 		double d1 = (r.c[0] * a.r.c[0] + i.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		double d2 = (i.c[0] * a.r.c[0] - r.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		r.c[0] = d1;
@@ -3618,7 +3648,7 @@ public:
 		i.c[1] = d2;
 	}
 
-	inline Array2Complex64 *sqrt() {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *sqrt() {
 		double d1;
 		double d2;
 		d2 = ::sqrt((-r.c[0] + ::sqrt(r.c[0] * r.c[0] + i.c[0] * i.c[0])) / (2));
@@ -3640,7 +3670,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex64 *sqrt(const VectorU8_2D mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *sqrt(const AML_PREFIX(VectorU8_2D) mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -3666,7 +3696,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex64 *sin() {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *sin() {
 		double d1;
 		double d2;
 		d1 = ::sin(r.c[0]) * ::cosh(i.c[0]);
@@ -3680,7 +3710,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex64 *cos() {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *cos() {
 		double d1;
 		double d2;
 		d1 = ::cos(r.c[0]) * ::cosh(i.c[0]);
@@ -3694,7 +3724,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex64 *tan() {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *tan() {
 		double d1;
 		double d2;
 		d1 = ::sin(r.c[0] + r.c[0]) / (::cos(r.c[0] + r.c[0]) * ::cosh(i.c[0] + i.c[0]));
@@ -3708,7 +3738,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex64 *sin(const VectorU8_2D mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *sin(const AML_PREFIX(VectorU8_2D) mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -3726,7 +3756,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex64 *cos(const VectorU8_2D mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *cos(const AML_PREFIX(VectorU8_2D) mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -3744,7 +3774,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex64 *tan(const VectorU8_2D mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *tan(const AML_PREFIX(VectorU8_2D) mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -3762,7 +3792,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex64 *exp() {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *exp() {
 		double d1 = ::exp(r.c[0]) * ::cos(i.c[0]);
 		double d2 = ::exp(r.c[0]) * ::sin(i.c[0]);
 		r.c[0] = d1;
@@ -3774,7 +3804,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex64 *exp(double n) {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *exp(double n) {
 		double d1 = ::pow(n, r.c[0]) * ::cos(i.c[0] * ::log(n));
 		double d2 = ::pow(n, r.c[0]) * ::sin(i.c[0] * ::log(n));
 		r.c[0] = d1;
@@ -3786,7 +3816,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex64 *exp(const VectorU8_2D &mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *exp(const AML_PREFIX(VectorU8_2D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -3804,7 +3834,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex64 *exp(double n, const VectorU8_2D &mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *exp(double n, const AML_PREFIX(VectorU8_2D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -3822,7 +3852,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex64 *pow(Array2Complex64 n) {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *pow(const AML_PREFIX(Array2Complex64) n) {
 		double d1 = ::log(i.c[0] * i.c[0] + r.c[0] * r.c[0]) / 2;
 		double d2 = ::atan2(r.c[0], i.c[0]);
 		double d3 = ::exp(d1 * n.i.c[0] - d2 * n.r.c[0]);
@@ -3843,7 +3873,7 @@ public:
 	}
 
 
-	inline Array2Complex64 *pow(Complex64 n) {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *pow(const AML_PREFIX(Complex64) n) {
 		double d1 = ::log(i.c[0] * i.c[0] + r.c[0] * r.c[0]) / 2;
 		double d2 = ::atan2(r.c[0], i.c[0]);
 		double d3 = ::exp(d1 * n.c.c[0] - d2 * n.c.c[1]);
@@ -3863,7 +3893,8 @@ public:
 		return this;
 	}
 
-	inline Array2Complex64 *pow(Array2Complex64 n, const VectorU8_2D &mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *
+	pow(const AML_PREFIX(Array2Complex64) n, const AML_PREFIX(VectorU8_2D) &mask) {
 		double d1;
 		double d2;
 		double d3;
@@ -3894,7 +3925,7 @@ public:
 	}
 
 
-	inline Array2Complex64 *pow(Complex64 n, const VectorU8_2D &mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *pow(const AML_PREFIX(Complex64) n, const AML_PREFIX(VectorU8_2D) &mask) {
 		double d1;
 		double d2;
 		double d3;
@@ -3925,7 +3956,7 @@ public:
 	}
 
 
-	inline Array2Complex64 *pow(double n) {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *pow(double n) {
 		double d1;
 		double d2;
 		d1 = ::pow(r.c[0] * r.c[0] + i.c[0] * i.c[0], n / 2) * ::cos(n * atan2(i.c[0], r.c[0]));
@@ -3939,7 +3970,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex64 *pow(double n, const VectorU8_2D &mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *pow(double n, const AML_PREFIX(VectorU8_2D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -3957,35 +3988,35 @@ public:
 		return this;
 	}
 
-	inline VectorDouble2D abs() {
-		VectorDouble2D ret;
+	AML_FUNCTION AML_PREFIX(VectorDouble2D) abs() {
+		AML_PREFIX(VectorDouble2D) ret;
 		ret.v.c[0] = ::sqrt(r.c[0] * r.c[0] + i.c[0] * i.c[0]);
 		ret.v.c[1] = ::sqrt(r.c[1] * r.c[1] + i.c[1] * i.c[1]);
 		return ret;
 	}
 
-	inline VectorU8_2D abs_gt(double a) {
-		VectorU8_2D ret;
+	AML_FUNCTION AML_PREFIX(VectorU8_2D) abs_gt(double a) {
+		AML_PREFIX(VectorU8_2D) ret;
 		ret.v.c[0] = a * a < r.c[0] * r.c[0] + i.c[0] * i.c[0];
 		ret.v.c[1] = a * a < r.c[1] * r.c[1] + i.c[1] * i.c[1];
 		return ret;
 	}
 
-	inline VectorU8_2D abs_lt(double a) {
-		VectorU8_2D ret;
+	AML_FUNCTION AML_PREFIX(VectorU8_2D) abs_lt(double a) {
+		AML_PREFIX(VectorU8_2D) ret;
 		ret.v.c[0] = a * a > r.c[0] * r.c[0] + i.c[0] * i.c[0];
 		ret.v.c[1] = a * a > r.c[1] * r.c[1] + i.c[1] * i.c[1];
 		return ret;
 	}
 
-	inline VectorU8_2D abs_eq(double a) {
-		VectorU8_2D ret;
+	AML_FUNCTION AML_PREFIX(VectorU8_2D) abs_eq(double a) {
+		AML_PREFIX(VectorU8_2D) ret;
 		ret.v.c[0] = a * a == r.c[0] * r.c[0] + i.c[0] * i.c[0];
 		ret.v.c[1] = a * a == r.c[1] * r.c[1] + i.c[1] * i.c[1];
 		return ret;
 	}
 
-	inline Array2Complex64 *ln(const VectorU8_2D &mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *ln(const AML_PREFIX(VectorU8_2D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -4003,7 +4034,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex64 *log(const VectorU8_2D &mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *log(const AML_PREFIX(VectorU8_2D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -4021,7 +4052,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex64 *log10(const VectorU8_2D &mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *log10(const AML_PREFIX(VectorU8_2D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -4039,7 +4070,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex64 *ln() {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *ln() {
 		double d1;
 		double d2;
 		d1 = ::log(i.c[0] * i.c[0] + r.c[0] * r.c[0]) / 2;
@@ -4053,7 +4084,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex64 *log() {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *log() {
 		double d1;
 		double d2;
 		d1 = ::log(i.c[0] * i.c[0] + r.c[0] * r.c[0]) / 2;
@@ -4067,7 +4098,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex64 *log10() {
+	AML_FUNCTION AML_PREFIX(Array2Complex64) *log10() {
 		double d1;
 		double d2;
 		d1 = ::log(i.c[0] * i.c[0] + r.c[0] * r.c[0]) / (2 * AML_LN10);
@@ -4081,52 +4112,62 @@ public:
 		return this;
 	}
 
-	class Complex64_2_Itr : public std::iterator<
+	class AML_PREFIX(Complex64_2_Itr) : public std::iterator<
 			std::input_iterator_tag,   // iterator_category
-			Complex64Ptr,                      // value_type
+			AML_PREFIX(Complex64Ptr),                      // value_type
 			long,                      // difference_type
-			const Complex64Ptr *,               // pointer
-			Complex64Ptr                       // reference
+			const AML_PREFIX(Complex64Ptr) *,               // pointer
+			AML_PREFIX(Complex64Ptr)                       // reference
 	> {
 
-		Array2Complex64 *a;
+		AML_PREFIX(Array2Complex64) *a;
 		int position;
 
 	public:
-		inline explicit Complex64_2_Itr(Array2Complex64 *array, int length) : a(array), position(length) {
+		AML_FUNCTION explicit AML_PREFIX(Complex64_2_Itr)(AML_PREFIX(Array2Complex64) *array, int length) : a(array),
+																											position(
+																													length) {
 
 		}
 
-		inline Complex64_2_Itr &operator++() {
+		AML_FUNCTION AML_PREFIX(Complex64_2_Itr) &operator++() {
 			position++;
 			return *this;
 		}
 
-		inline bool operator==(Complex64_2_Itr other) const { return position == other.position; }
+		AML_FUNCTION bool operator==(const AML_PREFIX(Complex64_2_Itr) other) const {
+			return position == other.position;
+		}
 
-		inline bool operator!=(Complex64_2_Itr other) const { return !(*this == other); }
+		AML_FUNCTION bool operator!=(const AML_PREFIX(Complex64_2_Itr) other) const { return !(*this == other); }
 
-		inline reference operator*() const { return Complex64Ptr(&a->r.c[position], &a->i.c[position], position); }
+		AML_FUNCTION reference operator*() const {
+			return AML_PREFIX(Complex64Ptr)(&a->r.c[position], &a->i.c[position], position);
+		}
 
 
 	};
 
-	inline Complex64_2_Itr begin() {
-		return Complex64_2_Itr(this, 0);
+	AML_FUNCTION AML_PREFIX(Complex64_2_Itr) begin() {
+		return AML_PREFIX(Complex64_2_Itr)(this, 0);
 	}
 
-	inline Complex64_2_Itr end() {
-		return Complex64_2_Itr(this, 2);
+	AML_FUNCTION AML_PREFIX(Complex64_2_Itr) end() {
+		return AML_PREFIX(Complex64_2_Itr)(this, 2);
 	}
 };
 
-inline std::string operator<<(std::string &lhs, const Array2Complex64 &rhs) {
+
+#if !defined(AML_NO_STRING)
+
+
+AML_FUNCTION std::string operator<<(std::string &lhs, const AML_PREFIX(Array2Complex64) &rhs) {
 	std::ostringstream string;
 	string << lhs << "{ " << rhs.r.c[0] << " + " << rhs.i.c[0] << "i ,  " << rhs.r.c[1] << " + " << rhs.i.c[1] << "i }";
 	return string.str();
 }
 
-inline std::string operator<<(const char *lhs, const Array2Complex64 &rhs) {
+AML_FUNCTION std::string operator<<(const char *lhs, const AML_PREFIX(Array2Complex64) &rhs) {
 	std::ostringstream string;
 	string << lhs << "{ " << rhs.r.c[0] << " + " << rhs.i.c[0] << "i ,  " << rhs.r.c[1] << " + " << rhs.i.c[1] << "i }";
 	return string.str();
@@ -4134,7 +4175,7 @@ inline std::string operator<<(const char *lhs, const Array2Complex64 &rhs) {
 
 template<class charT, class traits>
 std::basic_ostream<charT, traits> &
-operator<<(std::basic_ostream<charT, traits> &o, const Array2Complex64 &rhs) {
+operator<<(std::basic_ostream<charT, traits> &o, const AML_PREFIX(Array2Complex64) &rhs) {
 	std::basic_ostringstream<charT, traits> s;
 	s.flags(o.flags());
 	s.imbue(o.getloc());
@@ -4143,12 +4184,16 @@ operator<<(std::basic_ostream<charT, traits> &o, const Array2Complex64 &rhs) {
 	return o << s.str();
 }
 
-inline Array2Complex64 operator+(const Complex64 &lhs, const Array2Complex64 &rhs) {
+#endif
+
+AML_FUNCTION AML_PREFIX(Array2Complex64)
+operator+(const AML_PREFIX(Complex64) &lhs, const AML_PREFIX(Array2Complex64) &rhs) {
 	return rhs + lhs;
 }
 
-inline Array2Complex64 operator-(const Complex64 &lhs, const Array2Complex64 &rhs) {
-	Array2Complex64 ret;
+AML_FUNCTION AML_PREFIX(Array2Complex64)
+operator-(const AML_PREFIX(Complex64) &lhs, const AML_PREFIX(Array2Complex64) &rhs) {
+	AML_PREFIX(Array2Complex64) ret;
 	ret.i.c[0] = lhs.c.c[1] - rhs.i.c[0];
 	ret.i.c[1] = lhs.c.c[1] - rhs.i.c[1];
 	ret.r.c[0] = lhs.c.c[0] - rhs.r.c[0];
@@ -4156,12 +4201,14 @@ inline Array2Complex64 operator-(const Complex64 &lhs, const Array2Complex64 &rh
 	return ret;
 }
 
-inline Array2Complex64 operator*(const Complex64 &lhs, const Array2Complex64 &rhs) {
+AML_FUNCTION AML_PREFIX(Array2Complex64)
+operator*(const AML_PREFIX(Complex64) &lhs, const AML_PREFIX(Array2Complex64) &rhs) {
 	return rhs * lhs;
 }
 
-inline Array2Complex64 operator/(const Complex64 &lhs, const Array2Complex64 &rhs) {
-	Array2Complex64 ret;
+AML_FUNCTION AML_PREFIX(Array2Complex64)
+operator/(const AML_PREFIX(Complex64) &lhs, const AML_PREFIX(Array2Complex64) &rhs) {
+	AML_PREFIX(Array2Complex64) ret;
 	double d1 =
 			(lhs.c.c[0] * rhs.r.c[0] + lhs.c.c[1] * rhs.i.c[0]) / (rhs.r.c[0] * rhs.r.c[0] + rhs.i.c[0] * rhs.i.c[0]);
 	double d2 =
@@ -4175,14 +4222,14 @@ inline Array2Complex64 operator/(const Complex64 &lhs, const Array2Complex64 &rh
 	return ret;
 }
 
-class Array4Complex64 {
+class AML_PREFIX(Array4Complex64) {
 public:
-	doublevec4 r{};
-	doublevec4 i{};
+	AML_PREFIX(doublevec4) r{};
+	AML_PREFIX(doublevec4) i{};
 
-	inline Array4Complex64() {}
+	AML_FUNCTION AML_PREFIX(Array4Complex64)() {}
 
-	inline Array4Complex64(const Complex64 value) {
+	AML_FUNCTION AML_PREFIX(Array4Complex64)(const AML_PREFIX(Complex64) value) {
 		r.c[0] = value.c.c[0];
 		i.c[0] = value.c.c[1];
 		r.c[1] = value.c.c[0];
@@ -4194,24 +4241,24 @@ public:
 	}
 
 
-	inline VectorDouble4D real() {
-		return VectorDouble4D(r.c);
+	AML_FUNCTION AML_PREFIX(VectorDouble4D) real() {
+		return AML_PREFIX(VectorDouble4D)(r.c);
 	}
 
-	inline VectorDouble4D complex() {
-		return VectorDouble4D(i.c);
+	AML_FUNCTION AML_PREFIX(VectorDouble4D) complex() {
+		return AML_PREFIX(VectorDouble4D)(i.c);
 	}
 
-	inline Complex64 operator[](const uint64_t location) {
-		return Complex64(r.c[location], i.c[location]);
+	AML_FUNCTION AML_PREFIX(Complex64) operator[](const uint64_t location) {
+		return AML_PREFIX(Complex64)(r.c[location], i.c[location]);
 	}
 
-	inline void set(const uint64_t location, const Complex64 value) {
+	AML_FUNCTION void set(const uint64_t location, const AML_PREFIX(Complex64) value) {
 		r.c[location] = value.c.c[0];
 		i.c[location] = value.c.c[1];
 	}
 
-	inline Array4Complex64 *add(const Array4Complex64 &a) {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *add(const AML_PREFIX(Array4Complex64) &a) {
 #if defined(USE_AVX)
 		i.avx = _mm256_add_pd(i.avx, a.i.avx);
 		r.avx = _mm256_add_pd(r.avx, a.r.avx);
@@ -4228,7 +4275,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex64 *add(const Complex64 a) {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *add(const AML_PREFIX(Complex64) a) {
 #if defined(USE_AVX)
 		__m256d a_i = {a.c.c[1], a.c.c[1], a.c.c[1], a.c.c[1]};
 		i.avx = _mm256_add_pd(i.avx, a_i);
@@ -4247,7 +4294,7 @@ public:
 		return this;
 	}
 
-	inline void operator+=(const Array4Complex64 &a) {
+	AML_FUNCTION void operator+=(const AML_PREFIX(Array4Complex64) &a) {
 #if defined(USE_AVX)
 		i.avx = _mm256_add_pd(i.avx, a.i.avx);
 		r.avx = _mm256_add_pd(r.avx, a.r.avx);
@@ -4263,7 +4310,7 @@ public:
 #endif
 	}
 
-	inline void operator+=(const Complex64 a) {
+	AML_FUNCTION void operator+=(const AML_PREFIX(Complex64) a) {
 #if defined(USE_AVX)
 		__m256d a_i = {a.c.c[1], a.c.c[1], a.c.c[1], a.c.c[1]};
 		i.avx = _mm256_add_pd(i.avx, a_i);
@@ -4282,8 +4329,8 @@ public:
 	}
 
 
-	inline Array4Complex64 operator+(const Array4Complex64 &a) const {
-		Array4Complex64 ret{};
+	AML_FUNCTION AML_PREFIX(Array4Complex64) operator+(const AML_PREFIX(Array4Complex64) &a) const {
+		AML_PREFIX(Array4Complex64) ret{};
 #if defined(USE_AVX)
 		ret.i.avx = _mm256_add_pd(i.avx, a.i.avx);
 		ret.r.avx = _mm256_add_pd(r.avx, a.r.avx);
@@ -4300,8 +4347,8 @@ public:
 		return ret;
 	}
 
-	inline Array4Complex64 operator+(const Complex64 a) const {
-		Array4Complex64 ret{};
+	AML_FUNCTION AML_PREFIX(Array4Complex64) operator+(const AML_PREFIX(Complex64) a) const {
+		AML_PREFIX(Array4Complex64) ret{};
 #if defined(USE_AVX)
 		__m256d a_i = {a.c.c[1], a.c.c[1], a.c.c[1], a.c.c[1]};
 		ret.i.avx = _mm256_add_pd(i.avx, a_i);
@@ -4320,7 +4367,8 @@ public:
 		return ret;
 	}
 
-	inline Array4Complex64 *add(const Array4Complex64 &a, const VectorU8_4D mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *
+	add(const AML_PREFIX(Array4Complex64) &a, const AML_PREFIX(VectorU8_4D) mask) {
 		if (mask.v.c[0]) {
 			i.c[0] += a.i.c[0];
 			r.c[0] += a.r.c[0];
@@ -4340,7 +4388,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex64 *add(const Complex64 a, const VectorU8_4D mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *add(const AML_PREFIX(Complex64) a, const AML_PREFIX(VectorU8_4D) mask) {
 		if (mask.v.c[0]) {
 			i.c[0] += a.c.c[1];
 			r.c[0] += a.c.c[0];
@@ -4361,7 +4409,7 @@ public:
 	}
 
 
-	inline Array4Complex64 *subtract(const Array4Complex64 &a) {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *subtract(const AML_PREFIX(Array4Complex64) &a) {
 #if defined(USE_AVX)
 		i.avx = _mm256_sub_pd(i.avx, a.i.avx);
 		r.avx = _mm256_sub_pd(r.avx, a.r.avx);
@@ -4378,7 +4426,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex64 *subtract(const Complex64 a) {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *subtract(const AML_PREFIX(Complex64) a) {
 #if defined(USE_AVX)
 		__m256d a_i = {a.c.c[1], a.c.c[1], a.c.c[1], a.c.c[1]};
 		i.avx = _mm256_sub_pd(i.avx, a_i);
@@ -4397,7 +4445,7 @@ public:
 		return this;
 	}
 
-	inline void operator-=(const Array4Complex64 &a) {
+	AML_FUNCTION void operator-=(const AML_PREFIX(Array4Complex64) &a) {
 #if defined(USE_AVX)
 		i.avx = _mm256_sub_pd(i.avx, a.i.avx);
 		r.avx = _mm256_sub_pd(r.avx, a.r.avx);
@@ -4413,7 +4461,7 @@ public:
 #endif
 	}
 
-	inline void operator-=(const Complex64 a) {
+	AML_FUNCTION void operator-=(const AML_PREFIX(Complex64) a) {
 #if defined(USE_AVX)
 		__m256d a_i = {a.c.c[1], a.c.c[1], a.c.c[1], a.c.c[1]};
 		i.avx = _mm256_sub_pd(i.avx, a_i);
@@ -4431,8 +4479,8 @@ public:
 #endif
 	}
 
-	inline Array4Complex64 operator-(const Array4Complex64 &a) const {
-		Array4Complex64 ret;
+	AML_FUNCTION AML_PREFIX(Array4Complex64) operator-(const AML_PREFIX(Array4Complex64) &a) const {
+		AML_PREFIX(Array4Complex64) ret;
 #if defined(USE_AVX)
 		ret.i.avx = _mm256_sub_pd(i.avx, a.i.avx);
 		ret.r.avx = _mm256_sub_pd(r.avx, a.r.avx);
@@ -4449,8 +4497,8 @@ public:
 		return ret;
 	}
 
-	inline Array4Complex64 operator-(const Complex64 a) const {
-		Array4Complex64 ret;
+	AML_FUNCTION AML_PREFIX(Array4Complex64) operator-(const AML_PREFIX(Complex64) a) const {
+		AML_PREFIX(Array4Complex64) ret;
 #if defined(USE_AVX)
 		__m256d a_i = {a.c.c[1], a.c.c[1], a.c.c[1], a.c.c[1]};
 		ret.i.avx = _mm256_sub_pd(i.avx, a_i);
@@ -4469,7 +4517,8 @@ public:
 		return ret;
 	}
 
-	inline Array4Complex64 *subtract(const Array4Complex64 &a, const VectorU8_4D &mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *
+	subtract(const AML_PREFIX(Array4Complex64) &a, const AML_PREFIX(VectorU8_4D) &mask) {
 		if (mask.v.c[0]) {
 			i.c[0] -= a.i.c[0];
 			r.c[0] -= a.r.c[0];
@@ -4489,7 +4538,8 @@ public:
 		return this;
 	}
 
-	inline Array4Complex64 *subtract(const Complex64 a, const VectorU8_4D &mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *
+	subtract(const AML_PREFIX(Complex64) a, const AML_PREFIX(VectorU8_4D) &mask) {
 		if (mask.v.c[0]) {
 			i.c[0] -= a.c.c[1];
 			r.c[0] -= a.c.c[0];
@@ -4510,8 +4560,8 @@ public:
 	}
 
 
-	inline Array4Complex64 operator*(const Array4Complex64 &a) const {
-		Array4Complex64 ret;
+	AML_FUNCTION AML_PREFIX(Array4Complex64) operator*(const AML_PREFIX(Array4Complex64) &a) const {
+		AML_PREFIX(Array4Complex64) ret;
 #if defined(USE_FMA)
 		__m256d c_0 = _mm256_mul_pd(i.avx, a.i.avx);
 		ret.r.avx = _mm256_fmsub_pd(r.avx, a.r.avx,c_0);
@@ -4532,7 +4582,7 @@ public:
 		return ret;
 	}
 
-	inline Array4Complex64 *multiply(const Array4Complex64 &a) {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *multiply(const AML_PREFIX(Array4Complex64) &a) {
 		double d1;
 		double d2;
 		d1 = r.c[0] * a.r.c[0] - i.c[0] * a.i.c[0];
@@ -4555,8 +4605,8 @@ public:
 		return this;
 	}
 
-	inline Array4Complex64 operator*(const Complex64 a) const {
-		Array4Complex64 ret;
+	AML_FUNCTION AML_PREFIX(Array4Complex64) operator*(const AML_PREFIX(Complex64) a) const {
+		AML_PREFIX(Array4Complex64) ret;
 		ret.r.c[0] = r.c[0] * a.c.c[0] - i.c[0] * a.c.c[1];
 		ret.i.c[0] = r.c[0] * a.c.c[1] + i.c[0] * a.c.c[0];
 		ret.r.c[1] = r.c[1] * a.c.c[0] - i.c[1] * a.c.c[1];
@@ -4570,7 +4620,7 @@ public:
 		return ret;
 	}
 
-	inline void operator*=(const Array4Complex64 &a) {
+	AML_FUNCTION void operator*=(const AML_PREFIX(Array4Complex64) &a) {
 		double d1;
 		double d2;
 		d1 = r.c[0] * a.r.c[0] - i.c[0] * a.i.c[0];
@@ -4592,7 +4642,7 @@ public:
 		i.c[3] = d2;
 	}
 
-	inline void operator*=(const Complex64 a) {
+	AML_FUNCTION void operator*=(const AML_PREFIX(Complex64) a) {
 		double d1;
 		double d2;
 		d1 = r.c[0] * a.c.c[0] - i.c[0] * a.c.c[1];
@@ -4613,7 +4663,7 @@ public:
 		i.c[3] = d2;
 	}
 
-	inline Array4Complex64 *multiply(const Complex64 a) {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *multiply(const AML_PREFIX(Complex64) a) {
 		double d1;
 		double d2;
 		d1 = r.c[0] * a.c.c[0] - i.c[0] * a.c.c[1];
@@ -4635,7 +4685,8 @@ public:
 		return this;
 	}
 
-	inline Array4Complex64 *multiply(const Complex64 a, const VectorU8_4D &mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *
+	multiply(const AML_PREFIX(Complex64) a, const AML_PREFIX(VectorU8_4D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -4667,7 +4718,8 @@ public:
 
 	}
 
-	inline Array4Complex64 *multiply(const Array4Complex64 &a, const VectorU8_4D &mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *
+	multiply(const AML_PREFIX(Array4Complex64) &a, const AML_PREFIX(VectorU8_4D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -4697,7 +4749,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex64 *square() {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *square() {
 		double d1;
 		double d2;
 		d1 = r.c[0] * r.c[0] - i.c[0] * i.c[0];
@@ -4719,7 +4771,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex64 *square(const VectorU8_4D &mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *square(const AML_PREFIX(VectorU8_4D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -4749,7 +4801,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex64 *divide(const Complex64 a) {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *divide(const AML_PREFIX(Complex64) a) {
 		double d1 = (r.c[0] * a.c.c[0] + i.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		double d2 = (i.c[0] * a.c.c[0] - r.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		r.c[0] = d1;
@@ -4769,7 +4821,8 @@ public:
 		return this;
 	}
 
-	inline Array4Complex64 *divide(const Complex64 a, const VectorU8_4D &mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *
+	divide(const AML_PREFIX(Complex64) a, const AML_PREFIX(VectorU8_4D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -4799,7 +4852,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex64 *divide(const Array4Complex64 &a) {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *divide(const AML_PREFIX(Array4Complex64) &a) {
 		double d1 = (r.c[0] * a.r.c[0] + i.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		double d2 = (i.c[0] * a.r.c[0] - r.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		r.c[0] = d1;
@@ -4819,7 +4872,8 @@ public:
 		return this;
 	}
 
-	inline Array4Complex64 *divide(const Array4Complex64 &a, const VectorU8_4D &mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *
+	divide(const AML_PREFIX(Array4Complex64) &a, const AML_PREFIX(VectorU8_4D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -4849,8 +4903,8 @@ public:
 		return this;
 	}
 
-	inline Array4Complex64 operator/(const Complex64 a) const {
-		Array4Complex64 ret;
+	AML_FUNCTION AML_PREFIX(Array4Complex64) operator/(const AML_PREFIX(Complex64) a) const {
+		AML_PREFIX(Array4Complex64) ret;
 		double d1 = (r.c[0] * a.c.c[0] + i.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		double d2 = (i.c[0] * a.c.c[0] - r.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		ret.r.c[0] = d1;
@@ -4870,8 +4924,8 @@ public:
 		return ret;
 	}
 
-	inline Array4Complex64 operator/(const Array4Complex64 &a) const {
-		Array4Complex64 ret;
+	AML_FUNCTION AML_PREFIX(Array4Complex64) operator/(const AML_PREFIX(Array4Complex64) &a) const {
+		AML_PREFIX(Array4Complex64) ret;
 		double d1 = (r.c[0] * a.r.c[0] + i.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		double d2 = (i.c[0] * a.r.c[0] - r.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		ret.r.c[0] = d1;
@@ -4891,7 +4945,7 @@ public:
 		return ret;
 	}
 
-	inline void operator/=(const Complex64 a) {
+	AML_FUNCTION void operator/=(const AML_PREFIX(Complex64) a) {
 		double d1 = (r.c[0] * a.c.c[0] + i.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		double d2 = (i.c[0] * a.c.c[0] - r.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		r.c[0] = d1;
@@ -4910,7 +4964,7 @@ public:
 		i.c[3] = d2;
 	}
 
-	inline void operator/=(const Array4Complex64 &a) {
+	AML_FUNCTION void operator/=(const AML_PREFIX(Array4Complex64) &a) {
 		double d1 = (r.c[0] * a.r.c[0] + i.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		double d2 = (i.c[0] * a.r.c[0] - r.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		r.c[0] = d1;
@@ -4929,7 +4983,7 @@ public:
 		i.c[3] = d2;
 	}
 
-	inline Array4Complex64 *sqrt() {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *sqrt() {
 		double d1;
 		double d2;
 		d2 = ::sqrt((-r.c[0] + ::sqrt(r.c[0] * r.c[0] + i.c[0] * i.c[0])) / (2));
@@ -4965,7 +5019,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex64 *sqrt(const VectorU8_4D mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *sqrt(const AML_PREFIX(VectorU8_4D) mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -5011,7 +5065,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex64 *sin() {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *sin() {
 		double d1;
 		double d2;
 		d1 = ::sin(r.c[0]) * ::cosh(i.c[0]);
@@ -5033,7 +5087,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex64 *cos() {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *cos() {
 		double d1;
 		double d2;
 		d1 = ::cos(r.c[0]) * ::cosh(i.c[0]);
@@ -5055,7 +5109,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex64 *tan() {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *tan() {
 		double d1;
 		double d2;
 		d1 = ::sin(r.c[0] + r.c[0]) / (::cos(r.c[0] + r.c[0]) * ::cosh(i.c[0] + i.c[0]));
@@ -5077,7 +5131,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex64 *sin(const VectorU8_4D &mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *sin(const AML_PREFIX(VectorU8_4D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -5107,7 +5161,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex64 *cos(const VectorU8_4D &mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *cos(const AML_PREFIX(VectorU8_4D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -5137,7 +5191,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex64 *tan(const VectorU8_4D &mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *tan(const AML_PREFIX(VectorU8_4D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -5168,7 +5222,7 @@ public:
 	}
 
 
-	inline Array4Complex64 *exp() {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *exp() {
 		double d1 = ::exp(r.c[0]) * ::cos(i.c[0]);
 		double d2 = ::exp(r.c[0]) * ::sin(i.c[0]);
 		r.c[0] = d1;
@@ -5188,7 +5242,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex64 *exp(double n) {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *exp(double n) {
 		double d1 = ::pow(n, r.c[0]) * ::cos(i.c[0] * ::log(n));
 		double d2 = ::pow(n, r.c[0]) * ::sin(i.c[0] * ::log(n));
 		r.c[0] = d1;
@@ -5208,7 +5262,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex64 *exp(const VectorU8_4D &mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *exp(const AML_PREFIX(VectorU8_4D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -5238,7 +5292,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex64 *pow(Array4Complex64 &n) {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *pow(const AML_PREFIX(Array4Complex64) &n) {
 		double d1 = ::log(i.c[0] * i.c[0] + r.c[0] * r.c[0]) / 2;
 		double d2 = ::atan2(r.c[0], i.c[0]);
 		double d3 = ::exp(d1 * n.i.c[0] - d2 * n.r.c[0]);
@@ -5275,7 +5329,7 @@ public:
 	}
 
 
-	inline Array4Complex64 *pow(Complex64 n) {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *pow(const AML_PREFIX(Complex64) n) {
 		double d1 = ::log(i.c[0] * i.c[0] + r.c[0] * r.c[0]) / 2;
 		double d2 = ::atan2(r.c[0], i.c[0]);
 		double d3 = ::exp(d1 * n.c.c[0] - d2 * n.c.c[1]);
@@ -5311,7 +5365,8 @@ public:
 		return this;
 	}
 
-	inline Array4Complex64 *pow(Array4Complex64 &n, const VectorU8_4D &mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *
+	pow(const AML_PREFIX(Array4Complex64) &n, const AML_PREFIX(VectorU8_4D) &mask) {
 		double d1;
 		double d2;
 		double d3;
@@ -5362,7 +5417,7 @@ public:
 	}
 
 
-	inline Array4Complex64 *pow(Complex64 n, const VectorU8_4D &mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *pow(const AML_PREFIX(Complex64) n, const AML_PREFIX(VectorU8_4D) &mask) {
 		double d1;
 		double d2;
 		double d3;
@@ -5412,7 +5467,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex64 *exp(double n, const VectorU8_4D &mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *exp(double n, const AML_PREFIX(VectorU8_4D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -5442,7 +5497,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex64 *pow(double n) {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *pow(double n) {
 		double d1;
 		double d2;
 		d1 = ::pow(r.c[0] * r.c[0] + i.c[0] * i.c[0], n / 2) * ::cos(n * atan2(i.c[0], r.c[0]));
@@ -5465,7 +5520,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex64 *pow(double n, const VectorU8_4D &mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *pow(double n, const AML_PREFIX(VectorU8_4D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -5495,8 +5550,8 @@ public:
 		return this;
 	}
 
-	inline VectorDouble4D abs() {
-		VectorDouble4D ret;
+	AML_FUNCTION AML_PREFIX(VectorDouble4D) abs() {
+		AML_PREFIX(VectorDouble4D) ret;
 		ret.v.c[0] = ::sqrt(r.c[0] * r.c[0] + i.c[0] * i.c[0]);
 		ret.v.c[1] = ::sqrt(r.c[1] * r.c[1] + i.c[1] * i.c[1]);
 		ret.v.c[2] = ::sqrt(r.c[2] * r.c[2] + i.c[2] * i.c[2]);
@@ -5504,8 +5559,8 @@ public:
 		return ret;
 	}
 
-	inline VectorU8_4D abs_gt(double a) {
-		VectorU8_4D ret;
+	AML_FUNCTION AML_PREFIX(VectorU8_4D) abs_gt(double a) {
+		AML_PREFIX(VectorU8_4D) ret;
 		ret.v.c[0] = a * a < r.c[0] * r.c[0] + i.c[0] * i.c[0];
 		ret.v.c[1] = a * a < r.c[1] * r.c[1] + i.c[1] * i.c[1];
 		ret.v.c[2] = a * a < r.c[2] * r.c[2] + i.c[2] * i.c[2];
@@ -5513,8 +5568,8 @@ public:
 		return ret;
 	}
 
-	inline VectorU8_4D abs_lt(double a) {
-		VectorU8_4D ret;
+	AML_FUNCTION AML_PREFIX(VectorU8_4D) abs_lt(double a) {
+		AML_PREFIX(VectorU8_4D) ret;
 		ret.v.c[0] = a * a > r.c[0] * r.c[0] + i.c[0] * i.c[0];
 		ret.v.c[1] = a * a > r.c[1] * r.c[1] + i.c[1] * i.c[1];
 		ret.v.c[2] = a * a > r.c[2] * r.c[2] + i.c[2] * i.c[2];
@@ -5522,8 +5577,8 @@ public:
 		return ret;
 	}
 
-	inline VectorU8_4D abs_eq(double a) {
-		VectorU8_4D ret;
+	AML_FUNCTION AML_PREFIX(VectorU8_4D) abs_eq(double a) {
+		AML_PREFIX(VectorU8_4D) ret;
 		ret.v.c[0] = a * a == r.c[0] * r.c[0] + i.c[0] * i.c[0];
 		ret.v.c[1] = a * a == r.c[1] * r.c[1] + i.c[1] * i.c[1];
 		ret.v.c[2] = a * a == r.c[2] * r.c[2] + i.c[2] * i.c[2];
@@ -5531,7 +5586,7 @@ public:
 		return ret;
 	}
 
-	inline Array4Complex64 *ln(const VectorU8_4D &mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *ln(const AML_PREFIX(VectorU8_4D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -5561,7 +5616,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex64 *log(const VectorU8_4D &mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *log(const AML_PREFIX(VectorU8_4D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -5591,7 +5646,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex64 *log10(const VectorU8_4D &mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *log10(const AML_PREFIX(VectorU8_4D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -5621,7 +5676,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex64 *ln() {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *ln() {
 		double d1;
 		double d2;
 		d1 = ::log(i.c[0] * i.c[0] + r.c[0] * r.c[0]) / 2;
@@ -5643,7 +5698,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex64 *log() {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *log() {
 		double d1;
 		double d2;
 		d1 = ::log(i.c[0] * i.c[0] + r.c[0] * r.c[0]) / 2;
@@ -5665,7 +5720,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex64 *log10() {
+	AML_FUNCTION AML_PREFIX(Array4Complex64) *log10() {
 		double d1;
 		double d2;
 		d1 = ::log(i.c[0] * i.c[0] + r.c[0] * r.c[0]) / (2 * AML_LN10);
@@ -5687,51 +5742,61 @@ public:
 		return this;
 	}
 
-	class Complex64_4_Itr : public std::iterator<
+	class AML_PREFIX(Complex64_4_Itr) : public std::iterator<
 			std::input_iterator_tag,   // iterator_category
-			Complex64Ptr,                      // value_type
+			AML_PREFIX(Complex64Ptr),                      // value_type
 			long,                      // difference_type
-			const Complex64Ptr *,               // pointer
-			Complex64Ptr                       // reference
+			const AML_PREFIX(Complex64Ptr) *,               // pointer
+			AML_PREFIX(Complex64Ptr)                       // reference
 	> {
 
-		Array4Complex64 *a;
+		AML_PREFIX(Array4Complex64) *a;
 		int position;
 
 	public:
-		inline explicit Complex64_4_Itr(Array4Complex64 *array, int length) : a(array), position(length) {}
+		AML_FUNCTION explicit AML_PREFIX(Complex64_4_Itr)(AML_PREFIX(Array4Complex64) *array, int length) : a(array),
+																											position(
+																													length) {}
 
-		inline Complex64_4_Itr &operator++() {
+		AML_FUNCTION AML_PREFIX(Complex64_4_Itr) &operator++() {
 			position++;
 			return *this;
 		}
 
-		inline bool operator==(Complex64_4_Itr other) const { return position == other.position; }
+		AML_FUNCTION bool operator==(const AML_PREFIX(Complex64_4_Itr) other) const {
+			return position == other.position;
+		}
 
-		inline bool operator!=(Complex64_4_Itr other) const { return !(*this == other); }
+		AML_FUNCTION bool operator!=(const AML_PREFIX(Complex64_4_Itr) other) const { return !(*this == other); }
 
-		inline reference operator*() const { return Complex64Ptr(&a->r.c[position], &a->i.c[position], position); }
+		AML_FUNCTION reference operator*() const {
+			return AML_PREFIX(Complex64Ptr)(&a->r.c[position], &a->i.c[position], position);
+		}
 
 
 	};
 
-	inline Complex64_4_Itr begin() {
-		return Complex64_4_Itr(this, 0);
+	AML_FUNCTION AML_PREFIX(Complex64_4_Itr) begin() {
+		return AML_PREFIX(Complex64_4_Itr)(this, 0);
 	}
 
-	inline Complex64_4_Itr end() {
-		return Complex64_4_Itr(this, 4);
+	AML_FUNCTION AML_PREFIX(Complex64_4_Itr) end() {
+		return AML_PREFIX(Complex64_4_Itr)(this, 4);
 	}
 };
 
-inline std::string operator<<(std::string &lhs, const Array4Complex64 &rhs) {
+
+#if !defined(AML_NO_STRING)
+
+
+AML_FUNCTION std::string operator<<(std::string &lhs, const AML_PREFIX(Array4Complex64) &rhs) {
 	std::ostringstream string;
 	string << lhs << "{ " << rhs.r.c[0] << " + " << rhs.i.c[0] << "i ,  " << rhs.r.c[1] << " + " << rhs.i.c[1]
 		   << "i ,  " << rhs.r.c[2] << " + " << rhs.i.c[2] << "i ,  " << rhs.r.c[3] << " + " << rhs.i.c[3] << "i }";
 	return string.str();
 }
 
-inline std::string operator<<(const char *lhs, const Array4Complex64 &rhs) {
+AML_FUNCTION std::string operator<<(const char *lhs, const AML_PREFIX(Array4Complex64) &rhs) {
 	std::ostringstream string;
 	string << lhs << "{ " << rhs.r.c[0] << " + " << rhs.i.c[0] << "i ,  " << rhs.r.c[1] << " + " << rhs.i.c[1]
 		   << "i ,  " << rhs.r.c[2] << " + " << rhs.i.c[2] << "i ,  " << rhs.r.c[3] << " + " << rhs.i.c[3] << "i }";
@@ -5740,7 +5805,7 @@ inline std::string operator<<(const char *lhs, const Array4Complex64 &rhs) {
 
 template<class charT, class traits>
 std::basic_ostream<charT, traits> &
-operator<<(std::basic_ostream<charT, traits> &o, const Array4Complex64 &rhs) {
+operator<<(std::basic_ostream<charT, traits> &o, const AML_PREFIX(Array4Complex64) &rhs) {
 	std::basic_ostringstream<charT, traits> s;
 	s.flags(o.flags());
 	s.imbue(o.getloc());
@@ -5750,12 +5815,16 @@ operator<<(std::basic_ostream<charT, traits> &o, const Array4Complex64 &rhs) {
 	return o << s.str();
 }
 
-inline Array4Complex64 operator+(const Complex64 &lhs, const Array4Complex64 &rhs) {
+#endif
+
+AML_FUNCTION AML_PREFIX(Array4Complex64)
+operator+(const AML_PREFIX(Complex64) &lhs, const AML_PREFIX(Array4Complex64) &rhs) {
 	return rhs + lhs;
 }
 
-inline Array4Complex64 operator-(const Complex64 &lhs, const Array4Complex64 &rhs) {
-	Array4Complex64 ret;
+AML_FUNCTION AML_PREFIX(Array4Complex64)
+operator-(const AML_PREFIX(Complex64) &lhs, const AML_PREFIX(Array4Complex64) &rhs) {
+	AML_PREFIX(Array4Complex64) ret;
 	ret.i.c[0] = lhs.c.c[1] - rhs.i.c[0];
 	ret.i.c[1] = lhs.c.c[1] - rhs.i.c[1];
 	ret.i.c[2] = lhs.c.c[1] - rhs.i.c[2];
@@ -5767,12 +5836,14 @@ inline Array4Complex64 operator-(const Complex64 &lhs, const Array4Complex64 &rh
 	return ret;
 }
 
-inline Array4Complex64 operator*(const Complex64 &lhs, const Array4Complex64 &rhs) {
+AML_FUNCTION AML_PREFIX(Array4Complex64)
+operator*(const AML_PREFIX(Complex64) &lhs, const AML_PREFIX(Array4Complex64) &rhs) {
 	return rhs * lhs;
 }
 
-inline Array4Complex64 operator/(const Complex64 &lhs, const Array4Complex64 &rhs) {
-	Array4Complex64 ret;
+AML_FUNCTION AML_PREFIX(Array4Complex64)
+operator/(const AML_PREFIX(Complex64) &lhs, const AML_PREFIX(Array4Complex64) &rhs) {
+	AML_PREFIX(Array4Complex64) ret;
 	double d1 =
 			(lhs.c.c[0] * rhs.r.c[0] + lhs.c.c[1] * rhs.i.c[0]) / (rhs.r.c[0] * rhs.r.c[0] + rhs.i.c[0] * rhs.i.c[0]);
 	double d2 =
@@ -5794,14 +5865,14 @@ inline Array4Complex64 operator/(const Complex64 &lhs, const Array4Complex64 &rh
 	return ret;
 }
 
-class Array8Complex64 {
+class AML_PREFIX(Array8Complex64) {
 public:
-	doublevec8 r{};
-	doublevec8 i{};
+	AML_PREFIX(doublevec8) r{};
+	AML_PREFIX(doublevec8) i{};
 
-	inline Array8Complex64() {}
+	AML_FUNCTION AML_PREFIX(Array8Complex64)() {}
 
-	inline Array8Complex64(Complex64 value) {
+	AML_FUNCTION AML_PREFIX(Array8Complex64)(const AML_PREFIX(Complex64) value) {
 #if defined(USE_AVX)
 		r.avx[0] = _mm256_set1_pd(value.c.c[0]);
 		r.avx[1] = _mm256_set1_pd(value.c.c[0]);
@@ -5827,24 +5898,24 @@ public:
 #endif
 	}
 
-	inline VectorDouble8D real() {
-		return VectorDouble8D(r.c);
+	AML_FUNCTION AML_PREFIX(VectorDouble8D) real() {
+		return AML_PREFIX(VectorDouble8D)(r.c);
 	}
 
-	inline VectorDouble8D complex() {
-		return VectorDouble8D(i.c);
+	AML_FUNCTION AML_PREFIX(VectorDouble8D) complex() {
+		return AML_PREFIX(VectorDouble8D)(i.c);
 	}
 
-	inline Complex64 operator[](uint64_t location) {
-		return Complex64(r.c[location], i.c[location]);
+	AML_FUNCTION AML_PREFIX(Complex64) operator[](uint64_t location) {
+		return AML_PREFIX(Complex64)(r.c[location], i.c[location]);
 	}
 
-	inline void set(uint64_t location, Complex64 value) {
+	AML_FUNCTION void set(uint64_t location, AML_PREFIX(Complex64) value) {
 		r.c[location] = value.c.c[0];
 		i.c[location] = value.c.c[1];
 	}
 
-	inline Array8Complex64 *add(const Array8Complex64 &a) {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *add(const AML_PREFIX(Array8Complex64) &a) {
 #if defined(USE_AVX)
 		i.avx[0] = _mm256_add_pd(i.avx[0], a.i.avx[0]);
 		i.avx[1] = _mm256_add_pd(i.avx[1], a.i.avx[1]);
@@ -5871,7 +5942,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex64 *add(const Complex64 &a) {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *add(const AML_PREFIX(Complex64) &a) {
 #if defined(USE_AVX)
 		__m256d a_i = {a.c.c[1], a.c.c[1], a.c.c[1], a.c.c[1]};
 		i.avx[0] = _mm256_add_pd(i.avx[0], a_i);
@@ -5900,7 +5971,7 @@ public:
 		return this;
 	}
 
-	inline void operator+=(Array8Complex64 a) {
+	AML_FUNCTION void operator+=(const AML_PREFIX(Array8Complex64) &a) {
 #if defined(USE_AVX)
 		i.avx[0] = _mm256_add_pd(i.avx[0], a.i.avx[0]);
 		i.avx[1] = _mm256_add_pd(i.avx[1], a.i.avx[1]);
@@ -5926,7 +5997,7 @@ public:
 #endif
 	}
 
-	inline void operator+=(Complex64 a) {
+	AML_FUNCTION void operator+=(const AML_PREFIX(Complex64) a) {
 #if defined(USE_AVX)
 		__m256d a_i = {a.c.c[1], a.c.c[1], a.c.c[1], a.c.c[1]};
 		i.avx[0] = _mm256_add_pd(i.avx[0], a_i);
@@ -5954,8 +6025,8 @@ public:
 #endif
 	}
 
-	inline Array8Complex64 operator+(Array8Complex64 a) const {
-		Array8Complex64 ret;
+	AML_FUNCTION AML_PREFIX(Array8Complex64) operator+(const AML_PREFIX(Array8Complex64) &a) const {
+		AML_PREFIX(Array8Complex64) ret;
 #if defined(USE_AVX)
 		ret.i.avx[0] = _mm256_add_pd(i.avx[0], a.i.avx[0]);
 		ret.i.avx[1] = _mm256_add_pd(i.avx[1], a.i.avx[1]);
@@ -5982,8 +6053,8 @@ public:
 		return ret;
 	}
 
-	inline Array8Complex64 operator+(Complex64 a) const {
-		Array8Complex64 ret{};
+	AML_FUNCTION AML_PREFIX(Array8Complex64) operator+(const AML_PREFIX(Complex64) a) const {
+		AML_PREFIX(Array8Complex64) ret{};
 #if defined(USE_AVX)
 		__m256d a_i = {a.c.c[1], a.c.c[1], a.c.c[1], a.c.c[1]};
 		ret.i.avx[0] = _mm256_add_pd(i.avx[0], a_i);
@@ -6012,7 +6083,7 @@ public:
 		return ret;
 	}
 
-	inline Array8Complex64 *add(Array8Complex64 a, VectorU8_8D mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *add(const AML_PREFIX(Array8Complex64) &a, AML_PREFIX(VectorU8_8D) mask) {
 		if (mask.v.c[0]) {
 			i.c[0] += a.i.c[0];
 			r.c[0] += a.r.c[0];
@@ -6048,7 +6119,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex64 *add(Complex64 a, VectorU8_8D mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *add(const AML_PREFIX(Complex64) a, AML_PREFIX(VectorU8_8D) mask) {
 		if (mask.v.c[0]) {
 			i.c[0] += a.c.c[1];
 			r.c[0] += a.c.c[0];
@@ -6084,7 +6155,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex64 *subtract(Array8Complex64 a) {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *subtract(const AML_PREFIX(Array8Complex64) a) {
 #if defined(USE_AVX)
 		i.avx[0] = _mm256_sub_pd(i.avx[0], a.i.avx[0]);
 		i.avx[1] = _mm256_sub_pd(i.avx[1], a.i.avx[1]);
@@ -6111,7 +6182,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex64 *subtract(Complex64 a) {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *subtract(const AML_PREFIX(Complex64) a) {
 #if defined(USE_AVX)
 		__m256d a_i = {a.c.c[1], a.c.c[1], a.c.c[1], a.c.c[1]};
 		i.avx[0] = _mm256_sub_pd(i.avx[0], a_i);
@@ -6140,7 +6211,7 @@ public:
 		return this;
 	}
 
-	inline void operator-=(Array8Complex64 a) {
+	AML_FUNCTION void operator-=(const AML_PREFIX(Array8Complex64) a) {
 #if defined(USE_AVX)
 		i.avx[0] = _mm256_sub_pd(i.avx[0], a.i.avx[0]);
 		i.avx[1] = _mm256_sub_pd(i.avx[1], a.i.avx[1]);
@@ -6166,7 +6237,7 @@ public:
 #endif
 	}
 
-	inline void operator-=(Complex64 a) {
+	AML_FUNCTION void operator-=(const AML_PREFIX(Complex64) a) {
 #if defined(USE_AVX)
 		__m256d a_i = {a.c.c[1], a.c.c[1], a.c.c[1], a.c.c[1]};
 		i.avx[0] = _mm256_sub_pd(i.avx[0], a_i);
@@ -6194,8 +6265,8 @@ public:
 #endif
 	}
 
-	inline Array8Complex64 operator-(Array8Complex64 a) const {
-		Array8Complex64 ret;
+	AML_FUNCTION AML_PREFIX(Array8Complex64) operator-(const AML_PREFIX(Array8Complex64) &a) const {
+		AML_PREFIX(Array8Complex64) ret;
 #if defined(USE_AVX)
 		ret.i.avx[0] = _mm256_sub_pd(i.avx[0], a.i.avx[0]);
 		ret.i.avx[1] = _mm256_sub_pd(i.avx[1], a.i.avx[1]);
@@ -6222,8 +6293,8 @@ public:
 		return ret;
 	}
 
-	inline Array8Complex64 operator-(Complex64 a) const {
-		Array8Complex64 ret;
+	AML_FUNCTION AML_PREFIX(Array8Complex64) operator-(const AML_PREFIX(Complex64) a) const {
+		AML_PREFIX(Array8Complex64) ret;
 #if defined(USE_AVX)
 		__m256d a_i = {a.c.c[1], a.c.c[1], a.c.c[1], a.c.c[1]};
 		ret.i.avx[0] = _mm256_sub_pd(i.avx[0], a_i);
@@ -6252,7 +6323,8 @@ public:
 		return ret;
 	}
 
-	inline Array8Complex64 *subtract(Array8Complex64 a, VectorU8_8D mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *
+	subtract(const AML_PREFIX(Array8Complex64) &a, AML_PREFIX(VectorU8_8D) mask) {
 		if (mask.v.c[0]) {
 			i.c[0] -= a.i.c[0];
 			r.c[0] -= a.r.c[0];
@@ -6288,7 +6360,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex64 *subtract(Complex64 a, VectorU8_8D mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *subtract(const AML_PREFIX(Complex64) a, AML_PREFIX(VectorU8_8D) mask) {
 		if (mask.v.c[0]) {
 			i.c[0] -= a.c.c[1];
 			r.c[0] -= a.c.c[0];
@@ -6325,8 +6397,8 @@ public:
 	}
 
 
-	inline Array8Complex64 operator*(const Array8Complex64 &a) const {
-		Array8Complex64 ret;
+	AML_FUNCTION AML_PREFIX(Array8Complex64) operator*(const AML_PREFIX(Array8Complex64) &a) const {
+		AML_PREFIX(Array8Complex64) ret;
 #if defined(USE_FMA)
 		__m256d c_0 = _mm256_mul_pd(i.avx[0], a.i.avx[0]);
 		ret.r.avx[0] = _mm256_fmsub_pd(r.avx[0], a.r.avx[0],c_0);
@@ -6358,7 +6430,7 @@ public:
 		return ret;
 	}
 
-	inline Array8Complex64 *multiply(const Array8Complex64 &a) {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *multiply(const AML_PREFIX(Array8Complex64) &a) {
 		double d1;
 		double d2;
 		d1 = r.c[0] * a.r.c[0] - i.c[0] * a.i.c[0];
@@ -6397,7 +6469,7 @@ public:
 		return this;
 	}
 
-	inline void operator*=(const Array8Complex64 &a) {
+	AML_FUNCTION void operator*=(const AML_PREFIX(Array8Complex64) &a) {
 		double d1;
 		double d2;
 		d1 = r.c[0] * a.r.c[0] - i.c[0] * a.i.c[0];
@@ -6435,7 +6507,7 @@ public:
 		i.c[7] = d2;
 	}
 
-	inline void operator*=(const Complex64 &a) {
+	AML_FUNCTION void operator*=(const AML_PREFIX(Complex64) &a) {
 		double d1;
 		double d2;
 		d1 = r.c[0] * a.c.c[0] - i.c[0] * a.c.c[1];
@@ -6472,8 +6544,8 @@ public:
 		i.c[7] = d2;
 	}
 
-	inline Array8Complex64 operator*(const Complex64 &a) const {
-		Array8Complex64 ret;
+	AML_FUNCTION AML_PREFIX(Array8Complex64) operator*(const AML_PREFIX(Complex64) &a) const {
+		AML_PREFIX(Array8Complex64) ret;
 		ret.r.c[0] = r.c[0] * a.c.c[0] - i.c[0] * a.c.c[1];
 		ret.i.c[0] = r.c[0] * a.c.c[1] + i.c[0] * a.c.c[0];
 		ret.r.c[1] = r.c[1] * a.c.c[0] - i.c[1] * a.c.c[1];
@@ -6495,7 +6567,7 @@ public:
 		return ret;
 	}
 
-	inline Array8Complex64 *multiply(const Complex64 &a) {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *multiply(const AML_PREFIX(Complex64) &a) {
 		double d1;
 		double d2;
 		d1 = r.c[0] * a.c.c[0] - i.c[0] * a.c.c[1];
@@ -6533,7 +6605,8 @@ public:
 		return this;
 	}
 
-	inline Array8Complex64 *multiply(const Complex64 &a, const VectorU8_8D &mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *
+	multiply(const AML_PREFIX(Complex64) &a, const AML_PREFIX(VectorU8_8D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -6589,7 +6662,8 @@ public:
 
 	}
 
-	inline Array8Complex64 *multiply(const Array8Complex64 &a, const VectorU8_8D &mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *
+	multiply(const AML_PREFIX(Array8Complex64) &a, const AML_PREFIX(VectorU8_8D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -6643,7 +6717,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex64 *square() {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *square() {
 		double d1;
 		double d2;
 		d1 = r.c[0] * r.c[0] - i.c[0] * i.c[0];
@@ -6682,7 +6756,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex64 *square(const VectorU8_8D &mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *square(const AML_PREFIX(VectorU8_8D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -6736,7 +6810,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex64 *divide(const Complex64 a) {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *divide(const AML_PREFIX(Complex64) a) {
 		double d1 = (r.c[0] * a.c.c[0] + i.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		double d2 = (i.c[0] * a.c.c[0] - r.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		r.c[0] = d1;
@@ -6772,7 +6846,8 @@ public:
 		return this;
 	}
 
-	inline Array8Complex64 *divide(const Complex64 a, const VectorU8_8D &mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *
+	divide(const AML_PREFIX(Complex64) a, const AML_PREFIX(VectorU8_8D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -6826,7 +6901,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex64 *divide(const Array8Complex64 &a) {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *divide(const AML_PREFIX(Array8Complex64) &a) {
 		double d1 = (r.c[0] * a.r.c[0] + i.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		double d2 = (i.c[0] * a.r.c[0] - r.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		r.c[0] = d1;
@@ -6862,7 +6937,8 @@ public:
 		return this;
 	}
 
-	inline Array8Complex64 *divide(const Array8Complex64 &a, const VectorU8_8D &mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *
+	divide(const AML_PREFIX(Array8Complex64) &a, const AML_PREFIX(VectorU8_8D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -6916,8 +6992,8 @@ public:
 		return this;
 	}
 
-	inline Array8Complex64 operator/(const Complex64 &a) const {
-		Array8Complex64 ret;
+	AML_FUNCTION AML_PREFIX(Array8Complex64) operator/(const AML_PREFIX(Complex64) &a) const {
+		AML_PREFIX(Array8Complex64) ret;
 		double d1 = (r.c[0] * a.c.c[0] + i.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		double d2 = (i.c[0] * a.c.c[0] - r.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		ret.r.c[0] = d1;
@@ -6953,8 +7029,8 @@ public:
 		return ret;
 	}
 
-	inline Array8Complex64 operator/(const Array8Complex64 &a) const {
-		Array8Complex64 ret;
+	AML_FUNCTION AML_PREFIX(Array8Complex64) operator/(const AML_PREFIX(Array8Complex64) &a) const {
+		AML_PREFIX(Array8Complex64) ret;
 		double d1 = (r.c[0] * a.r.c[0] + i.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		double d2 = (i.c[0] * a.r.c[0] - r.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		ret.r.c[0] = d1;
@@ -6990,7 +7066,7 @@ public:
 		return ret;
 	}
 
-	inline void operator/=(const Complex64 &a) {
+	AML_FUNCTION void operator/=(const AML_PREFIX(Complex64) &a) {
 		double d1 = (r.c[0] * a.c.c[0] + i.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		double d2 = (i.c[0] * a.c.c[0] - r.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		r.c[0] = d1;
@@ -7025,7 +7101,7 @@ public:
 		i.c[7] = d2;
 	}
 
-	inline void operator/=(const Array8Complex64 &a) {
+	AML_FUNCTION void operator/=(const AML_PREFIX(Array8Complex64) &a) {
 		double d1 = (r.c[0] * a.r.c[0] + i.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		double d2 = (i.c[0] * a.r.c[0] - r.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		r.c[0] = d1;
@@ -7060,7 +7136,7 @@ public:
 		i.c[7] = d2;
 	}
 
-	inline Array8Complex64 *sqrt() {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *sqrt() {
 		double d1;
 		double d2;
 		d2 = ::sqrt((-r.c[0] + ::sqrt(r.c[0] * r.c[0] + i.c[0] * i.c[0])) / (2));
@@ -7130,7 +7206,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex64 *sqrt(const VectorU8_8D mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *sqrt(const AML_PREFIX(VectorU8_8D) mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -7216,7 +7292,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex64 *sin() {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *sin() {
 		double d1;
 		double d2;
 		d1 = ::sin(r.c[0]) * ::cosh(i.c[0]);
@@ -7254,7 +7330,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex64 *cos() {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *cos() {
 		double d1;
 		double d2;
 		d1 = ::cos(r.c[0]) * ::cosh(i.c[0]);
@@ -7292,7 +7368,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex64 *tan() {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *tan() {
 		double d1;
 		double d2;
 		d1 = ::sin(r.c[0] + r.c[0]) / (::cos(r.c[0] + r.c[0]) * ::cosh(i.c[0] + i.c[0]));
@@ -7330,7 +7406,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex64 *sin(const VectorU8_8D mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *sin(const AML_PREFIX(VectorU8_8D) mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -7384,7 +7460,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex64 *cos(const VectorU8_8D mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *cos(const AML_PREFIX(VectorU8_8D) mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -7438,7 +7514,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex64 *tan(const VectorU8_8D mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *tan(const AML_PREFIX(VectorU8_8D) mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -7493,7 +7569,7 @@ public:
 	}
 
 
-	inline Array8Complex64 *exp() {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *exp() {
 		double d1 = ::exp(r.c[0]) * ::cos(i.c[0]);
 		double d2 = ::exp(r.c[0]) * ::sin(i.c[0]);
 		r.c[0] = d1;
@@ -7529,7 +7605,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex64 *exp(double n) {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *exp(double n) {
 		double d1 = ::pow(n, r.c[0]) * ::cos(i.c[0] * ::log(n));
 		double d2 = ::pow(n, r.c[0]) * ::sin(i.c[0] * ::log(n));
 		r.c[0] = d1;
@@ -7565,7 +7641,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex64 *pow(Array8Complex64 n) {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *pow(const AML_PREFIX(Array8Complex64) &n) {
 		double d1 = ::log(i.c[0] * i.c[0] + r.c[0] * r.c[0]) / 2;
 		double d2 = ::atan2(r.c[0], i.c[0]);
 		double d3 = ::exp(d1 * n.i.c[0] - d2 * n.r.c[0]);
@@ -7634,7 +7710,7 @@ public:
 	}
 
 
-	inline Array8Complex64 *pow(Complex64 n) {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *pow(const AML_PREFIX(Complex64) n) {
 		double d1 = ::log(i.c[0] * i.c[0] + r.c[0] * r.c[0]) / 2;
 		double d2 = ::atan2(r.c[0], i.c[0]);
 		double d3 = ::exp(d1 * n.c.c[0] - d2 * n.c.c[1]);
@@ -7702,7 +7778,8 @@ public:
 		return this;
 	}
 
-	inline Array8Complex64 *pow(Array8Complex64 n, const VectorU8_8D &mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *
+	pow(const AML_PREFIX(Array8Complex64) &n, const AML_PREFIX(VectorU8_8D) &mask) {
 		double d1;
 		double d2;
 		double d3;
@@ -7793,7 +7870,7 @@ public:
 	}
 
 
-	inline Array8Complex64 *pow(Complex64 n, const VectorU8_8D &mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *pow(const AML_PREFIX(Complex64) n, const AML_PREFIX(VectorU8_8D) &mask) {
 		double d1;
 		double d2;
 		double d3;
@@ -7883,7 +7960,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex64 *exp(const VectorU8_8D &mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *exp(const AML_PREFIX(VectorU8_8D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -7937,7 +8014,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex64 *exp(double n, const VectorU8_8D &mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *exp(double n, const AML_PREFIX(VectorU8_8D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -7991,7 +8068,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex64 *pow(double n) {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *pow(double n) {
 		double d1;
 		double d2;
 		d1 = ::pow(r.c[0] * r.c[0] + i.c[0] * i.c[0], n / 2) * ::cos(n * atan2(i.c[0], r.c[0]));
@@ -8030,7 +8107,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex64 *pow(double n, const VectorU8_8D &mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *pow(double n, const AML_PREFIX(VectorU8_8D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -8084,8 +8161,8 @@ public:
 		return this;
 	}
 
-	inline VectorDouble8D abs() {
-		VectorDouble8D ret;
+	AML_FUNCTION AML_PREFIX(VectorDouble8D) abs() {
+		AML_PREFIX(VectorDouble8D) ret;
 		ret.v.c[0] = ::sqrt(r.c[0] * r.c[0] + i.c[0] * i.c[0]);
 		ret.v.c[1] = ::sqrt(r.c[1] * r.c[1] + i.c[1] * i.c[1]);
 		ret.v.c[2] = ::sqrt(r.c[2] * r.c[2] + i.c[2] * i.c[2]);
@@ -8097,8 +8174,8 @@ public:
 		return ret;
 	}
 
-	inline VectorU8_8D abs_gt(double a) {
-		VectorU8_8D ret;
+	AML_FUNCTION AML_PREFIX(VectorU8_8D) abs_gt(double a) {
+		AML_PREFIX(VectorU8_8D) ret;
 		ret.v.c[0] = a * a < r.c[0] * r.c[0] + i.c[0] * i.c[0];
 		ret.v.c[1] = a * a < r.c[1] * r.c[1] + i.c[1] * i.c[1];
 		ret.v.c[2] = a * a < r.c[2] * r.c[2] + i.c[2] * i.c[2];
@@ -8110,8 +8187,8 @@ public:
 		return ret;
 	}
 
-	inline VectorU8_8D abs_lt(double a) {
-		VectorU8_8D ret;
+	AML_FUNCTION AML_PREFIX(VectorU8_8D) abs_lt(double a) {
+		AML_PREFIX(VectorU8_8D) ret;
 		ret.v.c[0] = a * a > r.c[0] * r.c[0] + i.c[0] * i.c[0];
 		ret.v.c[1] = a * a > r.c[1] * r.c[1] + i.c[1] * i.c[1];
 		ret.v.c[2] = a * a > r.c[2] * r.c[2] + i.c[2] * i.c[2];
@@ -8123,8 +8200,8 @@ public:
 		return ret;
 	}
 
-	inline VectorU8_8D abs_eq(double a) {
-		VectorU8_8D ret;
+	AML_FUNCTION AML_PREFIX(VectorU8_8D) abs_eq(double a) {
+		AML_PREFIX(VectorU8_8D) ret;
 		ret.v.c[0] = a * a == r.c[0] * r.c[0] + i.c[0] * i.c[0];
 		ret.v.c[1] = a * a == r.c[1] * r.c[1] + i.c[1] * i.c[1];
 		ret.v.c[2] = a * a == r.c[2] * r.c[2] + i.c[2] * i.c[2];
@@ -8136,7 +8213,7 @@ public:
 		return ret;
 	}
 
-	inline Array8Complex64 *ln(const VectorU8_8D &mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *ln(const AML_PREFIX(VectorU8_8D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -8190,7 +8267,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex64 *log(const VectorU8_8D &mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *log(const AML_PREFIX(VectorU8_8D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -8244,7 +8321,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex64 *log10(const VectorU8_8D &mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *log10(const AML_PREFIX(VectorU8_8D) &mask) {
 		double d1;
 		double d2;
 		if (mask.v.c[0]) {
@@ -8298,7 +8375,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex64 *ln() {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *ln() {
 		double d1;
 		double d2;
 		d1 = ::log(i.c[0] * i.c[0] + r.c[0] * r.c[0]) / 2;
@@ -8336,7 +8413,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex64 *log() {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *log() {
 		double d1;
 		double d2;
 		d1 = ::log(i.c[0] * i.c[0] + r.c[0] * r.c[0]) / 2;
@@ -8374,7 +8451,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex64 *log10() {
+	AML_FUNCTION AML_PREFIX(Array8Complex64) *log10() {
 		double d1;
 		double d2;
 		d1 = ::log(i.c[0] * i.c[0] + r.c[0] * r.c[0]) / (2 * AML_LN10);
@@ -8412,47 +8489,57 @@ public:
 		return this;
 	}
 
-	class Complex64_8_Itr : public std::iterator<
+	class AML_PREFIX(Complex64_8_Itr) : public std::iterator<
 			std::input_iterator_tag,   // iterator_category
-			Complex64Ptr,                      // value_type
+			AML_PREFIX(Complex64Ptr),                      // value_type
 			long,                      // difference_type
-			const Complex64Ptr *,               // pointer
-			Complex64Ptr                       // reference
+			const AML_PREFIX(Complex64Ptr) *,               // pointer
+			AML_PREFIX(Complex64Ptr)                       // reference
 	> {
 
-		Array8Complex64 *a;
+		AML_PREFIX(Array8Complex64) *a;
 		int position;
 
 	public:
-		inline explicit Complex64_8_Itr(Array8Complex64 *array, int length) : a(array), position(length) {
+		AML_FUNCTION explicit AML_PREFIX(Complex64_8_Itr)(AML_PREFIX(Array8Complex64) *array, int length) : a(array),
+																											position(
+																													length) {
 
 		}
 
-		inline Complex64_8_Itr &operator++() {
+		AML_FUNCTION AML_PREFIX(Complex64_8_Itr) &operator++() {
 			position++;
 			return *this;
 		}
 
-		inline bool operator==(Complex64_8_Itr other) const { return position == other.position; }
+		AML_FUNCTION bool operator==(const AML_PREFIX(Complex64_8_Itr) other) const {
+			return position == other.position;
+		}
 
-		inline bool operator!=(Complex64_8_Itr other) const { return !(*this == other); }
+		AML_FUNCTION bool operator!=(const AML_PREFIX(Complex64_8_Itr) other) const { return !(*this == other); }
 
-		inline reference operator*() const { return Complex64Ptr(&a->r.c[position], &a->i.c[position], position); }
+		AML_FUNCTION reference operator*() const {
+			return AML_PREFIX(Complex64Ptr)(&a->r.c[position], &a->i.c[position], position);
+		}
 
 
 	};
 
-	inline Complex64_8_Itr begin() {
-		return Complex64_8_Itr(this, 0);
+	AML_FUNCTION AML_PREFIX(Complex64_8_Itr) begin() {
+		return AML_PREFIX(Complex64_8_Itr)(this, 0);
 	}
 
-	inline Complex64_8_Itr end() {
-		return Complex64_8_Itr(this, 8);
+	AML_FUNCTION AML_PREFIX(Complex64_8_Itr) end() {
+		return AML_PREFIX(Complex64_8_Itr)(this, 8);
 	}
 
 };
 
-inline std::string operator<<(std::string &lhs, const Array8Complex64 &rhs) {
+
+#if !defined(AML_NO_STRING)
+
+
+AML_FUNCTION std::string operator<<(std::string &lhs, const AML_PREFIX(Array8Complex64) &rhs) {
 	std::ostringstream string;
 	string << lhs << "{ " << rhs.r.c[0] << " + " << rhs.i.c[0] << "i ,  " << rhs.r.c[1] << " + " << rhs.i.c[1]
 		   << "i ,  " << rhs.r.c[2] << " + " << rhs.i.c[2] << "i ,  " << rhs.r.c[3] << " + " << rhs.i.c[3] << "i ,  "
@@ -8461,7 +8548,7 @@ inline std::string operator<<(std::string &lhs, const Array8Complex64 &rhs) {
 	return string.str();
 }
 
-inline std::string operator<<(const char *lhs, const Array8Complex64 &rhs) {
+AML_FUNCTION std::string operator<<(const char *lhs, const AML_PREFIX(Array8Complex64) &rhs) {
 	std::ostringstream string;
 	string << lhs << "{ " << rhs.r.c[0] << " + " << rhs.i.c[0] << "i ,  " << rhs.r.c[1] << " + " << rhs.i.c[1]
 		   << "i ,  " << rhs.r.c[2] << " + " << rhs.i.c[2] << "i ,  " << rhs.r.c[3] << " + " << rhs.i.c[3] << "i ,  "
@@ -8472,7 +8559,7 @@ inline std::string operator<<(const char *lhs, const Array8Complex64 &rhs) {
 
 template<class charT, class traits>
 std::basic_ostream<charT, traits> &
-operator<<(std::basic_ostream<charT, traits> &o, const Array8Complex64 &rhs) {
+operator<<(std::basic_ostream<charT, traits> &o, const AML_PREFIX(Array8Complex64) &rhs) {
 	std::basic_ostringstream<charT, traits> s;
 	s.flags(o.flags());
 	s.imbue(o.getloc());
@@ -8484,12 +8571,16 @@ operator<<(std::basic_ostream<charT, traits> &o, const Array8Complex64 &rhs) {
 	return o << s.str();
 }
 
-inline Array8Complex64 operator+(const Complex64 &lhs, const Array8Complex64 &rhs) {
+#endif
+
+AML_FUNCTION AML_PREFIX(Array8Complex64)
+operator+(const AML_PREFIX(Complex64) &lhs, const AML_PREFIX(Array8Complex64) &rhs) {
 	return rhs + lhs;
 }
 
-inline Array8Complex64 operator-(const Complex64 &lhs, const Array8Complex64 &rhs) {
-	Array8Complex64 ret;
+AML_FUNCTION AML_PREFIX(Array8Complex64)
+operator-(const AML_PREFIX(Complex64) &lhs, const AML_PREFIX(Array8Complex64) &rhs) {
+	AML_PREFIX(Array8Complex64) ret;
 	ret.i.c[0] = lhs.c.c[1] - rhs.i.c[0];
 	ret.i.c[1] = lhs.c.c[1] - rhs.i.c[1];
 	ret.i.c[2] = lhs.c.c[1] - rhs.i.c[2];
@@ -8509,12 +8600,14 @@ inline Array8Complex64 operator-(const Complex64 &lhs, const Array8Complex64 &rh
 	return ret;
 }
 
-inline Array8Complex64 operator*(const Complex64 &lhs, const Array8Complex64 &rhs) {
+AML_FUNCTION AML_PREFIX(Array8Complex64)
+operator*(const AML_PREFIX(Complex64) &lhs, const AML_PREFIX(Array8Complex64) &rhs) {
 	return rhs * lhs;
 }
 
-inline Array8Complex64 operator/(const Complex64 &lhs, const Array8Complex64 &rhs) {
-	Array8Complex64 ret;
+AML_FUNCTION AML_PREFIX(Array8Complex64)
+operator/(const AML_PREFIX(Complex64) &lhs, const AML_PREFIX(Array8Complex64) &rhs) {
+	AML_PREFIX(Array8Complex64) ret;
 	double d1 =
 			(lhs.c.c[0] * rhs.r.c[0] + lhs.c.c[1] * rhs.i.c[0]) / (rhs.r.c[0] * rhs.r.c[0] + rhs.i.c[0] * rhs.i.c[0]);
 	double d2 =
@@ -8552,54 +8645,53 @@ inline Array8Complex64 operator/(const Complex64 &lhs, const Array8Complex64 &rh
 	return ret;
 }
 
-
-class Complex32 {
+class AML_PREFIX(Complex32) {
 public:
-	floatvec2 c{};
+	AML_PREFIX(floatvec2) c{};
 
 
-	inline constexpr Complex32(const float real, const float img) {
+	AML_FUNCTION constexpr AML_PREFIX(Complex32)(const float real, const float img) {
 		c.c[0] = real;
 		c.c[1] = img;
 	}
 
-	inline explicit Complex32(float *values) {
+	AML_FUNCTION explicit AML_PREFIX(Complex32)(float *values) {
 		c.c[0] = values[0];
 		c.c[1] = values[1];
 	}
 
-	inline constexpr Complex32(float real) {
+	AML_FUNCTION constexpr AML_PREFIX(Complex32)(float real) {
 		c.c[0] = real;
 		c.c[1] = 0.0;
 	}
 
 #if defined(AML_USE_STD_COMPLEX)
 
-	inline Complex32(std::complex<float> sc) {
+	AML_FUNCTION AML_PREFIX(Complex32)(std::complex<float> sc) {
 		c.c[0] = sc.real();
 		c.c[1] = sc.imag();
 	}
 
 #endif
 
-	inline Complex32() {
+	AML_FUNCTION AML_PREFIX(Complex32)() {
 		c.c[0] = 0;
 		c.c[1] = 0;
 	}
 
-	inline void set([[maybe_unused]]uint64_t location, Complex32 value) {
+	AML_FUNCTION void set([[maybe_unused]]uint64_t location, const AML_PREFIX(Complex32) value) {
 		c.c[0] = value.c.c[0];
 		c.c[1] = value.c.c[1];
 	}
 
 //add sub
-	inline Complex32 *add(Complex32 a) {
+	AML_FUNCTION AML_PREFIX(Complex32) *add(const AML_PREFIX(Complex32) a) {
 		c.c[0] += a.c.c[0];
 		c.c[1] += a.c.c[1];
 		return this;
 	}
 
-	inline Complex32 *add(Complex32 a, VectorU8_1D mask) {
+	AML_FUNCTION AML_PREFIX(Complex32) *add(const AML_PREFIX(Complex32) a, const AML_PREFIX(VectorU8_1D) mask) {
 		if (mask.v.c) LIKELY {
 			c.c[1] += a.c.c[1];
 			c.c[0] += a.c.c[0];
@@ -8607,34 +8699,34 @@ public:
 		return this;
 	}
 
-	inline Complex32 operator+(Complex32 a) {
-		Complex32 ret(c.c[0] + a.c.c[0], c.c[1] + a.c.c[1]);
+	AML_FUNCTION AML_PREFIX(Complex32) operator+(const AML_PREFIX(Complex32) a) {
+		AML_PREFIX(Complex32) ret(c.c[0] + a.c.c[0], c.c[1] + a.c.c[1]);
 		return ret;
 	}
 
-	inline Complex32 operator-(Complex32 a) {
-		Complex32 ret(c.c[0] - a.c.c[0], c.c[1] - a.c.c[1]);
+	AML_FUNCTION AML_PREFIX(Complex32) operator-(AML_PREFIX(Complex32) a) {
+		AML_PREFIX(Complex32) ret(c.c[0] - a.c.c[0], c.c[1] - a.c.c[1]);
 		return ret;
 	}
 
 
-	inline void operator+=(Complex32 a) {
+	AML_FUNCTION void operator+=(const AML_PREFIX(Complex32) a) {
 		c.c[0] += a.c.c[0];
 		c.c[1] += a.c.c[1];
 	}
 
-	inline void operator-=(Complex32 a) {
+	AML_FUNCTION void operator-=(const AML_PREFIX(Complex32) a) {
 		c.c[0] -= a.c.c[0];
 		c.c[1] -= a.c.c[1];
 	}
 
-	inline Complex32 *subtract(Complex32 a) {
+	AML_FUNCTION AML_PREFIX(Complex32) *subtract(const AML_PREFIX(Complex32) a) {
 		c.c[0] -= a.c.c[0];
 		c.c[1] -= a.c.c[1];
 		return this;
 	}
 
-	inline Complex32 *subtract(Complex32 a, VectorU8_1D mask) {
+	AML_FUNCTION AML_PREFIX(Complex32) *subtract(const AML_PREFIX(Complex32) a, const AML_PREFIX(VectorU8_1D) mask) {
 		if (mask.v.c) LIKELY {
 			c.c[0] -= a.c.c[0];
 			c.c[1] -= a.c.c[1];
@@ -8643,13 +8735,13 @@ public:
 		return this;
 	}
 
-	inline Complex32 *conjugate() {
+	AML_FUNCTION AML_PREFIX(Complex32) *conjugate() {
 		c.c[1] = -c.c[1];
 		return this;
 	}
 
 //mul
-	inline Complex32 *multiply(Complex32 a) {
+	AML_FUNCTION AML_PREFIX(Complex32) *multiply(const AML_PREFIX(Complex32) a) {
 		float d1 = c.c[0] * a.c.c[0] - c.c[1] * a.c.c[1];
 		float d2 = c.c[0] * a.c.c[1] + c.c[1] * a.c.c[0];
 		c.c[0] = d1;
@@ -8658,7 +8750,7 @@ public:
 	}
 
 
-	inline Complex32 *multiply(const Complex32 &a, const VectorU8_1D &mask) {
+	AML_FUNCTION AML_PREFIX(Complex32) *multiply(const AML_PREFIX(Complex32) &a, const AML_PREFIX(VectorU8_1D) &mask) {
 		float d1;
 		float d2;
 		if (mask.v.c) LIKELY {
@@ -8672,25 +8764,25 @@ public:
 
 	}
 
-	inline Complex32 operator*(Complex32 a) {
-		Complex32 ret(c.c[0] * a.c.c[0] - c.c[1] * a.c.c[1], c.c[0] * a.c.c[1] + c.c[1] * a.c.c[0]);
+	AML_FUNCTION AML_PREFIX(Complex32) operator*(const AML_PREFIX(Complex32) a) {
+		AML_PREFIX(Complex32) ret(c.c[0] * a.c.c[0] - c.c[1] * a.c.c[1], c.c[0] * a.c.c[1] + c.c[1] * a.c.c[0]);
 		return ret;
 	}
 
-	inline void operator*=(Complex32 a) {
+	AML_FUNCTION void operator*=(const AML_PREFIX(Complex32) a) {
 		float d1 = c.c[0] * a.c.c[0] - c.c[1] * a.c.c[1];
 		float d2 = c.c[0] * a.c.c[1] + c.c[1] * a.c.c[0];
 		c.c[0] = d1;
 		c.c[1] = d2;
 	}
 
-	inline void operator*=(float a) {
+	AML_FUNCTION void operator*=(float a) {
 		c.c[0] = c.c[0] * a;
 		c.c[1] = c.c[1] * a;
 	}
 
 
-	inline Complex32 *square() {
+	AML_FUNCTION AML_PREFIX(Complex32) *square() {
 		float d1 = c.c[0] * c.c[0] - c.c[1] * c.c[1];
 		float d2 = c.c[0] * c.c[1] + c.c[1] * c.c[0];
 		c.c[0] = d1;
@@ -8698,7 +8790,7 @@ public:
 		return this;
 	}
 
-	inline Complex32 *square(const VectorU8_1D mask) {
+	AML_FUNCTION AML_PREFIX(Complex32) *square(const AML_PREFIX(VectorU8_1D) mask) {
 		if (mask.v.c) LIKELY {
 			float d1 = c.c[0] * c.c[0] - c.c[1] * c.c[1];
 			float d2 = c.c[0] * c.c[1] + c.c[1] * c.c[0];
@@ -8709,28 +8801,28 @@ public:
 	}
 
 //division
-	inline Complex32 operator/(Complex32 a) {
-		Complex32 ret;
+	AML_FUNCTION AML_PREFIX(Complex32) operator/(const AML_PREFIX(Complex32) a) {
+		AML_PREFIX(Complex32) ret;
 		ret.c.c[0] = (c.c[0] * a.c.c[0] + c.c[1] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		ret.c.c[1] = (c.c[1] * a.c.c[0] - c.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		return ret;
 	}
 
-	inline void operator/=(Complex32 a) {
+	AML_FUNCTION void operator/=(const AML_PREFIX(Complex32) a) {
 		float d1 = (c.c[0] * a.c.c[0] + c.c[1] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		float d2 = (c.c[1] * a.c.c[0] - c.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		c.c[0] = d1;
 		c.c[1] = d2;
 	}
 
-	inline void operator/=(float a) {
+	AML_FUNCTION void operator/=(float a) {
 		float d1 = c.c[0] / a;
 		float d2 = c.c[1] / a;
 		c.c[0] = d1;
 		c.c[1] = d2;
 	}
 
-	inline Complex32 *divide(Complex32 a) {
+	AML_FUNCTION AML_PREFIX(Complex32) *divide(const AML_PREFIX(Complex32) a) {
 		float d1 = (c.c[0] * a.c.c[0] + c.c[1] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		float d2 = (c.c[1] * a.c.c[0] - c.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		c.c[0] = d1;
@@ -8738,14 +8830,14 @@ public:
 		return this;
 	}
 
-	inline Complex32 operator/(float a) {
-		Complex32 ret;
+	AML_FUNCTION AML_PREFIX(Complex32) operator/(float a) {
+		AML_PREFIX(Complex32) ret;
 		ret.c.c[0] = c.c[0] / a;
 		ret.c.c[1] = c.c[1] / a;
 		return ret;
 	}
 
-	inline Complex32 *divide(float a) {
+	AML_FUNCTION AML_PREFIX(Complex32) *divide(float a) {
 		float d1 = c.c[0] / a;
 		float d2 = c.c[1] / a;
 		c.c[0] = d1;
@@ -8753,34 +8845,28 @@ public:
 		return this;
 	}
 
-	inline Complex32 *divide(const float a, const VectorU8_1D mask) {
+	AML_FUNCTION AML_PREFIX(Complex32) *divide(const float a, const AML_PREFIX(VectorU8_1D) mask) {
 		if (mask.v.c) LIKELY {
 			float d1 = c.c[0] / a;
 			float d2 = c.c[1] / a;
-
 			c.c[0] = d1;
 			c.c[1] = d2;
-
 		}
-
 		return this;
 	}
 
-	inline Complex32 *divide(const Complex32 a, const VectorU8_1D mask) {
+	AML_FUNCTION AML_PREFIX(Complex32) *divide(const AML_PREFIX(Complex32) a, const AML_PREFIX(VectorU8_1D) mask) {
 		if (mask.v.c) LIKELY {
 			float d1 = (c.c[0] * a.c.c[0] + c.c[1] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 			float d2 = (c.c[1] * a.c.c[0] - c.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
-
 			c.c[0] = d1;
 			c.c[1] = d2;
-
 		}
-
 		return this;
 	}
 
 //sqrt
-	inline Complex32 *sqrt() {
+	AML_FUNCTION AML_PREFIX(Complex32) *sqrt() {
 		float d2 = ::sqrt((-c.c[0] + ::sqrt(c.c[0] * c.c[0] + c.c[1] * c.c[1])) / (2));
 		float d1;
 		if (d2 == 0) UNLIKELY {
@@ -8793,7 +8879,7 @@ public:
 		return this;
 	}
 
-	inline Complex32 *sqrt(const VectorU8_1D mask) {
+	AML_FUNCTION AML_PREFIX(Complex32) *sqrt(const AML_PREFIX(VectorU8_1D) mask) {
 		if (mask.v.c) LIKELY {
 			float d2 = ::sqrt((-c.c[0] + ::sqrt(c.c[0] * c.c[0] + c.c[1] * c.c[1])) / (2));
 			float d1;
@@ -8808,7 +8894,7 @@ public:
 		return this;
 	}
 
-	inline Complex32 *sin() {
+	AML_FUNCTION AML_PREFIX(Complex32) *sin() {
 		float d1 = ::sin(c.c[0]) * ::cosh(c.c[1]);
 		float d2 = ::cos(c.c[1]) * ::sinh(c.c[0]);
 
@@ -8817,7 +8903,7 @@ public:
 		return this;
 	}
 
-	inline Complex32 *cos() {
+	AML_FUNCTION AML_PREFIX(Complex32) *cos() {
 		float d1 = ::cos(c.c[0]) * ::cosh(c.c[1]);
 		float d2 = -::sin(c.c[1]) * ::sinh(c.c[0]);
 
@@ -8826,7 +8912,7 @@ public:
 		return this;
 	}
 
-	inline Complex32 *tan() {
+	AML_FUNCTION AML_PREFIX(Complex32) *tan() {
 		float d1 = ::sin(c.c[0] + c.c[0]) / (::cos(c.c[0] + c.c[0]) * ::cosh(c.c[1] + c.c[1]));
 		float d2 = ::sinh(c.c[1] + c.c[1]) / (::cos(c.c[0] + c.c[0]) * ::cosh(c.c[1] + c.c[1]));
 
@@ -8835,7 +8921,7 @@ public:
 		return this;
 	}
 
-	inline Complex32 *sin(const VectorU8_1D mask) {
+	AML_FUNCTION AML_PREFIX(Complex32) *sin(const AML_PREFIX(VectorU8_1D) mask) {
 		if (mask.v.c) {
 			float d1 = ::sin(c.c[0]) * ::cosh(c.c[1]);
 			float d2 = ::cos(c.c[1]) * ::sinh(c.c[0]);
@@ -8845,7 +8931,7 @@ public:
 		return this;
 	}
 
-	inline Complex32 *cos(const VectorU8_1D mask) {
+	AML_FUNCTION AML_PREFIX(Complex32) *cos(const AML_PREFIX(VectorU8_1D) mask) {
 		if (mask.v.c) {
 			float d1 = ::cos(c.c[0]) * ::cosh(c.c[1]);
 			float d2 = -::sin(c.c[1]) * ::sinh(c.c[0]);
@@ -8855,7 +8941,7 @@ public:
 		return this;
 	}
 
-	inline Complex32 *tan(const VectorU8_1D mask) {
+	AML_FUNCTION AML_PREFIX(Complex32) *tan(const AML_PREFIX(VectorU8_1D) mask) {
 		if (mask.v.c) {
 			float d1 = ::sin(c.c[0] + c.c[0]) / (::cos(c.c[0] + c.c[0]) * ::cosh(c.c[1] + c.c[1]));
 			float d2 = ::sinh(c.c[1] + c.c[1]) / (::cos(c.c[0] + c.c[0]) * ::cosh(c.c[1] + c.c[1]));
@@ -8866,7 +8952,7 @@ public:
 	}
 
 
-	inline Complex32 *exp() {
+	AML_FUNCTION AML_PREFIX(Complex32) *exp() {
 		float d1 = ::exp(c.c[0]) * ::cos(c.c[1]);
 		float d2 = ::exp(c.c[0]) * ::sin(c.c[1]);
 
@@ -8876,7 +8962,7 @@ public:
 		return this;
 	}
 
-	inline Complex32 *exp(float n) {
+	AML_FUNCTION AML_PREFIX(Complex32) *exp(float n) {
 		float d1 = ::pow(n, c.c[0]) * ::cos(c.c[1] * ::log(n));
 		float d2 = ::pow(n, c.c[0]) * ::sin(c.c[1] * ::log(n));
 		c.c[0] = d1;
@@ -8884,7 +8970,7 @@ public:
 		return this;
 	}
 
-	inline Complex32 *pow(float n) {
+	AML_FUNCTION AML_PREFIX(Complex32) *pow(float n) {
 		float d1 = ::pow(c.c[0] * c.c[0] + c.c[1] * c.c[1], n / 2) * ::cos(n * atan2(c.c[1], c.c[0]));
 		float d2 = ::pow(c.c[0] * c.c[0] + c.c[1] * c.c[1], n / 2) * ::sin(n * atan2(c.c[1], c.c[0]));
 		c.c[0] = d1;
@@ -8892,7 +8978,7 @@ public:
 		return this;
 	}
 
-	inline Complex32 *pow(Complex32 n) {
+	AML_FUNCTION AML_PREFIX(Complex32) *pow(const AML_PREFIX(Complex32) n) {
 		float d1 = ::log(c.c[0] * c.c[0] + c.c[1] * c.c[1]) / 2;
 		float d2 = ::atan2(c.c[1], c.c[0]);
 		float d3 = ::exp(d1 * n.c.c[0] - d2 * n.c.c[1]);
@@ -8904,7 +8990,7 @@ public:
 		return this;
 	}
 
-	inline Complex32 *pow(float n, const VectorU8_1D &mask) {
+	AML_FUNCTION AML_PREFIX(Complex32) *pow(float n, const AML_PREFIX(VectorU8_1D) &mask) {
 		if (mask.v.c) LIKELY {
 			float d1 = ::pow(c.c[0] * c.c[0] + c.c[1] * c.c[1], n / 2) * ::cos(n * atan2(c.c[1], c.c[0]));
 			float d2 = ::pow(c.c[0] * c.c[0] + c.c[1] * c.c[1], n / 2) * ::sin(n * atan2(c.c[1], c.c[0]));
@@ -8914,7 +9000,7 @@ public:
 		return this;
 	}
 
-	inline Complex32 *pow(Complex32 n, const VectorU8_1D mask) {
+	AML_FUNCTION AML_PREFIX(Complex32) *pow(const AML_PREFIX(Complex32) n, const AML_PREFIX(VectorU8_1D) mask) {
 		if (mask.v.c) LIKELY {
 			float d1 = ::log(c.c[0] * c.c[0] + c.c[1] * c.c[1]) / 2;
 			float d2 = ::atan2(c.c[1], c.c[0]);
@@ -8928,36 +9014,36 @@ public:
 		return this;
 	}
 
-	inline float abs() {
+	AML_FUNCTION float abs() {
 		return ::sqrt(c.c[0] * c.c[0] + c.c[1] * c.c[1]);
 	}
 
-	inline bool abs_gt(float a) {
+	AML_FUNCTION bool abs_gt(float a) {
 		return a * a < c.c[0] * c.c[0] + c.c[1] * c.c[1];
 	}
 
-	inline bool abs_lt(float a) {
+	AML_FUNCTION bool abs_lt(float a) {
 		return a * a > c.c[0] * c.c[0] + c.c[1] * c.c[1];
 	}
 
-	inline bool abs_eq(float a) {
+	AML_FUNCTION bool abs_eq(float a) {
 		return a * a == c.c[0] * c.c[0] + c.c[1] * c.c[1];
 	}
 
-	inline bool abs_gt(Complex32 a) {
+	AML_FUNCTION bool abs_gt(const AML_PREFIX(Complex32) a) {
 		return a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1] < c.c[0] * c.c[0] + c.c[1] * c.c[1];
 	}
 
-	inline bool abs_lt(Complex32 a) {
+	AML_FUNCTION bool abs_lt(const AML_PREFIX(Complex32) a) {
 		return a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1] > c.c[0] * c.c[0] + c.c[1] * c.c[1];
 	}
 
-	inline bool abs_eq(Complex32 a) {
+	AML_FUNCTION bool abs_eq(const AML_PREFIX(Complex32) a) {
 		return a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1] == c.c[0] * c.c[0] + c.c[1] * c.c[1];
 	}
 
 
-	inline Complex32 *ln() {
+	AML_FUNCTION AML_PREFIX(Complex32) *ln() {
 		float d1 = ::log(c.c[0] * c.c[0] + c.c[1] * c.c[1]) / 2;
 		float d2 = ::atan2(c.c[1], c.c[0]);
 		c.c[0] = d1;
@@ -8965,7 +9051,7 @@ public:
 		return this;
 	}
 
-	inline Complex32 *log() {
+	AML_FUNCTION AML_PREFIX(Complex32) *log() {
 		float d1 = ::log(c.c[0] * c.c[0] + c.c[1] * c.c[1]) / 2;
 		float d2 = ::atan2(c.c[1], c.c[0]);
 		c.c[0] = d1;
@@ -8973,7 +9059,7 @@ public:
 		return this;
 	}
 
-	inline Complex32 *log10() {
+	AML_FUNCTION AML_PREFIX(Complex32) *log10() {
 		float d1 = ::log(c.c[0] * c.c[0] + c.c[1] * c.c[1]) / (2 * AML_LN10);
 		float d2 = ::atan2(c.c[1], c.c[0]) / AML_LN10;
 		c.c[0] = d1;
@@ -8981,7 +9067,7 @@ public:
 		return this;
 	}
 
-	inline Complex32 *ln(const VectorU8_1D mask) {
+	AML_FUNCTION AML_PREFIX(Complex32) *ln(const AML_PREFIX(VectorU8_1D) mask) {
 		if (mask.v.c) LIKELY {
 			float d1 = ::log(c.c[0] * c.c[0] + c.c[1] * c.c[1]) / 2;
 			float d2 = ::atan2(c.c[1], c.c[0]);
@@ -8991,7 +9077,7 @@ public:
 		return this;
 	}
 
-	inline Complex32 *log(const VectorU8_1D mask) {
+	AML_FUNCTION AML_PREFIX(Complex32) *log(const AML_PREFIX(VectorU8_1D) mask) {
 		if (mask.v.c) LIKELY {
 			float d1 = ::log(c.c[0] * c.c[0] + c.c[1] * c.c[1]) / 2;
 			float d2 = ::atan2(c.c[1], c.c[0]);
@@ -9001,7 +9087,7 @@ public:
 		return this;
 	}
 
-	inline Complex32 *log10(const VectorU8_1D mask) {
+	AML_FUNCTION AML_PREFIX(Complex32) *log10(const AML_PREFIX(VectorU8_1D) mask) {
 		if (mask.v.c) LIKELY {
 			float d1 = ::log(c.c[0] * c.c[0] + c.c[1] * c.c[1]) / (2 * AML_LN10);
 			float d2 = ::atan2(c.c[1], c.c[0]) / AML_LN10;
@@ -9012,42 +9098,46 @@ public:
 	}
 
 
-	inline float imaginary() {
+	AML_FUNCTION float imaginary() {
 		return c.c[1];
 	}
 
-	inline float real() {
+	AML_FUNCTION float real() {
 		return c.c[0];
 	}
 
-	inline float angle() {
+	AML_FUNCTION float angle() {
 		return ::atan2(c.c[1], c.c[0]);
 	}
 
-	inline float length() {
+	AML_FUNCTION float length() {
 		return ::sqrt(c.c[0] * c.c[0] + c.c[1] * c.c[1]);
 	}
 
-	inline Complex32 *polar(float length, float angle) {
+	AML_FUNCTION AML_PREFIX(Complex32) *polar(float length, float angle) {
 		c.c[0] = length * ::cos(angle);
 		c.c[1] = length * ::sin(angle);
 		return this;
 	}
 
-	inline Complex32 operator[]([[maybe_unused]]uint64_t location) {
+	AML_FUNCTION AML_PREFIX(Complex32) operator[]([[maybe_unused]]uint64_t location) {
 		return *this;
 	}
 
 
 };
 
-inline std::string operator<<(std::string &lhs, const Complex32 &rhs) {
+
+#if !defined(AML_NO_STRING)
+
+
+AML_FUNCTION std::string operator<<(std::string &lhs, const AML_PREFIX(Complex32) &rhs) {
 	std::ostringstream string;
 	string << lhs << rhs.c.c[0] << " + " << rhs.c.c[1] << "i";
 	return string.str();
 }
 
-inline std::string operator<<(const char *lhs, const Complex32 &rhs) {
+AML_FUNCTION std::string operator<<(const char *lhs, const AML_PREFIX(Complex32) &rhs) {
 	std::ostringstream string;
 	string << lhs << rhs.c.c[0] << " + " << rhs.c.c[1] << "i";
 	return string.str();
@@ -9055,7 +9145,7 @@ inline std::string operator<<(const char *lhs, const Complex32 &rhs) {
 
 template<class charT, class traits>
 std::basic_ostream<charT, traits> &
-operator<<(std::basic_ostream<charT, traits> &o, const Complex32 &x) {
+operator<<(std::basic_ostream<charT, traits> &o, const AML_PREFIX(Complex32) &x) {
 	std::basic_ostringstream<charT, traits> s;
 	s.flags(o.flags());
 	s.imbue(o.getloc());
@@ -9064,24 +9154,25 @@ operator<<(std::basic_ostream<charT, traits> &o, const Complex32 &x) {
 	return o << s.str();
 }
 
-inline Complex32 operator+(const float &lhs, const Complex32 &rhs) {
-	Complex32 ret(lhs + rhs.c.c[0], 0.0 + rhs.c.c[1]);
+#endif
+
+AML_FUNCTION AML_PREFIX(Complex32) operator+(const float &lhs, const AML_PREFIX(Complex32) &rhs) {
+	AML_PREFIX(Complex32) ret(lhs + rhs.c.c[0], 0.0 + rhs.c.c[1]);
 	return ret;
 }
 
-
-inline Complex32 operator-(const float &lhs, const Complex32 &rhs) {
-	Complex32 ret(lhs - rhs.c.c[0], 0.0 - rhs.c.c[1]);
+AML_FUNCTION AML_PREFIX(Complex32) operator-(const float &lhs, const AML_PREFIX(Complex32) &rhs) {
+	AML_PREFIX(Complex32) ret(lhs - rhs.c.c[0], 0.0 - rhs.c.c[1]);
 	return ret;
 }
 
-inline Complex32 operator*(const float &lhs, const Complex32 &rhs) {
-	Complex32 ret(lhs * rhs.c.c[0], lhs * rhs.c.c[1]);
+AML_FUNCTION AML_PREFIX(Complex32) operator*(const float &lhs, const AML_PREFIX(Complex32) &rhs) {
+	AML_PREFIX(Complex32) ret(lhs * rhs.c.c[0], lhs * rhs.c.c[1]);
 	return ret;
 }
 
-inline Complex32 operator/(const float &lhs, const Complex32 &rhs) {
-	Complex32 ret;
+AML_FUNCTION AML_PREFIX(Complex32) operator/(const float &lhs, const AML_PREFIX(Complex32) &rhs) {
+	AML_PREFIX(Complex32) ret;
 	ret.c.c[0] = (lhs * rhs.c.c[0]) / (rhs.c.c[0] * rhs.c.c[0] + rhs.c.c[1] * rhs.c.c[1]);
 	ret.c.c[1] = (-lhs * rhs.c.c[1]) / (rhs.c.c[0] * rhs.c.c[0] + rhs.c.c[1] * rhs.c.c[1]);
 	return ret;
@@ -9089,33 +9180,35 @@ inline Complex32 operator/(const float &lhs, const Complex32 &rhs) {
 
 #if defined(AML_USE_STD_COMPLEX)
 
-inline Complex32 operator+(const std::complex<float> &lhs, const Complex32 &rhs) {
-	Complex32 ret = lhs;
+AML_FUNCTION AML_PREFIX(Complex32) operator+(const std::complex<float> &lhs, const AML_PREFIX(Complex32) &rhs) {
+	AML_PREFIX(Complex32) ret = lhs;
 	return ret + rhs;
 }
 
-
-inline Complex32 operator-(const std::complex<float> &lhs, const Complex32 &rhs) {
-	Complex32 ret = lhs;
+AML_FUNCTION AML_PREFIX(Complex32) operator-(const std::complex<float> &lhs, const AML_PREFIX(Complex32) &rhs) {
+	AML_PREFIX(Complex32) ret = lhs;
 	return ret - rhs;
 }
 
-inline Complex32 operator*(const std::complex<float> &lhs, const Complex32 &rhs) {
-	Complex32 ret = lhs;
+AML_FUNCTION AML_PREFIX(Complex32) operator*(const std::complex<float> &lhs, const AML_PREFIX(Complex32) &rhs) {
+	AML_PREFIX(Complex32) ret = lhs;
 	return ret * rhs;
 }
 
-inline Complex32 operator/(const std::complex<float> &lhs, const Complex32 &rhs) {
-	Complex32 ret = lhs;
+AML_FUNCTION AML_PREFIX(Complex32) operator/(const std::complex<float> &lhs, const AML_PREFIX(Complex32) &rhs) {
+	AML_PREFIX(Complex32) ret = lhs;
 	return ret / rhs;
 }
 
 class STD_COMPLEX32_CAST : public std::complex<float> {
 public:
-	inline STD_COMPLEX32_CAST(const Complex32 &other) : std::complex<float>(other.c.c[0], other.c.c[1]) {}
+	AML_FUNCTION STD_COMPLEX32_CAST(const AML_PREFIX(Complex32) &other) : std::complex<float>(other.c.c[0],
+																							  other.c.c[1]) {}
 };
 
 #endif
+
+#if !defined(USE_CUDA)
 
 constexpr Complex32 operator ""_fi(long double d) {
 	return Complex32(0.0f, (float) d);
@@ -9125,9 +9218,11 @@ constexpr Complex32 operator ""_fi(unsigned long long d) {
 	return Complex32(0.0f, (float) d);
 }
 
+#endif
+
 #if defined(AML_USE_STD_COMPLEX)
 
-inline std::complex<float> toStdComplex(Complex32 a) {
+AML_FUNCTION std::complex<float> toStdComplex(Complex32 a) {
 	std::complex<float> ret(a.c.c[0], a.c.c[1]);
 	return ret;
 }
@@ -9135,14 +9230,14 @@ inline std::complex<float> toStdComplex(Complex32 a) {
 #endif
 
 
-class Array2Complex32 {
+class AML_PREFIX(Array2Complex32) {
 public:
-	floatvec2 r{};
-	floatvec2 i{};
+	AML_PREFIX(floatvec2) r{};
+	AML_PREFIX(floatvec2) i{};
 
-	inline Array2Complex32() {}
+	AML_FUNCTION AML_PREFIX(Array2Complex32)() {}
 
-	inline Array2Complex32(Complex32 value) {
+	AML_FUNCTION AML_PREFIX(Array2Complex32)(const AML_PREFIX(Complex32) value) {
 		r.c[0] = value.c.c[0];
 		i.c[0] = value.c.c[1];
 		r.c[1] = value.c.c[0];
@@ -9150,24 +9245,24 @@ public:
 	}
 
 
-	inline VectorFloat2D real() {
-		return VectorFloat2D(r.c);
+	AML_FUNCTION AML_PREFIX(VectorFloat2D) real() {
+		return AML_PREFIX(VectorFloat2D)(r.c);
 	}
 
-	inline VectorFloat2D complex() {
-		return VectorFloat2D(i.c);
+	AML_FUNCTION AML_PREFIX(VectorFloat2D) complex() {
+		return AML_PREFIX(VectorFloat2D)(i.c);
 	}
 
-	inline Complex32 operator[](uint64_t location) {
-		return Complex32(r.c[location], i.c[location]);
+	AML_FUNCTION AML_PREFIX(Complex32) operator[](uint64_t location) {
+		return AML_PREFIX(Complex32)(r.c[location], i.c[location]);
 	}
 
-	inline void set(uint64_t location, Complex32 value) {
+	AML_FUNCTION void set(uint64_t location, AML_PREFIX(Complex32) value) {
 		r.c[location] = value.c.c[0];
 		i.c[location] = value.c.c[1];
 	}
 
-	inline Array2Complex32 *add(Array2Complex32 a) {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *add(const AML_PREFIX(Array2Complex32) a) {
 		i.c[0] += a.i.c[0];
 		i.c[1] += a.i.c[1];
 		r.c[0] += a.r.c[0];
@@ -9175,7 +9270,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex32 *add(Complex32 a) {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *add(const AML_PREFIX(Complex32) a) {
 		i.c[0] += a.c.c[1];
 		i.c[1] += a.c.c[1];
 		r.c[0] += a.c.c[0];
@@ -9183,14 +9278,14 @@ public:
 		return this;
 	}
 
-	inline void operator+=(Array2Complex32 a) {
+	AML_FUNCTION void operator+=(const AML_PREFIX(Array2Complex32) a) {
 		i.c[0] += a.i.c[0];
 		i.c[1] += a.i.c[1];
 		r.c[0] += a.r.c[0];
 		r.c[1] += a.r.c[1];
 	}
 
-	inline void operator+=(Complex32 a) {
+	AML_FUNCTION void operator+=(const AML_PREFIX(Complex32) a) {
 		i.c[0] += a.c.c[1];
 		i.c[1] += a.c.c[1];
 		r.c[0] += a.c.c[0];
@@ -9198,8 +9293,8 @@ public:
 	}
 
 
-	inline Array2Complex32 operator+(Array2Complex32 a) const {
-		Array2Complex32 ret;
+	AML_FUNCTION AML_PREFIX(Array2Complex32) operator+(const AML_PREFIX(Array2Complex32) a) const {
+		AML_PREFIX(Array2Complex32) ret;
 		ret.i.c[0] = i.c[0] + a.i.c[0];
 		ret.i.c[1] = i.c[1] + a.i.c[1];
 		ret.r.c[0] = r.c[0] + a.r.c[0];
@@ -9207,8 +9302,8 @@ public:
 		return ret;
 	}
 
-	inline Array2Complex32 operator+(Complex32 a) const {
-		Array2Complex32 ret;
+	AML_FUNCTION AML_PREFIX(Array2Complex32) operator+(const AML_PREFIX(Complex32) a) const {
+		AML_PREFIX(Array2Complex32) ret;
 		ret.i.c[0] = i.c[0] + a.c.c[1];
 		ret.i.c[1] = i.c[1] + a.c.c[1];
 		ret.r.c[0] = r.c[0] + a.c.c[0];
@@ -9216,7 +9311,7 @@ public:
 		return ret;
 	}
 
-	inline Array2Complex32 *add(Array2Complex32 a, VectorU8_2D mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *add(const AML_PREFIX(Array2Complex32) a, AML_PREFIX(VectorU8_2D) mask) {
 		if (mask.v.c[0]) {
 			i.c[0] += a.i.c[0];
 			r.c[0] += a.r.c[0];
@@ -9228,7 +9323,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex32 *add(Complex32 a, VectorU8_2D mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *add(const AML_PREFIX(Complex32) a, AML_PREFIX(VectorU8_2D) mask) {
 		if (mask.v.c[0]) {
 			i.c[0] += a.c.c[1];
 			r.c[0] += a.c.c[0];
@@ -9241,7 +9336,7 @@ public:
 	}
 
 
-	inline Array2Complex32 *subtract(Array2Complex32 a) {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *subtract(const AML_PREFIX(Array2Complex32) a) {
 		i.c[0] -= a.i.c[0];
 		i.c[1] -= a.i.c[1];
 		r.c[0] -= a.r.c[0];
@@ -9249,7 +9344,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex32 *subtract(Complex32 a) {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *subtract(const AML_PREFIX(Complex32) a) {
 		i.c[0] -= a.c.c[1];
 		i.c[1] -= a.c.c[1];
 		r.c[0] -= a.c.c[0];
@@ -9257,22 +9352,22 @@ public:
 		return this;
 	}
 
-	inline void operator-=(Array2Complex32 a) {
+	AML_FUNCTION void operator-=(const AML_PREFIX(Array2Complex32) a) {
 		i.c[0] -= a.i.c[0];
 		i.c[1] -= a.i.c[1];
 		r.c[0] -= a.r.c[0];
 		r.c[1] -= a.r.c[1];
 	}
 
-	inline void operator-=(Complex32 a) {
+	AML_FUNCTION void operator-=(const AML_PREFIX(Complex32) a) {
 		i.c[0] -= a.c.c[1];
 		i.c[1] -= a.c.c[1];
 		r.c[0] -= a.c.c[0];
 		r.c[1] -= a.c.c[0];
 	}
 
-	inline Array2Complex32 operator-(Array2Complex32 a) const {
-		Array2Complex32 ret;
+	AML_FUNCTION AML_PREFIX(Array2Complex32) operator-(const AML_PREFIX(Array2Complex32) a) const {
+		AML_PREFIX(Array2Complex32) ret;
 		ret.i.c[0] = i.c[0] - a.i.c[0];
 		ret.i.c[1] = i.c[1] - a.i.c[1];
 		ret.r.c[0] = r.c[0] - a.r.c[0];
@@ -9280,8 +9375,8 @@ public:
 		return ret;
 	}
 
-	inline Array2Complex32 operator-(Complex32 a) const {
-		Array2Complex32 ret;
+	AML_FUNCTION AML_PREFIX(Array2Complex32) operator-(const AML_PREFIX(Complex32) a) const {
+		AML_PREFIX(Array2Complex32) ret;
 		ret.i.c[0] = i.c[0] - a.c.c[1];
 		ret.i.c[1] = i.c[1] - a.c.c[1];
 		ret.r.c[0] = r.c[0] - a.c.c[0];
@@ -9289,7 +9384,8 @@ public:
 		return ret;
 	}
 
-	inline Array2Complex32 *subtract(Array2Complex32 a, VectorU8_2D mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *
+	subtract(const AML_PREFIX(Array2Complex32) a, AML_PREFIX(VectorU8_2D) mask) {
 		if (mask.v.c[0]) {
 			i.c[0] -= a.i.c[0];
 			r.c[0] -= a.r.c[0];
@@ -9301,7 +9397,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex32 *subtract(Complex32 a, VectorU8_2D mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *subtract(const AML_PREFIX(Complex32) a, AML_PREFIX(VectorU8_2D) mask) {
 		if (mask.v.c[0]) {
 			i.c[0] -= a.c.c[1];
 			r.c[0] -= a.c.c[0];
@@ -9314,8 +9410,8 @@ public:
 	}
 
 
-	inline Array2Complex32 operator*(const Array2Complex32 &a) const {
-		Array2Complex32 ret;
+	AML_FUNCTION AML_PREFIX(Array2Complex32) operator*(const AML_PREFIX(Array2Complex32) &a) const {
+		AML_PREFIX(Array2Complex32) ret;
 		ret.r.c[0] = r.c[0] * a.r.c[0] - i.c[0] * a.i.c[0];
 		ret.i.c[0] = r.c[0] * a.i.c[0] + i.c[0] * a.r.c[0];
 		ret.r.c[1] = r.c[1] * a.r.c[1] - i.c[1] * a.i.c[1];
@@ -9325,7 +9421,7 @@ public:
 		return ret;
 	}
 
-	inline Array2Complex32 *multiply(const Array2Complex32 &a) {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *multiply(const AML_PREFIX(Array2Complex32) &a) {
 		float d1;
 		float d2;
 		d1 = r.c[0] * a.r.c[0] - i.c[0] * a.i.c[0];
@@ -9340,8 +9436,8 @@ public:
 		return this;
 	}
 
-	inline Array2Complex32 operator*(const Complex32 &a) const {
-		Array2Complex32 ret;
+	AML_FUNCTION AML_PREFIX(Array2Complex32) operator*(const AML_PREFIX(Complex32) &a) const {
+		AML_PREFIX(Array2Complex32) ret;
 		ret.r.c[0] = r.c[0] * a.c.c[0] - i.c[0] * a.c.c[1];
 		ret.i.c[0] = r.c[0] * a.c.c[1] + i.c[0] * a.c.c[0];
 		ret.r.c[1] = r.c[1] * a.c.c[0] - i.c[1] * a.c.c[1];
@@ -9350,7 +9446,7 @@ public:
 		return ret;
 	}
 
-	inline void operator*=(const Array2Complex32 &a) {
+	AML_FUNCTION void operator*=(const AML_PREFIX(Array2Complex32) &a) {
 		float d1;
 		float d2;
 		d1 = r.c[0] * a.r.c[0] - i.c[0] * a.i.c[0];
@@ -9362,7 +9458,7 @@ public:
 		d2 = r.c[1] * a.i.c[1] + i.c[1] * a.r.c[1];
 	}
 
-	inline void operator*=(const Complex32 &a) {
+	AML_FUNCTION void operator*=(const AML_PREFIX(Complex32) &a) {
 		float d1;
 		float d2;
 		d1 = r.c[0] * a.c.c[0] - i.c[0] * a.c.c[1];
@@ -9375,7 +9471,7 @@ public:
 		i.c[1] = d2;
 	}
 
-	inline Array2Complex32 *multiply(const Complex32 &a) {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *multiply(const AML_PREFIX(Complex32) &a) {
 		float d1;
 		float d2;
 		d1 = r.c[0] * a.c.c[0] - i.c[0] * a.c.c[1];
@@ -9389,7 +9485,8 @@ public:
 		return this;
 	}
 
-	inline Array2Complex32 *multiply(const Complex32 &a, const VectorU8_2D &mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *
+	multiply(const AML_PREFIX(Complex32) &a, const AML_PREFIX(VectorU8_2D) &mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -9409,7 +9506,8 @@ public:
 
 	}
 
-	inline Array2Complex32 *multiply(const Array2Complex32 &a, const VectorU8_2D &mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *
+	multiply(const AML_PREFIX(Array2Complex32) &a, const AML_PREFIX(VectorU8_2D) &mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -9427,7 +9525,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex32 *square() {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *square() {
 		float d1;
 		float d2;
 		d1 = r.c[0] * r.c[0] - i.c[0] * i.c[0];
@@ -9441,7 +9539,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex32 *square(const VectorU8_2D &mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *square(const AML_PREFIX(VectorU8_2D) &mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -9459,7 +9557,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex32 *divide(const Complex32 a) {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *divide(const AML_PREFIX(Complex32) a) {
 		float d1 = (r.c[0] * a.c.c[0] + i.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		float d2 = (i.c[0] * a.c.c[0] - r.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		r.c[0] = d1;
@@ -9471,7 +9569,8 @@ public:
 		return this;
 	}
 
-	inline Array2Complex32 *divide(const Complex32 a, const VectorU8_2D &mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *
+	divide(const AML_PREFIX(Complex32) a, const AML_PREFIX(VectorU8_2D) &mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -9489,7 +9588,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex32 *divide(const Array2Complex32 &a) {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *divide(const AML_PREFIX(Array2Complex32) &a) {
 		float d1 = (r.c[0] * a.r.c[0] + i.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		float d2 = (i.c[0] * a.r.c[0] - r.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		r.c[0] = d1;
@@ -9501,7 +9600,8 @@ public:
 		return this;
 	}
 
-	inline Array2Complex32 *divide(const Array2Complex32 &a, const VectorU8_2D &mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *
+	divide(const AML_PREFIX(Array2Complex32) &a, const AML_PREFIX(VectorU8_2D) &mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -9519,8 +9619,8 @@ public:
 		return this;
 	}
 
-	inline Array2Complex32 operator/(const Complex32 &a) const {
-		Array2Complex32 ret;
+	AML_FUNCTION AML_PREFIX(Array2Complex32) operator/(const AML_PREFIX(Complex32) &a) const {
+		AML_PREFIX(Array2Complex32) ret;
 		float d1 = (r.c[0] * a.c.c[0] + i.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		float d2 = (i.c[0] * a.c.c[0] - r.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		ret.r.c[0] = d1;
@@ -9532,8 +9632,8 @@ public:
 		return ret;
 	}
 
-	inline Array2Complex32 operator/(const Array2Complex32 &a) const {
-		Array2Complex32 ret;
+	AML_FUNCTION AML_PREFIX(Array2Complex32) operator/(const AML_PREFIX(Array2Complex32) &a) const {
+		AML_PREFIX(Array2Complex32) ret;
 		float d1 = (r.c[0] * a.r.c[0] + i.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		float d2 = (i.c[0] * a.r.c[0] - r.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		ret.r.c[0] = d1;
@@ -9545,7 +9645,7 @@ public:
 		return ret;
 	}
 
-	inline void operator/=(const Complex32 &a) {
+	AML_FUNCTION void operator/=(const AML_PREFIX(Complex32) &a) {
 		float d1 = (r.c[0] * a.c.c[0] + i.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		float d2 = (i.c[0] * a.c.c[0] - r.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		r.c[0] = d1;
@@ -9556,7 +9656,7 @@ public:
 		i.c[1] = d2;
 	}
 
-	inline void operator/=(const Array2Complex32 &a) {
+	AML_FUNCTION void operator/=(const AML_PREFIX(Array2Complex32) &a) {
 		float d1 = (r.c[0] * a.r.c[0] + i.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		float d2 = (i.c[0] * a.r.c[0] - r.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		r.c[0] = d1;
@@ -9567,7 +9667,7 @@ public:
 		i.c[1] = d2;
 	}
 
-	inline Array2Complex32 *sqrt() {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *sqrt() {
 		float d1;
 		float d2;
 		d2 = ::sqrt((-r.c[0] + ::sqrt(r.c[0] * r.c[0] + i.c[0] * i.c[0])) / (2));
@@ -9589,7 +9689,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex32 *sqrt(const VectorU8_2D mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *sqrt(const AML_PREFIX(VectorU8_2D) mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -9615,7 +9715,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex32 *sin() {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *sin() {
 		float d1;
 		float d2;
 		d1 = ::sin(r.c[0]) * ::cosh(i.c[0]);
@@ -9629,7 +9729,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex32 *cos() {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *cos() {
 		float d1;
 		float d2;
 		d1 = ::cos(r.c[0]) * ::cosh(i.c[0]);
@@ -9643,7 +9743,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex32 *tan() {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *tan() {
 		float d1;
 		float d2;
 		d1 = ::sin(r.c[0] + r.c[0]) / (::cos(r.c[0] + r.c[0]) * ::cosh(i.c[0] + i.c[0]));
@@ -9657,7 +9757,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex32 *sin(const VectorU8_2D mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *sin(const AML_PREFIX(VectorU8_2D) mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -9675,7 +9775,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex32 *cos(const VectorU8_2D mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *cos(const AML_PREFIX(VectorU8_2D) mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -9693,7 +9793,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex32 *tan(const VectorU8_2D mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *tan(const AML_PREFIX(VectorU8_2D) mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -9711,7 +9811,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex32 *exp() {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *exp() {
 		float d1 = ::exp(r.c[0]) * ::cos(i.c[0]);
 		float d2 = ::exp(r.c[0]) * ::sin(i.c[0]);
 		r.c[0] = d1;
@@ -9723,7 +9823,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex32 *exp(float n) {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *exp(float n) {
 		float d1 = ::pow(n, r.c[0]) * ::cos(i.c[0] * ::log(n));
 		float d2 = ::pow(n, r.c[0]) * ::sin(i.c[0] * ::log(n));
 		r.c[0] = d1;
@@ -9735,7 +9835,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex32 *exp(const VectorU8_2D &mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *exp(const AML_PREFIX(VectorU8_2D) &mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -9753,7 +9853,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex32 *exp(float n, const VectorU8_2D &mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *exp(float n, const AML_PREFIX(VectorU8_2D) &mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -9771,7 +9871,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex32 *pow(Array2Complex32 n) {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *pow(const AML_PREFIX(Array2Complex32) n) {
 		float d1 = ::log(i.c[0] * i.c[0] + r.c[0] * r.c[0]) / 2;
 		float d2 = ::atan2(r.c[0], i.c[0]);
 		float d3 = ::exp(d1 * n.i.c[0] - d2 * n.r.c[0]);
@@ -9792,7 +9892,7 @@ public:
 	}
 
 
-	inline Array2Complex32 *pow(Complex32 n) {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *pow(const AML_PREFIX(Complex32) n) {
 		float d1 = ::log(i.c[0] * i.c[0] + r.c[0] * r.c[0]) / 2;
 		float d2 = ::atan2(r.c[0], i.c[0]);
 		float d3 = ::exp(d1 * n.c.c[0] - d2 * n.c.c[1]);
@@ -9812,7 +9912,8 @@ public:
 		return this;
 	}
 
-	inline Array2Complex32 *pow(Array2Complex32 n, const VectorU8_2D &mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *
+	pow(const AML_PREFIX(Array2Complex32) n, const AML_PREFIX(VectorU8_2D) &mask) {
 		float d1;
 		float d2;
 		float d3;
@@ -9843,7 +9944,7 @@ public:
 	}
 
 
-	inline Array2Complex32 *pow(Complex32 n, const VectorU8_2D &mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *pow(const AML_PREFIX(Complex32) n, const AML_PREFIX(VectorU8_2D) &mask) {
 		float d1;
 		float d2;
 		float d3;
@@ -9874,7 +9975,7 @@ public:
 	}
 
 
-	inline Array2Complex32 *pow(float n) {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *pow(float n) {
 		float d1;
 		float d2;
 		d1 = ::pow(r.c[0] * r.c[0] + i.c[0] * i.c[0], n / 2) * ::cos(n * atan2(i.c[0], r.c[0]));
@@ -9888,7 +9989,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex32 *pow(float n, const VectorU8_2D &mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *pow(float n, const AML_PREFIX(VectorU8_2D) &mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -9906,35 +10007,35 @@ public:
 		return this;
 	}
 
-	inline VectorFloat2D abs() {
-		VectorFloat2D ret;
+	AML_FUNCTION AML_PREFIX(VectorFloat2D) abs() {
+		AML_PREFIX(VectorFloat2D) ret;
 		ret.v.c[0] = ::sqrt(r.c[0] * r.c[0] + i.c[0] * i.c[0]);
 		ret.v.c[1] = ::sqrt(r.c[1] * r.c[1] + i.c[1] * i.c[1]);
 		return ret;
 	}
 
-	inline VectorU8_2D abs_gt(float a) {
-		VectorU8_2D ret;
+	AML_FUNCTION AML_PREFIX(VectorU8_2D) abs_gt(float a) {
+		AML_PREFIX(VectorU8_2D) ret;
 		ret.v.c[0] = a * a < r.c[0] * r.c[0] + i.c[0] * i.c[0];
 		ret.v.c[1] = a * a < r.c[1] * r.c[1] + i.c[1] * i.c[1];
 		return ret;
 	}
 
-	inline VectorU8_2D abs_lt(float a) {
-		VectorU8_2D ret;
+	AML_FUNCTION AML_PREFIX(VectorU8_2D) abs_lt(float a) {
+		AML_PREFIX(VectorU8_2D) ret;
 		ret.v.c[0] = a * a > r.c[0] * r.c[0] + i.c[0] * i.c[0];
 		ret.v.c[1] = a * a > r.c[1] * r.c[1] + i.c[1] * i.c[1];
 		return ret;
 	}
 
-	inline VectorU8_2D abs_eq(float a) {
-		VectorU8_2D ret;
+	AML_FUNCTION AML_PREFIX(VectorU8_2D) abs_eq(float a) {
+		AML_PREFIX(VectorU8_2D) ret;
 		ret.v.c[0] = a * a == r.c[0] * r.c[0] + i.c[0] * i.c[0];
 		ret.v.c[1] = a * a == r.c[1] * r.c[1] + i.c[1] * i.c[1];
 		return ret;
 	}
 
-	inline Array2Complex32 *ln(const VectorU8_2D &mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *ln(const AML_PREFIX(VectorU8_2D) &mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -9952,7 +10053,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex32 *log(const VectorU8_2D &mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *log(const AML_PREFIX(VectorU8_2D) &mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -9970,7 +10071,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex32 *log10(const VectorU8_2D &mask) {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *log10(const AML_PREFIX(VectorU8_2D) &mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -9988,7 +10089,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex32 *ln() {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *ln() {
 		float d1;
 		float d2;
 		d1 = ::log(i.c[0] * i.c[0] + r.c[0] * r.c[0]) / 2;
@@ -10002,7 +10103,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex32 *log() {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *log() {
 		float d1;
 		float d2;
 		d1 = ::log(i.c[0] * i.c[0] + r.c[0] * r.c[0]) / 2;
@@ -10016,7 +10117,7 @@ public:
 		return this;
 	}
 
-	inline Array2Complex32 *log10() {
+	AML_FUNCTION AML_PREFIX(Array2Complex32) *log10() {
 		float d1;
 		float d2;
 		d1 = ::log(i.c[0] * i.c[0] + r.c[0] * r.c[0]) / (2 * AML_LN10);
@@ -10031,13 +10132,16 @@ public:
 	}
 };
 
-inline std::string operator<<(std::string &lhs, const Array2Complex32 &rhs) {
+
+#if !defined(AML_NO_STRING)
+
+AML_FUNCTION std::string operator<<(std::string &lhs, const AML_PREFIX(Array2Complex32) &rhs) {
 	std::ostringstream string;
 	string << lhs << "{ " << rhs.r.c[0] << " + " << rhs.i.c[0] << "i ,  " << rhs.r.c[1] << " + " << rhs.i.c[1] << "i }";
 	return string.str();
 }
 
-inline std::string operator<<(const char *lhs, const Array2Complex32 &rhs) {
+AML_FUNCTION std::string operator<<(const char *lhs, const AML_PREFIX(Array2Complex32) &rhs) {
 	std::ostringstream string;
 	string << lhs << "{ " << rhs.r.c[0] << " + " << rhs.i.c[0] << "i ,  " << rhs.r.c[1] << " + " << rhs.i.c[1] << "i }";
 	return string.str();
@@ -10045,7 +10149,7 @@ inline std::string operator<<(const char *lhs, const Array2Complex32 &rhs) {
 
 template<class charT, class traits>
 std::basic_ostream<charT, traits> &
-operator<<(std::basic_ostream<charT, traits> &o, const Array2Complex32 &rhs) {
+operator<<(std::basic_ostream<charT, traits> &o, const AML_PREFIX(Array2Complex32) &rhs) {
 	std::basic_ostringstream<charT, traits> s;
 	s.flags(o.flags());
 	s.imbue(o.getloc());
@@ -10054,13 +10158,16 @@ operator<<(std::basic_ostream<charT, traits> &o, const Array2Complex32 &rhs) {
 	return o << s.str();
 }
 
-inline Array2Complex32 operator+(const Complex32 &lhs, const Array2Complex32 &rhs) {
+#endif
+
+AML_FUNCTION AML_PREFIX(Array2Complex32)
+operator+(const AML_PREFIX(Complex32) &lhs, const AML_PREFIX(Array2Complex32) &rhs) {
 	return rhs + lhs;
 }
 
-
-inline Array2Complex32 operator-(const Complex32 &lhs, const Array2Complex32 &rhs) {
-	Array2Complex32 ret;
+AML_FUNCTION AML_PREFIX(Array2Complex32)
+operator-(const AML_PREFIX(Complex32) &lhs, const AML_PREFIX(Array2Complex32) &rhs) {
+	AML_PREFIX(Array2Complex32) ret;
 	ret.i.c[0] = lhs.c.c[1] - rhs.i.c[0];
 	ret.i.c[1] = lhs.c.c[1] - rhs.i.c[1];
 	ret.r.c[0] = lhs.c.c[0] - rhs.r.c[0];
@@ -10068,12 +10175,14 @@ inline Array2Complex32 operator-(const Complex32 &lhs, const Array2Complex32 &rh
 	return ret;
 }
 
-inline Array2Complex32 operator*(const Complex32 &lhs, const Array2Complex32 &rhs) {
+AML_FUNCTION AML_PREFIX(Array2Complex32)
+operator*(const AML_PREFIX(Complex32) &lhs, const AML_PREFIX(Array2Complex32) &rhs) {
 	return rhs * lhs;
 }
 
-inline Array2Complex32 operator/(const Complex32 &lhs, const Array2Complex32 &rhs) {
-	Array2Complex32 ret;
+AML_FUNCTION AML_PREFIX(Array2Complex32)
+operator/(const AML_PREFIX(Complex32) &lhs, const AML_PREFIX(Array2Complex32) &rhs) {
+	AML_PREFIX(Array2Complex32) ret;
 	float d1 =
 			(lhs.c.c[0] * rhs.r.c[0] + lhs.c.c[1] * rhs.i.c[0]) / (rhs.r.c[0] * rhs.r.c[0] + rhs.i.c[0] * rhs.i.c[0]);
 	float d2 =
@@ -10087,15 +10196,14 @@ inline Array2Complex32 operator/(const Complex32 &lhs, const Array2Complex32 &rh
 	return ret;
 }
 
-
-class Array4Complex32 {
+class AML_PREFIX(Array4Complex32) {
 public:
-	floatvec4 r{};
-	floatvec4 i{};
+	AML_PREFIX(floatvec4) r{};
+	AML_PREFIX(floatvec4) i{};
 
-	inline Array4Complex32() {}
+	AML_FUNCTION AML_PREFIX(Array4Complex32)() {}
 
-	inline Array4Complex32(Complex32 value) {
+	AML_FUNCTION AML_PREFIX(Array4Complex32)(AML_PREFIX(Complex32) value) {
 		r.c[0] = value.c.c[0];
 		i.c[0] = value.c.c[1];
 		r.c[1] = value.c.c[0];
@@ -10107,24 +10215,24 @@ public:
 	}
 
 
-	inline VectorFloat4D real() {
-		return VectorFloat4D(r.c);
+	AML_FUNCTION AML_PREFIX(VectorFloat4D) real() {
+		return AML_PREFIX(VectorFloat4D)(r.c);
 	}
 
-	inline VectorFloat4D complex() {
-		return VectorFloat4D(i.c);
+	AML_FUNCTION AML_PREFIX(VectorFloat4D) complex() {
+		return AML_PREFIX(VectorFloat4D)(i.c);
 	}
 
-	inline Complex32 operator[](uint64_t location) {
-		return Complex32(r.c[location], i.c[location]);
+	AML_FUNCTION AML_PREFIX(Complex32) operator[](uint64_t location) {
+		return AML_PREFIX(Complex32)(r.c[location], i.c[location]);
 	}
 
-	inline void set(uint64_t location, Complex32 value) {
+	AML_FUNCTION void set(uint64_t location, AML_PREFIX(Complex32) value) {
 		r.c[location] = value.c.c[0];
 		i.c[location] = value.c.c[1];
 	}
 
-	inline Array4Complex32 *add(Array4Complex32 a) {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *add(const AML_PREFIX(Array4Complex32) a) {
 		i.c[0] += a.i.c[0];
 		i.c[1] += a.i.c[1];
 		i.c[2] += a.i.c[2];
@@ -10136,7 +10244,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex32 *add(Complex32 a) {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *add(const AML_PREFIX(Complex32) a) {
 		i.c[0] += a.c.c[1];
 		i.c[1] += a.c.c[1];
 		i.c[2] += a.c.c[1];
@@ -10148,7 +10256,7 @@ public:
 		return this;
 	}
 
-	inline void operator+=(Array4Complex32 a) {
+	AML_FUNCTION void operator+=(const AML_PREFIX(Array4Complex32) a) {
 		i.c[0] += a.i.c[0];
 		i.c[1] += a.i.c[1];
 		i.c[2] += a.i.c[2];
@@ -10159,7 +10267,7 @@ public:
 		r.c[3] += a.r.c[3];
 	}
 
-	inline void operator+=(Complex32 a) {
+	AML_FUNCTION void operator+=(const AML_PREFIX(Complex32) a) {
 		i.c[0] += a.c.c[1];
 		i.c[1] += a.c.c[1];
 		i.c[2] += a.c.c[1];
@@ -10171,8 +10279,8 @@ public:
 	}
 
 
-	inline Array4Complex32 operator+(Array4Complex32 a) const {
-		Array4Complex32 ret{};
+	AML_FUNCTION AML_PREFIX(Array4Complex32) operator+(const AML_PREFIX(Array4Complex32) a) const {
+		AML_PREFIX(Array4Complex32) ret{};
 		ret.i.c[0] = i.c[0] + a.i.c[0];
 		ret.i.c[1] = i.c[1] + a.i.c[1];
 		ret.i.c[2] = i.c[2] + a.i.c[2];
@@ -10184,8 +10292,8 @@ public:
 		return ret;
 	}
 
-	inline Array4Complex32 operator+(Complex32 a) const {
-		Array4Complex32 ret{};
+	AML_FUNCTION AML_PREFIX(Array4Complex32) operator+(const AML_PREFIX(Complex32) a) const {
+		AML_PREFIX(Array4Complex32) ret{};
 		ret.i.c[0] = i.c[0] + a.c.c[1];
 		ret.i.c[1] = i.c[1] + a.c.c[1];
 		ret.i.c[2] = i.c[2] + a.c.c[1];
@@ -10197,7 +10305,7 @@ public:
 		return ret;
 	}
 
-	inline Array4Complex32 *add(Array4Complex32 a, VectorU8_4D mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *add(const AML_PREFIX(Array4Complex32) a, AML_PREFIX(VectorU8_4D) mask) {
 		if (mask.v.c[0]) {
 			i.c[0] += a.i.c[0];
 			r.c[0] += a.r.c[0];
@@ -10217,7 +10325,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex32 *add(Complex32 a, VectorU8_4D mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *add(const AML_PREFIX(Complex32) a, AML_PREFIX(VectorU8_4D) mask) {
 		if (mask.v.c[0]) {
 			i.c[0] += a.c.c[1];
 			r.c[0] += a.c.c[0];
@@ -10238,7 +10346,7 @@ public:
 	}
 
 
-	inline Array4Complex32 *subtract(Array4Complex32 a) {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *subtract(const AML_PREFIX(Array4Complex32) a) {
 		i.c[0] -= a.i.c[0];
 		i.c[1] -= a.i.c[1];
 		i.c[2] -= a.i.c[2];
@@ -10250,7 +10358,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex32 *subtract(Complex32 a) {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *subtract(const AML_PREFIX(Complex32) a) {
 		i.c[0] -= a.c.c[1];
 		i.c[1] -= a.c.c[1];
 		i.c[2] -= a.c.c[1];
@@ -10262,7 +10370,7 @@ public:
 		return this;
 	}
 
-	inline void operator-=(Array4Complex32 a) {
+	AML_FUNCTION void operator-=(const AML_PREFIX(Array4Complex32) a) {
 		i.c[0] -= a.i.c[0];
 		i.c[1] -= a.i.c[1];
 		i.c[2] -= a.i.c[2];
@@ -10273,7 +10381,7 @@ public:
 		r.c[3] -= a.r.c[3];
 	}
 
-	inline void operator-=(Complex32 a) {
+	AML_FUNCTION void operator-=(const AML_PREFIX(Complex32) a) {
 		i.c[0] -= a.c.c[1];
 		i.c[1] -= a.c.c[1];
 		i.c[2] -= a.c.c[1];
@@ -10284,8 +10392,8 @@ public:
 		r.c[3] -= a.c.c[0];
 	}
 
-	inline Array4Complex32 operator-(Array4Complex32 a) const {
-		Array4Complex32 ret;
+	AML_FUNCTION AML_PREFIX(Array4Complex32) operator-(const AML_PREFIX(Array4Complex32) a) const {
+		AML_PREFIX(Array4Complex32) ret;
 		ret.i.c[0] = i.c[0] - a.i.c[0];
 		ret.i.c[1] = i.c[1] - a.i.c[1];
 		ret.i.c[2] = i.c[2] - a.i.c[2];
@@ -10297,8 +10405,8 @@ public:
 		return ret;
 	}
 
-	inline Array4Complex32 operator-(Complex32 a) const {
-		Array4Complex32 ret;
+	AML_FUNCTION AML_PREFIX(Array4Complex32) operator-(const AML_PREFIX(Complex32) a) const {
+		AML_PREFIX(Array4Complex32) ret;
 		ret.i.c[0] = i.c[0] - a.c.c[1];
 		ret.i.c[1] = i.c[1] - a.c.c[1];
 		ret.i.c[2] = i.c[2] - a.c.c[1];
@@ -10310,7 +10418,8 @@ public:
 		return ret;
 	}
 
-	inline Array4Complex32 *subtract(Array4Complex32 a, VectorU8_4D mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *
+	subtract(const AML_PREFIX(Array4Complex32) a, AML_PREFIX(VectorU8_4D) mask) {
 		if (mask.v.c[0]) {
 			i.c[0] -= a.i.c[0];
 			r.c[0] -= a.r.c[0];
@@ -10330,7 +10439,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex32 *subtract(Complex32 a, VectorU8_4D mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *subtract(const AML_PREFIX(Complex32) a, AML_PREFIX(VectorU8_4D) mask) {
 		if (mask.v.c[0]) {
 			i.c[0] -= a.c.c[1];
 			r.c[0] -= a.c.c[0];
@@ -10351,8 +10460,8 @@ public:
 	}
 
 
-	inline Array4Complex32 operator*(const Array4Complex32 &a) const {
-		Array4Complex32 ret;
+	AML_FUNCTION AML_PREFIX(Array4Complex32) operator*(const AML_PREFIX(Array4Complex32) &a) const {
+		AML_PREFIX(Array4Complex32) ret;
 		ret.r.c[0] = r.c[0] * a.r.c[0] - i.c[0] * a.i.c[0];
 		ret.i.c[0] = r.c[0] * a.i.c[0] + i.c[0] * a.r.c[0];
 		ret.r.c[1] = r.c[1] * a.r.c[1] - i.c[1] * a.i.c[1];
@@ -10366,7 +10475,7 @@ public:
 		return ret;
 	}
 
-	inline Array4Complex32 *multiply(const Array4Complex32 &a) {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *multiply(const AML_PREFIX(Array4Complex32) &a) {
 		float d1;
 		float d2;
 		d1 = r.c[0] * a.r.c[0] - i.c[0] * a.i.c[0];
@@ -10389,8 +10498,8 @@ public:
 		return this;
 	}
 
-	inline Array4Complex32 operator*(const Complex32 &a) const {
-		Array4Complex32 ret;
+	AML_FUNCTION AML_PREFIX(Array4Complex32) operator*(const AML_PREFIX(Complex32) &a) const {
+		AML_PREFIX(Array4Complex32) ret;
 		ret.r.c[0] = r.c[0] * a.c.c[0] - i.c[0] * a.c.c[1];
 		ret.i.c[0] = r.c[0] * a.c.c[1] + i.c[0] * a.c.c[0];
 		ret.r.c[1] = r.c[1] * a.c.c[0] - i.c[1] * a.c.c[1];
@@ -10399,12 +10508,10 @@ public:
 		ret.i.c[2] = r.c[2] * a.c.c[1] + i.c[2] * a.c.c[0];
 		ret.r.c[3] = r.c[3] * a.c.c[0] - i.c[3] * a.c.c[1];
 		ret.i.c[3] = r.c[3] * a.c.c[1] + i.c[3] * a.c.c[0];
-
-
 		return ret;
 	}
 
-	inline void operator*=(const Array4Complex32 &a) {
+	AML_FUNCTION void operator*=(const AML_PREFIX(Array4Complex32) &a) {
 		float d1;
 		float d2;
 		d1 = r.c[0] * a.r.c[0] - i.c[0] * a.i.c[0];
@@ -10426,7 +10533,7 @@ public:
 		i.c[3] = d2;
 	}
 
-	inline void operator*=(const Complex32 &a) {
+	AML_FUNCTION void operator*=(const AML_PREFIX(Complex32) &a) {
 		float d1;
 		float d2;
 		d1 = r.c[0] * a.c.c[0] - i.c[0] * a.c.c[1];
@@ -10447,7 +10554,7 @@ public:
 		i.c[3] = d2;
 	}
 
-	inline Array4Complex32 *multiply(const Complex32 &a) {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *multiply(const AML_PREFIX(Complex32) &a) {
 		float d1;
 		float d2;
 		d1 = r.c[0] * a.c.c[0] - i.c[0] * a.c.c[1];
@@ -10469,7 +10576,8 @@ public:
 		return this;
 	}
 
-	inline Array4Complex32 *multiply(const Complex32 &a, const VectorU8_4D &mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *
+	multiply(const AML_PREFIX(Complex32) &a, const AML_PREFIX(VectorU8_4D) &mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -10501,7 +10609,8 @@ public:
 
 	}
 
-	inline Array4Complex32 *multiply(const Array4Complex32 &a, const VectorU8_4D &mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *
+	multiply(const AML_PREFIX(Array4Complex32) &a, const AML_PREFIX(VectorU8_4D) &mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -10531,7 +10640,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex32 *square() {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *square() {
 		float d1;
 		float d2;
 		d1 = r.c[0] * r.c[0] - i.c[0] * i.c[0];
@@ -10553,7 +10662,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex32 *square(const VectorU8_4D &mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *square(const AML_PREFIX(VectorU8_4D) &mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -10583,7 +10692,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex32 *divide(const Complex32 a) {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *divide(const AML_PREFIX(Complex32) a) {
 		float d1 = (r.c[0] * a.c.c[0] + i.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		float d2 = (i.c[0] * a.c.c[0] - r.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		r.c[0] = d1;
@@ -10603,7 +10712,8 @@ public:
 		return this;
 	}
 
-	inline Array4Complex32 *divide(const Complex32 a, const VectorU8_4D &mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *
+	divide(const AML_PREFIX(Complex32) a, const AML_PREFIX(VectorU8_4D) &mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -10633,7 +10743,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex32 *divide(const Array4Complex32 &a) {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *divide(const AML_PREFIX(Array4Complex32) &a) {
 		float d1 = (r.c[0] * a.r.c[0] + i.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		float d2 = (i.c[0] * a.r.c[0] - r.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		r.c[0] = d1;
@@ -10653,7 +10763,8 @@ public:
 		return this;
 	}
 
-	inline Array4Complex32 *divide(const Array4Complex32 &a, const VectorU8_4D &mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *
+	divide(const AML_PREFIX(Array4Complex32) &a, const AML_PREFIX(VectorU8_4D) &mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -10683,8 +10794,8 @@ public:
 		return this;
 	}
 
-	inline Array4Complex32 operator/(const Complex32 &a) const {
-		Array4Complex32 ret;
+	AML_FUNCTION AML_PREFIX(Array4Complex32) operator/(const AML_PREFIX(Complex32) &a) const {
+		AML_PREFIX(Array4Complex32) ret;
 		float d1 = (r.c[0] * a.c.c[0] + i.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		float d2 = (i.c[0] * a.c.c[0] - r.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		ret.r.c[0] = d1;
@@ -10704,8 +10815,8 @@ public:
 		return ret;
 	}
 
-	inline Array4Complex32 operator/(const Array4Complex32 &a) const {
-		Array4Complex32 ret;
+	AML_FUNCTION AML_PREFIX(Array4Complex32) operator/(const AML_PREFIX(Array4Complex32) &a) const {
+		AML_PREFIX(Array4Complex32) ret;
 		float d1 = (r.c[0] * a.r.c[0] + i.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		float d2 = (i.c[0] * a.r.c[0] - r.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		ret.r.c[0] = d1;
@@ -10725,7 +10836,7 @@ public:
 		return ret;
 	}
 
-	inline void operator/=(const Complex32 &a) {
+	AML_FUNCTION void operator/=(const AML_PREFIX(Complex32) &a) {
 		float d1 = (r.c[0] * a.c.c[0] + i.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		float d2 = (i.c[0] * a.c.c[0] - r.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		r.c[0] = d1;
@@ -10744,7 +10855,7 @@ public:
 		i.c[3] = d2;
 	}
 
-	inline void operator/=(const Array4Complex32 &a) {
+	AML_FUNCTION void operator/=(const AML_PREFIX(Array4Complex32) &a) {
 		float d1 = (r.c[0] * a.r.c[0] + i.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		float d2 = (i.c[0] * a.r.c[0] - r.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		r.c[0] = d1;
@@ -10763,7 +10874,7 @@ public:
 		i.c[3] = d2;
 	}
 
-	inline Array4Complex32 *sqrt() {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *sqrt() {
 		float d1;
 		float d2;
 		d2 = ::sqrt((-r.c[0] + ::sqrt(r.c[0] * r.c[0] + i.c[0] * i.c[0])) / (2));
@@ -10799,7 +10910,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex32 *sqrt(const VectorU8_4D mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *sqrt(const AML_PREFIX(VectorU8_4D) mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -10845,7 +10956,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex32 *sin() {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *sin() {
 		float d1;
 		float d2;
 		d1 = ::sin(r.c[0]) * ::cosh(i.c[0]);
@@ -10867,7 +10978,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex32 *cos() {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *cos() {
 		float d1;
 		float d2;
 		d1 = ::cos(r.c[0]) * ::cosh(i.c[0]);
@@ -10889,7 +11000,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex32 *tan() {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *tan() {
 		float d1;
 		float d2;
 		d1 = ::sin(r.c[0] + r.c[0]) / (::cos(r.c[0] + r.c[0]) * ::cosh(i.c[0] + i.c[0]));
@@ -10911,7 +11022,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex32 *sin(const VectorU8_4D mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *sin(const AML_PREFIX(VectorU8_4D) mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -10941,7 +11052,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex32 *cos(const VectorU8_4D mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *cos(const AML_PREFIX(VectorU8_4D) mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -10971,7 +11082,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex32 *tan(const VectorU8_4D mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *tan(const AML_PREFIX(VectorU8_4D) mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -11002,7 +11113,7 @@ public:
 	}
 
 
-	inline Array4Complex32 *exp() {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *exp() {
 		float d1 = ::exp(r.c[0]) * ::cos(i.c[0]);
 		float d2 = ::exp(r.c[0]) * ::sin(i.c[0]);
 		r.c[0] = d1;
@@ -11022,7 +11133,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex32 *exp(float n) {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *exp(float n) {
 		float d1 = ::pow(n, r.c[0]) * ::cos(i.c[0] * ::log(n));
 		float d2 = ::pow(n, r.c[0]) * ::sin(i.c[0] * ::log(n));
 		r.c[0] = d1;
@@ -11042,7 +11153,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex32 *exp(const VectorU8_4D &mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *exp(const AML_PREFIX(VectorU8_4D) &mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -11072,7 +11183,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex32 *pow(Array4Complex32 n) {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *pow(const AML_PREFIX(Array4Complex32) n) {
 		float d1 = ::log(i.c[0] * i.c[0] + r.c[0] * r.c[0]) / 2;
 		float d2 = ::atan2(r.c[0], i.c[0]);
 		float d3 = ::exp(d1 * n.i.c[0] - d2 * n.r.c[0]);
@@ -11109,7 +11220,7 @@ public:
 	}
 
 
-	inline Array4Complex32 *pow(Complex32 n) {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *pow(const AML_PREFIX(Complex32) n) {
 		float d1 = ::log(i.c[0] * i.c[0] + r.c[0] * r.c[0]) / 2;
 		float d2 = ::atan2(r.c[0], i.c[0]);
 		float d3 = ::exp(d1 * n.c.c[0] - d2 * n.c.c[1]);
@@ -11145,7 +11256,8 @@ public:
 		return this;
 	}
 
-	inline Array4Complex32 *pow(Array4Complex32 n, const VectorU8_4D &mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *
+	pow(const AML_PREFIX(Array4Complex32) n, const AML_PREFIX(VectorU8_4D) &mask) {
 		float d1;
 		float d2;
 		float d3;
@@ -11196,7 +11308,7 @@ public:
 	}
 
 
-	inline Array4Complex32 *pow(Complex32 n, const VectorU8_4D &mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *pow(AML_PREFIX(Complex32) n, const AML_PREFIX(VectorU8_4D) &mask) {
 		float d1;
 		float d2;
 		float d3;
@@ -11246,7 +11358,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex32 *exp(float n, const VectorU8_4D &mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *exp(float n, const AML_PREFIX(VectorU8_4D) &mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -11276,7 +11388,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex32 *pow(float n) {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *pow(float n) {
 		float d1;
 		float d2;
 		d1 = ::pow(r.c[0] * r.c[0] + i.c[0] * i.c[0], n / 2) * ::cos(n * atan2(i.c[0], r.c[0]));
@@ -11299,7 +11411,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex32 *pow(float n, const VectorU8_4D &mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *pow(float n, const AML_PREFIX(VectorU8_4D) &mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -11329,8 +11441,8 @@ public:
 		return this;
 	}
 
-	inline VectorFloat4D abs() {
-		VectorFloat4D ret;
+	AML_FUNCTION AML_PREFIX(VectorFloat4D) abs() {
+		AML_PREFIX(VectorFloat4D) ret;
 		ret.v.c[0] = ::sqrt(r.c[0] * r.c[0] + i.c[0] * i.c[0]);
 		ret.v.c[1] = ::sqrt(r.c[1] * r.c[1] + i.c[1] * i.c[1]);
 		ret.v.c[2] = ::sqrt(r.c[2] * r.c[2] + i.c[2] * i.c[2]);
@@ -11338,8 +11450,8 @@ public:
 		return ret;
 	}
 
-	inline VectorU8_4D abs_gt(float a) {
-		VectorU8_4D ret;
+	AML_FUNCTION AML_PREFIX(VectorU8_4D) abs_gt(float a) {
+		AML_PREFIX(VectorU8_4D) ret;
 		ret.v.c[0] = a * a < r.c[0] * r.c[0] + i.c[0] * i.c[0];
 		ret.v.c[1] = a * a < r.c[1] * r.c[1] + i.c[1] * i.c[1];
 		ret.v.c[2] = a * a < r.c[2] * r.c[2] + i.c[2] * i.c[2];
@@ -11347,8 +11459,8 @@ public:
 		return ret;
 	}
 
-	inline VectorU8_4D abs_lt(float a) {
-		VectorU8_4D ret;
+	AML_FUNCTION AML_PREFIX(VectorU8_4D) abs_lt(float a) {
+		AML_PREFIX(VectorU8_4D) ret;
 		ret.v.c[0] = a * a > r.c[0] * r.c[0] + i.c[0] * i.c[0];
 		ret.v.c[1] = a * a > r.c[1] * r.c[1] + i.c[1] * i.c[1];
 		ret.v.c[2] = a * a > r.c[2] * r.c[2] + i.c[2] * i.c[2];
@@ -11356,8 +11468,8 @@ public:
 		return ret;
 	}
 
-	inline VectorU8_4D abs_eq(float a) {
-		VectorU8_4D ret;
+	AML_FUNCTION AML_PREFIX(VectorU8_4D) abs_eq(float a) {
+		AML_PREFIX(VectorU8_4D) ret;
 		ret.v.c[0] = a * a == r.c[0] * r.c[0] + i.c[0] * i.c[0];
 		ret.v.c[1] = a * a == r.c[1] * r.c[1] + i.c[1] * i.c[1];
 		ret.v.c[2] = a * a == r.c[2] * r.c[2] + i.c[2] * i.c[2];
@@ -11365,7 +11477,7 @@ public:
 		return ret;
 	}
 
-	inline Array4Complex32 *ln(const VectorU8_4D &mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *ln(const AML_PREFIX(VectorU8_4D) &mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -11395,7 +11507,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex32 *log(const VectorU8_4D &mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *log(const AML_PREFIX(VectorU8_4D) &mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -11425,7 +11537,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex32 *log10(const VectorU8_4D &mask) {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *log10(const AML_PREFIX(VectorU8_4D) &mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -11455,7 +11567,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex32 *ln() {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *ln() {
 		float d1;
 		float d2;
 		d1 = ::log(i.c[0] * i.c[0] + r.c[0] * r.c[0]) / 2;
@@ -11477,7 +11589,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex32 *log() {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *log() {
 		float d1;
 		float d2;
 		d1 = ::log(i.c[0] * i.c[0] + r.c[0] * r.c[0]) / 2;
@@ -11499,7 +11611,7 @@ public:
 		return this;
 	}
 
-	inline Array4Complex32 *log10() {
+	AML_FUNCTION AML_PREFIX(Array4Complex32) *log10() {
 		float d1;
 		float d2;
 		d1 = ::log(i.c[0] * i.c[0] + r.c[0] * r.c[0]) / (2 * AML_LN10);
@@ -11523,14 +11635,16 @@ public:
 };
 
 
-inline std::string operator<<(std::string &lhs, const Array4Complex32 &rhs) {
+#if !defined(AML_NO_STRING)
+
+AML_FUNCTION std::string operator<<(std::string &lhs, const AML_PREFIX(Array4Complex32) &rhs) {
 	std::ostringstream string;
 	string << lhs << "{ " << rhs.r.c[0] << " + " << rhs.i.c[0] << "i ,  " << rhs.r.c[1] << " + " << rhs.i.c[1]
 		   << "i ,  " << rhs.r.c[2] << " + " << rhs.i.c[2] << "i ,  " << rhs.r.c[3] << " + " << rhs.i.c[3] << "i }";
 	return string.str();
 }
 
-inline std::string operator<<(const char *lhs, const Array4Complex32 &rhs) {
+AML_FUNCTION std::string operator<<(const char *lhs, const AML_PREFIX(Array4Complex32) &rhs) {
 	std::ostringstream string;
 	string << lhs << "{ " << rhs.r.c[0] << " + " << rhs.i.c[0] << "i ,  " << rhs.r.c[1] << " + " << rhs.i.c[1]
 		   << "i ,  " << rhs.r.c[2] << " + " << rhs.i.c[2] << "i ,  " << rhs.r.c[3] << " + " << rhs.i.c[3] << "i }";
@@ -11539,7 +11653,7 @@ inline std::string operator<<(const char *lhs, const Array4Complex32 &rhs) {
 
 template<class charT, class traits>
 std::basic_ostream<charT, traits> &
-operator<<(std::basic_ostream<charT, traits> &o, const Array4Complex32 &rhs) {
+operator<<(std::basic_ostream<charT, traits> &o, const AML_PREFIX(Array4Complex32) &rhs) {
 	std::basic_ostringstream<charT, traits> s;
 	s.flags(o.flags());
 	s.imbue(o.getloc());
@@ -11549,13 +11663,17 @@ operator<<(std::basic_ostream<charT, traits> &o, const Array4Complex32 &rhs) {
 	return o << s.str();
 }
 
-inline Array4Complex32 operator+(const Complex32 &lhs, const Array4Complex32 &rhs) {
+#endif
+
+AML_FUNCTION AML_PREFIX(Array4Complex32)
+operator+(const AML_PREFIX(Complex32) &lhs, const AML_PREFIX(Array4Complex32) &rhs) {
 	return rhs + lhs;
 }
 
 
-inline Array4Complex32 operator-(const Complex32 &lhs, const Array4Complex32 &rhs) {
-	Array4Complex32 ret;
+AML_FUNCTION AML_PREFIX(Array4Complex32)
+operator-(const AML_PREFIX(Complex32) &lhs, const AML_PREFIX(Array4Complex32) &rhs) {
+	AML_PREFIX(Array4Complex32) ret;
 	ret.i.c[0] = lhs.c.c[1] - rhs.i.c[0];
 	ret.i.c[1] = lhs.c.c[1] - rhs.i.c[1];
 	ret.i.c[2] = lhs.c.c[1] - rhs.i.c[2];
@@ -11567,12 +11685,14 @@ inline Array4Complex32 operator-(const Complex32 &lhs, const Array4Complex32 &rh
 	return ret;
 }
 
-inline Array4Complex32 operator*(const Complex32 &lhs, const Array4Complex32 &rhs) {
+AML_FUNCTION AML_PREFIX(Array4Complex32)
+operator*(const AML_PREFIX(Complex32) &lhs, const AML_PREFIX(Array4Complex32) &rhs) {
 	return rhs * lhs;
 }
 
-inline Array4Complex32 operator/(const Complex32 &lhs, const Array4Complex32 &rhs) {
-	Array4Complex32 ret;
+AML_FUNCTION AML_PREFIX(Array4Complex32)
+operator/(const AML_PREFIX(Complex32) &lhs, const AML_PREFIX(Array4Complex32) &rhs) {
+	AML_PREFIX(Array4Complex32) ret;
 	float d1 =
 			(lhs.c.c[0] * rhs.r.c[0] + lhs.c.c[1] * rhs.i.c[0]) / (rhs.r.c[0] * rhs.r.c[0] + rhs.i.c[0] * rhs.i.c[0]);
 	float d2 =
@@ -11595,14 +11715,14 @@ inline Array4Complex32 operator/(const Complex32 &lhs, const Array4Complex32 &rh
 }
 
 
-class Array8Complex32 {
+class AML_PREFIX(Array8Complex32) {
 public:
-	floatvec8 r{};
-	floatvec8 i{};
+	AML_PREFIX(floatvec8) r{};
+	AML_PREFIX(floatvec8) i{};
 
-	inline Array8Complex32() {}
+	AML_FUNCTION AML_PREFIX(Array8Complex32)() {}
 
-	inline Array8Complex32(Complex32 value) {
+	AML_FUNCTION AML_PREFIX(Array8Complex32)(const AML_PREFIX(Complex32) value) {
 		r.c[0] = value.c.c[0];
 		i.c[0] = value.c.c[1];
 		r.c[1] = value.c.c[0];
@@ -11621,24 +11741,24 @@ public:
 		i.c[7] = value.c.c[1];
 	}
 
-	inline VectorFloat8D real() {
-		return VectorFloat8D(r.c);
+	AML_FUNCTION AML_PREFIX(VectorFloat8D) real() {
+		return AML_PREFIX(VectorFloat8D)(r.c);
 	}
 
-	inline VectorFloat8D complex() {
-		return VectorFloat8D(i.c);
+	AML_FUNCTION AML_PREFIX(VectorFloat8D) complex() {
+		return AML_PREFIX(VectorFloat8D)(i.c);
 	}
 
-	inline Complex32 operator[](uint64_t location) {
-		return Complex32(r.c[location], i.c[location]);
+	AML_FUNCTION AML_PREFIX(Complex32) operator[](uint64_t location) {
+		return AML_PREFIX(Complex32)(r.c[location], i.c[location]);
 	}
 
-	inline void set(uint64_t location, Complex32 value) {
+	AML_FUNCTION void set(uint64_t location, AML_PREFIX(Complex32) value) {
 		r.c[location] = value.c.c[0];
 		i.c[location] = value.c.c[1];
 	}
 
-	inline Array8Complex32 *add(Array8Complex32 a) {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *add(const AML_PREFIX(Array8Complex32) &a) {
 		i.c[0] += a.i.c[0];
 		i.c[1] += a.i.c[1];
 		i.c[2] += a.i.c[2];
@@ -11658,7 +11778,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex32 *add(Complex32 a) {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *add(const AML_PREFIX(Complex32) a) {
 		i.c[0] += a.c.c[1];
 		i.c[1] += a.c.c[1];
 		i.c[2] += a.c.c[1];
@@ -11679,7 +11799,7 @@ public:
 	}
 
 
-	inline void operator+=(Array8Complex32 a) {
+	AML_FUNCTION void operator+=(const AML_PREFIX(Array8Complex32) &a) {
 		i.c[0] += a.i.c[0];
 		i.c[1] += a.i.c[1];
 		i.c[2] += a.i.c[2];
@@ -11698,7 +11818,7 @@ public:
 		r.c[7] += a.r.c[7];
 	}
 
-	inline void operator+=(Complex32 a) {
+	AML_FUNCTION void operator+=(const AML_PREFIX(Complex32) a) {
 		i.c[0] += a.c.c[1];
 		i.c[1] += a.c.c[1];
 		i.c[2] += a.c.c[1];
@@ -11717,8 +11837,8 @@ public:
 		r.c[7] += a.c.c[0];
 	}
 
-	inline Array8Complex32 operator+(Array8Complex32 a) const {
-		Array8Complex32 ret;
+	AML_FUNCTION AML_PREFIX(Array8Complex32) operator+(const AML_PREFIX(Array8Complex32) a) const {
+		AML_PREFIX(Array8Complex32) ret;
 		ret.i.c[0] = i.c[0] + a.i.c[0];
 		ret.i.c[1] = i.c[1] + a.i.c[1];
 		ret.i.c[2] = i.c[2] + a.i.c[2];
@@ -11738,8 +11858,8 @@ public:
 		return ret;
 	}
 
-	inline Array8Complex32 operator+(Complex32 a) const {
-		Array8Complex32 ret;
+	AML_FUNCTION AML_PREFIX(Array8Complex32) operator+(AML_PREFIX(Complex32) a) const {
+		AML_PREFIX(Array8Complex32) ret;
 		ret.i.c[0] = i.c[0] + a.c.c[1];
 		ret.i.c[1] = i.c[1] + a.c.c[1];
 		ret.i.c[2] = i.c[2] + a.c.c[1];
@@ -11759,7 +11879,7 @@ public:
 		return ret;
 	}
 
-	inline Array8Complex32 *add(Array8Complex32 a, VectorU8_8D mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *add(const AML_PREFIX(Array8Complex32) &a, AML_PREFIX(VectorU8_8D) mask) {
 		if (mask.v.c[0]) {
 			i.c[0] += a.i.c[0];
 			r.c[0] += a.r.c[0];
@@ -11795,7 +11915,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex32 *add(Complex32 a, VectorU8_8D mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *add(AML_PREFIX(Complex32) a, AML_PREFIX(VectorU8_8D) mask) {
 		if (mask.v.c[0]) {
 			i.c[0] += a.c.c[1];
 			r.c[0] += a.c.c[0];
@@ -11831,7 +11951,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex32 *subtract(Array8Complex32 a) {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *subtract(const AML_PREFIX(Array8Complex32) &a) {
 		i.c[0] -= a.i.c[0];
 		i.c[1] -= a.i.c[1];
 		i.c[2] -= a.i.c[2];
@@ -11851,7 +11971,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex32 *subtract(Complex32 a) {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *subtract(const AML_PREFIX(Complex32) a) {
 		i.c[0] -= a.c.c[1];
 		i.c[1] -= a.c.c[1];
 		i.c[2] -= a.c.c[1];
@@ -11871,7 +11991,7 @@ public:
 		return this;
 	}
 
-	inline void operator-=(Array8Complex32 a) {
+	AML_FUNCTION void operator-=(const AML_PREFIX(Array8Complex32) &a) {
 		i.c[0] -= a.i.c[0];
 		i.c[1] -= a.i.c[1];
 		i.c[2] -= a.i.c[2];
@@ -11890,7 +12010,7 @@ public:
 		r.c[7] -= a.r.c[7];
 	}
 
-	inline void operator-=(Complex32 a) {
+	AML_FUNCTION void operator-=(const AML_PREFIX(Complex32) a) {
 		i.c[0] -= a.c.c[1];
 		i.c[1] -= a.c.c[1];
 		i.c[2] -= a.c.c[1];
@@ -11909,8 +12029,8 @@ public:
 		r.c[7] -= a.c.c[0];
 	}
 
-	inline Array8Complex32 operator-(Array8Complex32 a) const {
-		Array8Complex32 ret;
+	AML_FUNCTION AML_PREFIX(Array8Complex32) operator-(const AML_PREFIX(Array8Complex32) a) const {
+		AML_PREFIX(Array8Complex32) ret;
 		ret.i.c[0] = i.c[0] - a.i.c[0];
 		ret.i.c[1] = i.c[1] - a.i.c[1];
 		ret.i.c[2] = i.c[2] - a.i.c[2];
@@ -11930,8 +12050,8 @@ public:
 		return ret;
 	}
 
-	inline Array8Complex32 operator-(Complex32 a) const {
-		Array8Complex32 ret;
+	AML_FUNCTION AML_PREFIX(Array8Complex32) operator-(const AML_PREFIX(Complex32) a) const {
+		AML_PREFIX(Array8Complex32) ret;
 		ret.i.c[0] = i.c[0] - a.c.c[1];
 		ret.i.c[1] = i.c[1] - a.c.c[1];
 		ret.i.c[2] = i.c[2] - a.c.c[1];
@@ -11951,7 +12071,8 @@ public:
 		return ret;
 	}
 
-	inline Array8Complex32 *subtract(Array8Complex32 a, VectorU8_8D mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *
+	subtract(const AML_PREFIX(Array8Complex32) &a, AML_PREFIX(VectorU8_8D) mask) {
 		if (mask.v.c[0]) {
 			i.c[0] -= a.i.c[0];
 			r.c[0] -= a.r.c[0];
@@ -11987,7 +12108,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex32 *subtract(Complex32 a, VectorU8_8D mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *subtract(const AML_PREFIX(Complex32) a, AML_PREFIX(VectorU8_8D) mask) {
 		if (mask.v.c[0]) {
 			i.c[0] -= a.c.c[1];
 			r.c[0] -= a.c.c[0];
@@ -12024,8 +12145,8 @@ public:
 	}
 
 
-	inline Array8Complex32 operator*(const Array8Complex32 &a) const {
-		Array8Complex32 ret;
+	AML_FUNCTION AML_PREFIX(Array8Complex32) operator*(const AML_PREFIX(Array8Complex32) &a) const {
+		AML_PREFIX(Array8Complex32) ret;
 		ret.r.c[0] = r.c[0] * a.r.c[0] - i.c[0] * a.i.c[0];
 		ret.i.c[0] = r.c[0] * a.i.c[0] + i.c[0] * a.r.c[0];
 		ret.r.c[1] = r.c[1] * a.r.c[1] - i.c[1] * a.i.c[1];
@@ -12047,7 +12168,7 @@ public:
 		return ret;
 	}
 
-	inline Array8Complex32 *multiply(const Array8Complex32 &a) {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *multiply(const AML_PREFIX(Array8Complex32) &a) {
 		float d1;
 		float d2;
 		d1 = r.c[0] * a.r.c[0] - i.c[0] * a.i.c[0];
@@ -12086,7 +12207,7 @@ public:
 		return this;
 	}
 
-	inline void operator*=(const Array8Complex32 &a) {
+	AML_FUNCTION void operator*=(const AML_PREFIX(Array8Complex32) &a) {
 		float d1;
 		float d2;
 		d1 = r.c[0] * a.r.c[0] - i.c[0] * a.i.c[0];
@@ -12124,7 +12245,7 @@ public:
 		i.c[7] = d2;
 	}
 
-	inline void operator*=(const Complex32 &a) {
+	AML_FUNCTION void operator*=(const AML_PREFIX(Complex32) &a) {
 		float d1;
 		float d2;
 		d1 = r.c[0] * a.c.c[0] - i.c[0] * a.c.c[1];
@@ -12161,8 +12282,8 @@ public:
 		i.c[7] = d2;
 	}
 
-	inline Array8Complex32 operator*(const Complex32 &a) const {
-		Array8Complex32 ret;
+	AML_FUNCTION AML_PREFIX(Array8Complex32) operator*(const AML_PREFIX(Complex32) &a) const {
+		AML_PREFIX(Array8Complex32) ret;
 		ret.r.c[0] = r.c[0] * a.c.c[0] - i.c[0] * a.c.c[1];
 		ret.i.c[0] = r.c[0] * a.c.c[1] + i.c[0] * a.c.c[0];
 		ret.r.c[1] = r.c[1] * a.c.c[0] - i.c[1] * a.c.c[1];
@@ -12184,7 +12305,7 @@ public:
 		return ret;
 	}
 
-	inline Array8Complex32 *multiply(const Complex32 &a) {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *multiply(const AML_PREFIX(Complex32) &a) {
 		float d1;
 		float d2;
 		d1 = r.c[0] * a.c.c[0] - i.c[0] * a.c.c[1];
@@ -12222,7 +12343,8 @@ public:
 		return this;
 	}
 
-	inline Array8Complex32 *multiply(const Complex32 &a, const VectorU8_8D &mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *
+	multiply(const AML_PREFIX(Complex32) &a, const AML_PREFIX(VectorU8_8D) &mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -12278,7 +12400,8 @@ public:
 
 	}
 
-	inline Array8Complex32 *multiply(const Array8Complex32 &a, const VectorU8_8D &mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *
+	multiply(const AML_PREFIX(Array8Complex32) &a, const AML_PREFIX(VectorU8_8D) &mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -12332,7 +12455,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex32 *square() {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *square() {
 		float d1;
 		float d2;
 		d1 = r.c[0] * r.c[0] - i.c[0] * i.c[0];
@@ -12371,7 +12494,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex32 *square(const VectorU8_8D &mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *square(const AML_PREFIX(VectorU8_8D) &mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -12425,7 +12548,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex32 *divide(const Complex32 a) {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *divide(const AML_PREFIX(Complex32) a) {
 		float d1 = (r.c[0] * a.c.c[0] + i.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		float d2 = (i.c[0] * a.c.c[0] - r.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		r.c[0] = d1;
@@ -12461,7 +12584,8 @@ public:
 		return this;
 	}
 
-	inline Array8Complex32 *divide(const Complex32 a, const VectorU8_8D &mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *
+	divide(const AML_PREFIX(Complex32) a, const AML_PREFIX(VectorU8_8D) &mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -12515,7 +12639,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex32 *divide(const Array8Complex32 &a) {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *divide(const AML_PREFIX(Array8Complex32) &a) {
 		float d1 = (r.c[0] * a.r.c[0] + i.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		float d2 = (i.c[0] * a.r.c[0] - r.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		r.c[0] = d1;
@@ -12551,7 +12675,8 @@ public:
 		return this;
 	}
 
-	inline Array8Complex32 *divide(const Array8Complex32 &a, const VectorU8_8D &mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *
+	divide(const AML_PREFIX(Array8Complex32) &a, const AML_PREFIX(VectorU8_8D) &mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -12605,8 +12730,8 @@ public:
 		return this;
 	}
 
-	inline Array8Complex32 operator/(const Complex32 &a) const {
-		Array8Complex32 ret;
+	AML_FUNCTION AML_PREFIX(Array8Complex32) operator/(const AML_PREFIX(Complex32) &a) const {
+		AML_PREFIX(Array8Complex32) ret;
 		float d1 = (r.c[0] * a.c.c[0] + i.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		float d2 = (i.c[0] * a.c.c[0] - r.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		ret.r.c[0] = d1;
@@ -12642,8 +12767,8 @@ public:
 		return ret;
 	}
 
-	inline Array8Complex32 operator/(const Array8Complex32 &a) const {
-		Array8Complex32 ret;
+	AML_FUNCTION AML_PREFIX(Array8Complex32) operator/(const AML_PREFIX(Array8Complex32) &a) const {
+		AML_PREFIX(Array8Complex32) ret;
 		float d1 = (r.c[0] * a.r.c[0] + i.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		float d2 = (i.c[0] * a.r.c[0] - r.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		ret.r.c[0] = d1;
@@ -12679,7 +12804,7 @@ public:
 		return ret;
 	}
 
-	inline void operator/=(const Complex32 &a) {
+	AML_FUNCTION void operator/=(const AML_PREFIX(Complex32) &a) {
 		float d1 = (r.c[0] * a.c.c[0] + i.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		float d2 = (i.c[0] * a.c.c[0] - r.c[0] * a.c.c[1]) / (a.c.c[0] * a.c.c[0] + a.c.c[1] * a.c.c[1]);
 		r.c[0] = d1;
@@ -12714,7 +12839,7 @@ public:
 		i.c[7] = d2;
 	}
 
-	inline void operator/=(const Array8Complex32 &a) {
+	AML_FUNCTION void operator/=(const AML_PREFIX(Array8Complex32) &a) {
 		float d1 = (r.c[0] * a.r.c[0] + i.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		float d2 = (i.c[0] * a.r.c[0] - r.c[0] * a.i.c[0]) / (a.r.c[0] * a.r.c[0] + a.i.c[0] * a.i.c[0]);
 		r.c[0] = d1;
@@ -12749,7 +12874,7 @@ public:
 		i.c[7] = d2;
 	}
 
-	inline Array8Complex32 *sqrt() {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *sqrt() {
 		float d1;
 		float d2;
 		d2 = ::sqrt((-r.c[0] + ::sqrt(r.c[0] * r.c[0] + i.c[0] * i.c[0])) / (2));
@@ -12819,7 +12944,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex32 *sqrt(const VectorU8_8D mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *sqrt(const AML_PREFIX(VectorU8_8D) mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -12905,7 +13030,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex32 *sin() {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *sin() {
 		float d1;
 		float d2;
 		d1 = ::sin(r.c[0]) * ::cosh(i.c[0]);
@@ -12943,7 +13068,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex32 *cos() {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *cos() {
 		float d1;
 		float d2;
 		d1 = ::cos(r.c[0]) * ::cosh(i.c[0]);
@@ -12981,7 +13106,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex32 *tan() {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *tan() {
 		float d1;
 		float d2;
 		d1 = ::sin(r.c[0] + r.c[0]) / (::cos(r.c[0] + r.c[0]) * ::cosh(i.c[0] + i.c[0]));
@@ -13019,7 +13144,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex32 *sin(const VectorU8_8D mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *sin(const AML_PREFIX(VectorU8_8D) mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -13073,7 +13198,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex32 *cos(const VectorU8_8D mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *cos(const AML_PREFIX(VectorU8_8D) mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -13127,7 +13252,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex32 *tan(const VectorU8_8D mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *tan(const AML_PREFIX(VectorU8_8D) mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -13182,7 +13307,7 @@ public:
 	}
 
 
-	inline Array8Complex32 *exp() {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *exp() {
 		float d1 = ::exp(r.c[0]) * ::cos(i.c[0]);
 		float d2 = ::exp(r.c[0]) * ::sin(i.c[0]);
 		r.c[0] = d1;
@@ -13218,7 +13343,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex32 *exp(float n) {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *exp(float n) {
 		float d1 = ::pow(n, r.c[0]) * ::cos(i.c[0] * ::log(n));
 		float d2 = ::pow(n, r.c[0]) * ::sin(i.c[0] * ::log(n));
 		r.c[0] = d1;
@@ -13254,7 +13379,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex32 *pow(Array8Complex32 n) {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *pow(const AML_PREFIX(Array8Complex32) &n) {
 		float d1 = ::log(i.c[0] * i.c[0] + r.c[0] * r.c[0]) / 2;
 		float d2 = ::atan2(r.c[0], i.c[0]);
 		float d3 = ::exp(d1 * n.i.c[0] - d2 * n.r.c[0]);
@@ -13323,7 +13448,7 @@ public:
 	}
 
 
-	inline Array8Complex32 *pow(Complex32 n) {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *pow(const AML_PREFIX(Complex32) n) {
 		float d1 = ::log(i.c[0] * i.c[0] + r.c[0] * r.c[0]) / 2;
 		float d2 = ::atan2(r.c[0], i.c[0]);
 		float d3 = ::exp(d1 * n.c.c[0] - d2 * n.c.c[1]);
@@ -13391,7 +13516,8 @@ public:
 		return this;
 	}
 
-	inline Array8Complex32 *pow(Array8Complex32 n, const VectorU8_8D &mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *
+	pow(const AML_PREFIX(Array8Complex32) &n, const AML_PREFIX(VectorU8_8D) &mask) {
 		float d1;
 		float d2;
 		float d3;
@@ -13482,7 +13608,7 @@ public:
 	}
 
 
-	inline Array8Complex32 *pow(Complex32 n, const VectorU8_8D &mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *pow(const AML_PREFIX(Complex32) n, const AML_PREFIX(VectorU8_8D) &mask) {
 		float d1;
 		float d2;
 		float d3;
@@ -13572,7 +13698,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex32 *exp(const VectorU8_8D &mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *exp(const AML_PREFIX(VectorU8_8D) &mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -13626,7 +13752,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex32 *exp(float n, const VectorU8_8D &mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *exp(float n, const AML_PREFIX(VectorU8_8D) &mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -13680,7 +13806,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex32 *pow(float n) {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *pow(float n) {
 		float d1;
 		float d2;
 		d1 = ::pow(r.c[0] * r.c[0] + i.c[0] * i.c[0], n / 2) * ::cos(n * atan2(i.c[0], r.c[0]));
@@ -13719,7 +13845,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex32 *pow(float n, const VectorU8_8D &mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *pow(float n, const AML_PREFIX(VectorU8_8D) &mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -13773,8 +13899,8 @@ public:
 		return this;
 	}
 
-	inline VectorFloat8D abs() {
-		VectorFloat8D ret;
+	AML_FUNCTION AML_PREFIX(VectorFloat8D) abs() {
+		AML_PREFIX(VectorFloat8D) ret;
 		ret.v.c[0] = ::sqrt(r.c[0] * r.c[0] + i.c[0] * i.c[0]);
 		ret.v.c[1] = ::sqrt(r.c[1] * r.c[1] + i.c[1] * i.c[1]);
 		ret.v.c[2] = ::sqrt(r.c[2] * r.c[2] + i.c[2] * i.c[2]);
@@ -13786,8 +13912,8 @@ public:
 		return ret;
 	}
 
-	inline VectorU8_8D abs_gt(float a) {
-		VectorU8_8D ret;
+	AML_FUNCTION AML_PREFIX(VectorU8_8D) abs_gt(float a) {
+		AML_PREFIX(VectorU8_8D) ret;
 		ret.v.c[0] = a * a < r.c[0] * r.c[0] + i.c[0] * i.c[0];
 		ret.v.c[1] = a * a < r.c[1] * r.c[1] + i.c[1] * i.c[1];
 		ret.v.c[2] = a * a < r.c[2] * r.c[2] + i.c[2] * i.c[2];
@@ -13799,8 +13925,8 @@ public:
 		return ret;
 	}
 
-	inline VectorU8_8D abs_lt(float a) {
-		VectorU8_8D ret;
+	AML_FUNCTION AML_PREFIX(VectorU8_8D) abs_lt(float a) {
+		AML_PREFIX(VectorU8_8D) ret;
 		ret.v.c[0] = a * a > r.c[0] * r.c[0] + i.c[0] * i.c[0];
 		ret.v.c[1] = a * a > r.c[1] * r.c[1] + i.c[1] * i.c[1];
 		ret.v.c[2] = a * a > r.c[2] * r.c[2] + i.c[2] * i.c[2];
@@ -13812,8 +13938,8 @@ public:
 		return ret;
 	}
 
-	inline VectorU8_8D abs_eq(float a) {
-		VectorU8_8D ret;
+	AML_FUNCTION AML_PREFIX(VectorU8_8D) abs_eq(float a) {
+		AML_PREFIX(VectorU8_8D) ret;
 		ret.v.c[0] = a * a == r.c[0] * r.c[0] + i.c[0] * i.c[0];
 		ret.v.c[1] = a * a == r.c[1] * r.c[1] + i.c[1] * i.c[1];
 		ret.v.c[2] = a * a == r.c[2] * r.c[2] + i.c[2] * i.c[2];
@@ -13825,7 +13951,7 @@ public:
 		return ret;
 	}
 
-	inline Array8Complex32 *ln(const VectorU8_8D &mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *ln(const AML_PREFIX(VectorU8_8D) &mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -13879,7 +14005,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex32 *log(const VectorU8_8D &mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *log(const AML_PREFIX(VectorU8_8D) &mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -13933,7 +14059,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex32 *log10(const VectorU8_8D &mask) {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *log10(const AML_PREFIX(VectorU8_8D) &mask) {
 		float d1;
 		float d2;
 		if (mask.v.c[0]) {
@@ -13987,7 +14113,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex32 *ln() {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *ln() {
 		float d1;
 		float d2;
 		d1 = ::log(i.c[0] * i.c[0] + r.c[0] * r.c[0]) / 2;
@@ -14025,7 +14151,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex32 *log() {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *log() {
 		float d1;
 		float d2;
 		d1 = ::log(i.c[0] * i.c[0] + r.c[0] * r.c[0]) / 2;
@@ -14063,7 +14189,7 @@ public:
 		return this;
 	}
 
-	inline Array8Complex32 *log10() {
+	AML_FUNCTION AML_PREFIX(Array8Complex32) *log10() {
 		float d1;
 		float d2;
 		d1 = ::log(i.c[0] * i.c[0] + r.c[0] * r.c[0]) / (2 * AML_LN10);
@@ -14104,7 +14230,9 @@ public:
 };
 
 
-inline std::string operator<<(std::string &lhs, const Array8Complex32 &rhs) {
+#if !defined(AML_NO_STRING)
+
+AML_FUNCTION std::string operator<<(std::string &lhs, const AML_PREFIX(Array8Complex32) &rhs) {
 	std::ostringstream string;
 	string << lhs << "{ " << rhs.r.c[0] << " + " << rhs.i.c[0] << "i ,  " << rhs.r.c[1] << " + " << rhs.i.c[1]
 		   << "i ,  " << rhs.r.c[2] << " + " << rhs.i.c[2] << "i ,  " << rhs.r.c[3] << " + " << rhs.i.c[3] << "i ,  "
@@ -14113,7 +14241,7 @@ inline std::string operator<<(std::string &lhs, const Array8Complex32 &rhs) {
 	return string.str();
 }
 
-inline std::string operator<<(const char *lhs, const Array8Complex32 &rhs) {
+AML_FUNCTION std::string operator<<(const char *lhs, const AML_PREFIX(Array8Complex32) &rhs) {
 	std::ostringstream string;
 	string << lhs << "{ " << rhs.r.c[0] << " + " << rhs.i.c[0] << "i ,  " << rhs.r.c[1] << " + " << rhs.i.c[1]
 		   << "i ,  " << rhs.r.c[2] << " + " << rhs.i.c[2] << "i ,  " << rhs.r.c[3] << " + " << rhs.i.c[3] << "i ,  "
@@ -14124,7 +14252,7 @@ inline std::string operator<<(const char *lhs, const Array8Complex32 &rhs) {
 
 template<class charT, class traits>
 std::basic_ostream<charT, traits> &
-operator<<(std::basic_ostream<charT, traits> &o, const Array8Complex32 &rhs) {
+operator<<(std::basic_ostream<charT, traits> &o, const AML_PREFIX(Array8Complex32) &rhs) {
 	std::basic_ostringstream<charT, traits> s;
 	s.flags(o.flags());
 	s.imbue(o.getloc());
@@ -14136,13 +14264,17 @@ operator<<(std::basic_ostream<charT, traits> &o, const Array8Complex32 &rhs) {
 	return o << s.str();
 }
 
-inline Array8Complex32 operator+(const Complex32 &lhs, const Array8Complex32 &rhs) {
+#endif
+
+AML_FUNCTION AML_PREFIX(Array8Complex32)
+operator+(const AML_PREFIX(Complex32) &lhs, const AML_PREFIX(Array8Complex32) &rhs) {
 	return rhs + lhs;
 }
 
 
-inline Array8Complex32 operator-(const Complex32 &lhs, const Array8Complex32 &rhs) {
-	Array8Complex32 ret;
+AML_FUNCTION AML_PREFIX(Array8Complex32)
+operator-(const AML_PREFIX(Complex32) &lhs, const AML_PREFIX(Array8Complex32) &rhs) {
+	AML_PREFIX(Array8Complex32) ret;
 	ret.i.c[0] = lhs.c.c[1] - rhs.i.c[0];
 	ret.i.c[1] = lhs.c.c[1] - rhs.i.c[1];
 	ret.i.c[2] = lhs.c.c[1] - rhs.i.c[2];
@@ -14162,12 +14294,14 @@ inline Array8Complex32 operator-(const Complex32 &lhs, const Array8Complex32 &rh
 	return ret;
 }
 
-inline Array8Complex32 operator*(const Complex32 &lhs, const Array8Complex32 &rhs) {
+AML_FUNCTION AML_PREFIX(Array8Complex32)
+operator*(const AML_PREFIX(Complex32) &lhs, const AML_PREFIX(Array8Complex32) &rhs) {
 	return rhs * lhs;
 }
 
-inline Array8Complex32 operator/(const Complex32 &lhs, const Array8Complex32 &rhs) {
-	Array8Complex32 ret;
+AML_FUNCTION AML_PREFIX(Array8Complex32)
+operator/(const AML_PREFIX(Complex32) &lhs, const AML_PREFIX(Array8Complex32) &rhs) {
+	AML_PREFIX(Array8Complex32) ret;
 	float d1 =
 			(lhs.c.c[0] * rhs.r.c[0] + lhs.c.c[1] * rhs.i.c[0]) / (rhs.r.c[0] * rhs.r.c[0] + rhs.i.c[0] * rhs.i.c[0]);
 	float d2 =
@@ -14209,12 +14343,12 @@ inline Array8Complex32 operator/(const Complex32 &lhs, const Array8Complex32 &rh
 
 #if defined(USE_CONCEPTS)
 template<class T>
-concept ComplexNumber = requires(T a, T b, Complex64 v){
+concept ComplexNumber = requires(T a, T b){
 	a + a;
 	a * a;
 	a / b;
 	a.ln();
-	a.set(0, v);
+	a.sin();
 };
 #endif
 
@@ -14225,7 +14359,7 @@ template<ComplexNumber C>
 #else
 template<class C>
 #endif
-inline auto log(C c) { return *c.ln(); }
+AML_FUNCTION auto log(C c) { return *c.ln(); }
 
 #if defined(USE_CONCEPTS)
 
@@ -14233,7 +14367,7 @@ template<ComplexNumber C>
 #else
 template<class C>
 #endif
-inline auto sin(C c) { return *c.sin(); }
+AML_FUNCTION auto sin(C c) { return *c.sin(); }
 
 #if defined(USE_CONCEPTS)
 
@@ -14241,7 +14375,7 @@ template<ComplexNumber C>
 #else
 template<class C>
 #endif
-inline auto log10(C c) { return *c.log10(); }
+AML_FUNCTION auto log10(C c) { return *c.log10(); }
 
 #if defined(USE_CONCEPTS)
 
@@ -14249,7 +14383,7 @@ template<ComplexNumber C>
 #else
 template<class C>
 #endif
-inline auto tan(C c) { return *c.tan(); }
+AML_FUNCTION auto tan(C c) { return *c.tan(); }
 
 #if defined(USE_CONCEPTS)
 
@@ -14257,7 +14391,7 @@ template<ComplexNumber C>
 #else
 template<class C>
 #endif
-inline auto cos(C c) { return *c.cos(); }
+AML_FUNCTION auto cos(C c) { return *c.cos(); }
 
 
 #endif //std::complex compatibility
