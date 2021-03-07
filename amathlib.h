@@ -99,7 +99,7 @@
 
 #ifndef DEBUG
 
-#if defined(__x86_64__) && !defined(__global__)
+#if defined(__x86_64__) && !defined(USE_CUDA)
 #ifdef __SSE__
 #define USE_SSE
 #endif
@@ -148,7 +148,7 @@
 #endif //NDEBUG
 
 //#if defined(DEBUG)
-#if defined(__x86_64__) && !defined(__global__)
+#if defined(__x86_64__) && !defined(USE_CUDA)
 #if defined(USE_AVX512F)
 #define USE_AVX512
 #endif
@@ -183,19 +183,19 @@
 
 //#endif // DEBUG
 
-#if defined(USE_AVX512) && !defined(__global__)
+#if defined(USE_AVX512) && !defined(USE_CUDA)
 
 #include <immintrin.h>
 
 #endif
 
 
-#if defined(USE_AVX) && !defined(__global__)
+#if defined(USE_AVX) && !defined(USE_CUDA)
 
 #include <immintrin.h>
 
 #endif
-#if defined(USE_SSE) && !defined(__global__)
+#if defined(USE_SSE) && !defined(USE_CUDA)
 
 #include <emmintrin.h>
 
@@ -215,6 +215,9 @@
 
 
 #endif
+
+
+#include "multiprecision.h"
 
 
 union AML_PREFIX(doublevec4) {
@@ -498,13 +501,39 @@ namespace AML_PREFIX(AML) {
 #else
 	template<class T>
 #endif
-	AML_FUNCTION T arithmeticMean(T a1, T a2) {
+	AML_FUNCTION T arithmeticMean(const T a1, const T a2) {
 #if defined(AML_SAFE_MATH)
-		return a1 + (a2 - a1) / 2;
+		return a1 + (a2 - a1) * ((T) 0.5);
 #else
 		return (a1 + a2) / 2;
 #endif
 	}
+
+#if !defined(USE_CUDA) && defined(USE_CONCEPTS)
+
+#if defined(__GNUG__) && !defined(__clang__) && !defined(USE_CUDA)
+#pragma GCC push_options
+#pragma GCC optimize ("O3")
+#endif
+
+	template<class T>
+	AML_FUNCTION bool precisionSufficient(const T a, const T b) {
+		const T a1 = a;
+		const T b1 = b;
+		return a1 != b1;
+	}
+
+	template<class T>
+	AML_FUNCTION bool precisionSufficient(const T a, const T b, auto f) {
+		const T a1 = f(a);
+		const T b1 = f(b);
+		return a1 != b1;
+	}
+
+#if defined(__GNUG__) && !defined(__clang__) && !defined(USE_CUDA)
+#pragma GCC pop_options
+#endif
+#endif
 }
 
 
@@ -1528,7 +1557,7 @@ public:
 	template<const int a, const int b, const int c, const int d>
 	AML_FUNCTION AML_PREFIX(VectorDouble4D) *permutation() {
 #if defined(USE_AVX2)
-		v.avx = _mm256_permute4x64_pd(v.avx,a + (b << 2) + (c << 4) + (d << 6));
+		v.avx = _mm256_permute4x64_pd(v.avx, a + (b << 2) + (c << 4) + (d << 6));
 #else
 		double a1 = v.c[a];
 		double b1 = v.c[b];
@@ -2434,7 +2463,8 @@ public:
 	}
 };
 
-#if defined(USE_AVX512)
+#if defined(USE_AVX512) && !defined(COMPLEX_DEFINITIONS) && !defined(USE_CUDA)
+#define COMPLEX_DEFINITIONS
 
 #define MAX_COMPLEX_64_SIZE 8
 #define MAX_COMPLEX_64_TYPE Array8Complex64
@@ -2463,7 +2493,8 @@ public:
 #define MIN_COMPLEX_32_VECTOR_TYPE VectorDouble4D
 
 
-#elif defined(USE_AVX)
+#elif defined(USE_AVX) && !defined(COMPLEX_DEFINITIONS) && !defined(USE_CUDA)
+#define COMPLEX_DEFINITIONS
 
 #define MAX_COMPLEX_64_SIZE 8
 #define MAX_COMPLEX_64_TYPE Array8Complex64
@@ -2492,7 +2523,8 @@ public:
 #define MIN_COMPLEX_32_VECTOR_TYPE VectorFloat4D
 
 
-#elif defined(USE_SSE) || defined(USE_NEON) || defined(USE_WASM_SIMD)
+#elif defined(USE_SSE) || defined(USE_NEON) || defined(USE_WASM_SIMD) && !defined(COMPLEX_DEFINITIONS) && !defined(USE_CUDA)
+#define COMPLEX_DEFINITIONS
 
 #define MAX_COMPLEX_64_SIZE 4
 #define MAX_COMPLEX_64_TYPE Array4Complex64
@@ -2551,7 +2583,8 @@ public:
 #define MIN_COMPLEX_32_VECTOR_TYPE VectorFloat2D
 
 
-#else
+#elif !defined(COMPLEX_DEFINITIONS) && !defined(USE_CUDA)
+#define COMPLEX_DEFINITIONS
 
 
 #define MAX_COMPLEX_64_SIZE 1
@@ -4564,9 +4597,9 @@ public:
 		AML_PREFIX(Array4Complex64) ret;
 #if defined(USE_FMA)
 		__m256d c_0 = _mm256_mul_pd(i.avx, a.i.avx);
-		ret.r.avx = _mm256_fmsub_pd(r.avx, a.r.avx,c_0);
+		ret.r.avx = _mm256_fmsub_pd(r.avx, a.r.avx, c_0);
 		__m256d c_2 = _mm256_mul_pd(i.avx, a.r.avx);
-		ret.i.avx = _mm256_fmadd_pd(r.avx, a.i.avx,c_2);
+		ret.i.avx = _mm256_fmadd_pd(r.avx, a.i.avx, c_2);
 #else
 		ret.r.c[0] = r.c[0] * a.r.c[0] - i.c[0] * a.i.c[0];
 		ret.i.c[0] = r.c[0] * a.i.c[0] + i.c[0] * a.r.c[0];
@@ -6401,13 +6434,13 @@ public:
 		AML_PREFIX(Array8Complex64) ret;
 #if defined(USE_FMA)
 		__m256d c_0 = _mm256_mul_pd(i.avx[0], a.i.avx[0]);
-		ret.r.avx[0] = _mm256_fmsub_pd(r.avx[0], a.r.avx[0],c_0);
+		ret.r.avx[0] = _mm256_fmsub_pd(r.avx[0], a.r.avx[0], c_0);
 		__m256d c_1 = _mm256_mul_pd(i.avx[1], a.i.avx[1]);
-		ret.r.avx[1] = _mm256_fmsub_pd(r.avx[1], a.r.avx[1],c_1);
+		ret.r.avx[1] = _mm256_fmsub_pd(r.avx[1], a.r.avx[1], c_1);
 		__m256d c_2 = _mm256_mul_pd(i.avx[0], a.r.avx[0]);
-		ret.i.avx[0] = _mm256_fmadd_pd(r.avx[0], a.i.avx[0],c_2);
+		ret.i.avx[0] = _mm256_fmadd_pd(r.avx[0], a.i.avx[0], c_2);
 		__m256d c_3 = _mm256_mul_pd(i.avx[1], a.r.avx[1]);
-		ret.i.avx[1] = _mm256_fmadd_pd(r.avx[1], a.i.avx[1],c_3);
+		ret.i.avx[1] = _mm256_fmadd_pd(r.avx[1], a.i.avx[1], c_3);
 #else
 		ret.r.c[0] = r.c[0] * a.r.c[0] - i.c[0] * a.i.c[0];
 		ret.i.c[0] = r.c[0] * a.i.c[0] + i.c[0] * a.r.c[0];
@@ -14396,5 +14429,264 @@ AML_FUNCTION auto cos(C c) { return *c.cos(); }
 
 #endif //std::complex compatibility
 
+#if defined(AML_USE_GMP) && !defined(USE_CUDA)
+
+class AML_PREFIX(ComplexN) {
+public:
+	AML_PREFIX(AmlNumber) c[2];
+
+	AML_FUNCTION AML_PREFIX(ComplexN)(const AmlNumber real, const AmlNumber img = 0.0) {
+		c[0] = real;
+		c[1] = img;
+	}
+
+	AML_FUNCTION explicit AML_PREFIX(ComplexN)(AmlNumber *values) {
+		c[0] = values[0];
+		c[1] = values[1];
+	}
+
+	AML_FUNCTION AML_PREFIX(ComplexN)() = default;
+
+	AML_FUNCTION void set([[maybe_unused]]uint64_t location, AML_PREFIX(ComplexN) value) {
+		c[0] = value.c[0];
+		c[1] = value.c[1];
+	}
+
+//add sub
+	AML_FUNCTION AML_PREFIX(ComplexN) *add(const AML_PREFIX(ComplexN) a) {
+		c[0] += a.c[0];
+		c[1] += a.c[1];
+		return this;
+	}
+
+	AML_FUNCTION AML_PREFIX(ComplexN) operator+(const AML_PREFIX(ComplexN) a) const {
+		AML_PREFIX(ComplexN) ret(c[0] + a.c[0], c[1] + a.c[1]);
+		return ret;
+	}
+
+	AML_FUNCTION AML_PREFIX(ComplexN) operator-(const AML_PREFIX(ComplexN) a) const {
+		AML_PREFIX(ComplexN) ret(c[0] - a.c[0], c[1] - a.c[1]);
+		return ret;
+	}
+
+
+	AML_FUNCTION void operator+=(const AML_PREFIX(ComplexN) a) {
+		c[0] += a.c[0];
+		c[1] += a.c[1];
+	}
+
+	AML_FUNCTION void operator-=(const AML_PREFIX(ComplexN) a) {
+		c[0] -= a.c[0];
+		c[1] -= a.c[1];
+	}
+
+	AML_FUNCTION AML_PREFIX(ComplexN) *subtract(const AML_PREFIX(ComplexN) a) {
+		c[0] -= a.c[0];
+		c[1] -= a.c[1];
+		return this;
+	}
+
+	AML_FUNCTION AML_PREFIX(ComplexN) *conjugate() {
+		c[1].neg();
+		return this;
+	}
+
+//mul
+	AML_FUNCTION AML_PREFIX(ComplexN) *multiply(const AML_PREFIX(ComplexN) a) {
+		AmlNumber d1 = c[0] * a.c[0] - c[1] * a.c[1];
+		AmlNumber d2 = c[0] * a.c[1] + c[1] * a.c[0];
+		c[0] = d1;
+		c[1] = d2;
+		return this;
+	}
+
+
+	AML_FUNCTION AML_PREFIX(ComplexN) operator*(const AML_PREFIX(ComplexN) a) const {
+		AML_PREFIX(ComplexN) ret(c[0] * a.c[0] - c[1] * a.c[1], c[0] * a.c[1] + c[1] * a.c[0]);
+		return ret;
+	}
+
+	AML_FUNCTION void operator*=(const AML_PREFIX(ComplexN) a) {
+		AmlNumber d1 = c[0] * a.c[0] - c[1] * a.c[1];
+		AmlNumber d2 = c[0] * a.c[1] + c[1] * a.c[0];
+		c[0] = d1;
+		c[1] = d2;
+	}
+
+	AML_FUNCTION void operator*=(AmlNumber a) {
+		c[0] *= a;
+		c[1] *= a;
+	}
+
+
+	AML_FUNCTION AML_PREFIX(ComplexN) *square() {
+		AmlNumber d1 = c[0] * c[0] - c[1] * c[1];
+		AmlNumber d2 = c[0] * c[1] + c[1] * c[0];
+		c[0] = d1;
+		c[1] = d2;
+		return this;
+	}
+
+
+//division
+	AML_FUNCTION AML_PREFIX(ComplexN) operator/(const AML_PREFIX(ComplexN) a) const {
+		AML_PREFIX(ComplexN) ret;
+		ret.c[0] = (c[0] * a.c[0] + c[1] * a.c[1]) / (a.c[0] * a.c[0] + a.c[1] * a.c[1]);
+		ret.c[1] = (c[1] * a.c[0] - c[0] * a.c[1]) / (a.c[0] * a.c[0] + a.c[1] * a.c[1]);
+		return ret;
+	}
+
+	AML_FUNCTION void operator/=(const AML_PREFIX(ComplexN) a) {
+		AmlNumber d1 = (c[0] * a.c[0] + c[1] * a.c[1]) / (a.c[0] * a.c[0] + a.c[1] * a.c[1]);
+		AmlNumber d2 = (c[1] * a.c[0] - c[0] * a.c[1]) / (a.c[0] * a.c[0] + a.c[1] * a.c[1]);
+		c[0] = d1;
+		c[1] = d2;
+	}
+
+	AML_FUNCTION void operator/=(const AmlNumber a) {
+		AmlNumber d1 = c[0] / a;
+		AmlNumber d2 = c[1] / a;
+		c[0] = d1;
+		c[1] = d2;
+	}
+
+	AML_FUNCTION AML_PREFIX(ComplexN) *divide(const AML_PREFIX(ComplexN) a) {
+		AmlNumber d1 = (c[0] * a.c[0] + c[1] * a.c[1]) / (a.c[0] * a.c[0] + a.c[1] * a.c[1]);
+		AmlNumber d2 = (c[1] * a.c[0] - c[0] * a.c[1]) / (a.c[0] * a.c[0] + a.c[1] * a.c[1]);
+		c[0] = d1;
+		c[1] = d2;
+		return this;
+	}
+
+	AML_FUNCTION AML_PREFIX(ComplexN) operator/(AmlNumber a) {
+		AML_PREFIX(ComplexN) ret;
+		ret.c[0] = c[0] / a;
+		ret.c[1] = c[1] / a;
+		return ret;
+	}
+
+	AML_FUNCTION AML_PREFIX(ComplexN) *divide(AmlNumber a) {
+		AmlNumber d1 = c[0] / a;
+		AmlNumber d2 = c[1] / a;
+		c[0] = d1;
+		c[1] = d2;
+		return this;
+	}
+
+
+
+
+//sqrt
+	AML_FUNCTION AML_PREFIX(ComplexN) *sqrt() {
+		//double d2 = ::sqrt((-c.c[0] + ::sqrt(c.c[0] * c.c[0] + c.c[1] * c.c[1])) / (2));
+		AmlNumber d2 = c[0] * c[0] + c[1] * c[1];
+		d2.sqrt();
+		d2 -= c[0];
+		d2.sqrt();
+		d2 *= 0.5;
+		AmlNumber d1;
+		if ((double) d2 == 0.0) UNLIKELY {// TODO correct
+			d1 = c[0];
+			d1.sqrt();
+		} else LIKELY {
+			d1 = c[1] / (d2 + d2);
+		}
+		c[0] = d1;
+		c[1] = d2;
+		return this;
+	}
+
+
+	AML_FUNCTION AmlNumber abs() {
+		AmlNumber d = c[0] * c[0] + c[1] * c[1];
+		d.sqrt();
+		return d;
+	}
+
+	AML_FUNCTION bool abs_gt(AmlNumber a) {
+		return a * a < c[0] * c[0] + c[1] * c[1];
+	}
+
+	AML_FUNCTION bool abs_lt(AmlNumber a) {
+		return a * a > c[0] * c[0] + c[1] * c[1];
+	}
+
+	AML_FUNCTION bool abs_eq(AmlNumber a) {
+		return a * a == c[0] * c[0] + c[1] * c[1];
+	}
+
+	AML_FUNCTION bool abs_gt(const AML_PREFIX(ComplexN) a) {
+		return a.c[0] * a.c[0] + a.c[1] * a.c[1] < c[0] * c[0] + c[1] * c[1];
+	}
+
+	AML_FUNCTION bool abs_lt(const AML_PREFIX(ComplexN) a) {
+		return a.c[0] * a.c[0] + a.c[1] * a.c[1] > c[0] * c[0] + c[1] * c[1];
+	}
+
+	AML_FUNCTION bool abs_eq(const AML_PREFIX(ComplexN) a) {
+		return a.c[0] * a.c[0] + a.c[1] * a.c[1] == c[0] * c[0] + c[1] * c[1];
+	}
+
+
+	AML_FUNCTION AmlNumber imaginary() {
+		return c[1];
+	}
+
+	AML_FUNCTION AmlNumber real() {
+		return c[0];
+	}
+
+
+	AML_FUNCTION AmlNumber length() {
+		AmlNumber d = c[0] * c[0] + c[1] * c[1];
+		d.sqrt();
+		return d;
+	}
+
+	AML_FUNCTION AML_PREFIX(ComplexN) *polar(AmlNumber length, AmlNumber angle) {
+		AmlNumber d = angle;
+		d.cos();
+		c[0] = length * d;
+		d = angle;
+		d.sin();
+		c[1] = length * d;
+		return this;
+	}
+
+	AML_FUNCTION AML_PREFIX(ComplexN) operator[]([[maybe_unused]]uint64_t location) {
+		return *this;
+	}
+
+
+};
+
+AML_FUNCTION AML_PREFIX(ComplexN) operator+(const AmlNumber &lhs, const AML_PREFIX(ComplexN) &rhs) {
+	AML_PREFIX(ComplexN) ret(lhs + rhs.c[0], rhs.c[1]);
+	return ret;
+}
+
+AML_FUNCTION AML_PREFIX(ComplexN) operator-(const AmlNumber &lhs, const AML_PREFIX(ComplexN) &rhs) {
+	AmlNumber d = rhs.c[1];
+	d.neg();
+	AML_PREFIX(ComplexN) ret(lhs - rhs.c[0], d);
+	return ret;
+}
+
+AML_FUNCTION AML_PREFIX(ComplexN) operator*(const AmlNumber &lhs, const AML_PREFIX(ComplexN) &rhs) {
+	AML_PREFIX(ComplexN) ret(lhs * rhs.c[0], lhs * rhs.c[1]);
+	return ret;
+}
+
+AML_FUNCTION AML_PREFIX(ComplexN) operator/(const AmlNumber &lhs, const AML_PREFIX(ComplexN) &rhs) {
+	AmlNumber d = lhs;
+	d.neg();
+
+	AML_PREFIX(ComplexN) ret;
+	ret.c[0] = (lhs * rhs.c[0]) / (rhs.c[0] * rhs.c[0] + rhs.c[1] * rhs.c[1]);
+	ret.c[1] = (d * rhs.c[1]) / (rhs.c[0] * rhs.c[0] + rhs.c[1] * rhs.c[1]);
+	return ret;
+}
+
+#endif
 
 #endif //MATH_LIB_A_MATH_LIB_H

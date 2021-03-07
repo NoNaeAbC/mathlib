@@ -8,16 +8,22 @@
 #include "amathlib.h"
 
 
-__global__ void kernel(double height, double width, int accuracy, int *results) {
+__global__ void kernel(double width, double height, int accuracy, int *results) {
 	int i = blockIdx.x * blockDim.x + threadIdx.x; //width
+	if (i >= (int) width) {
+		return;
+	}
 	int j = blockIdx.y * blockDim.y + threadIdx.y; //height
-	results[i + j] = 10000000;
-	return;
-	/*
+	if (j >= (int) height) {
+		return;
+	}
+	results[i + j * (int) width] = 10000000;
+	results[i + j * (int) width] = 0;
+	//	return;
 	if (!(i >= width || j >= height)) {
 
-		CU_Complex64 c = {((double) j) / ((double) height / 2.0f) - 1.5f,
-						  ((double) i) / ((double) width / 2.0f) - 1.0f};
+		CU_Complex64 c = {CU_AML::mapLinear((double) j, 0.0, (double) height, -1.5, 0.5),
+						  CU_AML::mapLinear((double) i, 0.0, (double) width, -1.0, 1.0)};
 		CU_Complex64 z = c;
 		for (int x = 0; x < accuracy; ++x) {
 			z = z * z + c;
@@ -26,11 +32,8 @@ __global__ void kernel(double height, double width, int accuracy, int *results) 
 				break;
 			}
 		}
-		results[i] = accuracy;
 	} else {
-		results[i] = 10;
 	}
-	 */
 }
 
 
@@ -39,7 +42,7 @@ int main() {
 	// Run kernel
 	int width = 250;
 	int height = 80;
-	int accuracy = 1000;
+	int accuracy = 100000;
 
 	int *deviceResults;
 	cudaMalloc(&deviceResults, width * height * sizeof(int));
@@ -49,7 +52,7 @@ int main() {
 				   (height + threadsPerBlock.y - 1) / threadsPerBlock.y);
 
 	kernel<<< numBlocks, threadsPerBlock>>>(width, height, accuracy, deviceResults);
-	std::cout << " : " << width << " : " << c << std::endl;
+	std::cout << " : " << width << " : " << std::endl;
 
 	int *results = (int *) malloc(width * height * sizeof(int));
 
@@ -57,13 +60,14 @@ int main() {
 	cudaFree(deviceResults);
 	for (int x = 0; x < height; x++) {
 		for (int y = 0; y < width; y++) {
-			if (results[y + x * width] >= accuracy) {
-				std::cout << "#";
-			} else if (results[y + x * width] == 10) {
+			if (results[y + x * (int) width] >= accuracy) {
+				std::cout << " ";
+			} else if (results[y + x * (int) width] == 10) {
 				std::cout << ".";
 			} else {
-				std::cout << "_";
+				std::cout << "#";
 			}
+			//std::cout << results[y + x * width] << " ";
 		}
 		std::cout << "\n";
 	}
