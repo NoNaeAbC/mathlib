@@ -215,7 +215,6 @@ public:
 
 	}
 
-
 	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector4D)) operator-(const AML_PREFIX(AML_TYPE_NAME(Vector4D)) vec2) {
 #if defined(USE_AVX) && AML_TYPE_ID == AML_TYPE_DOUBLE
 		AML_PREFIX(AML_TYPE_NAME(Vector4D)) ret;
@@ -274,7 +273,6 @@ public:
 		v.c[3] *= scalar;
 	}
 
-	// for each multiply
 	AML_FUNCTION void operator*=(AML_PREFIX(AML_TYPE_NAME(Vector4D)) vec2) {
 #if defined(USE_AVX) && AML_TYPE_ID == AML_TYPE_DOUBLE
 		v.avx = _mm256_mul_pd(v.avx, vec2.v.avx);
@@ -332,7 +330,6 @@ public:
 #endif
 		return ret;
 	}
-
 
 	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector4D)) *capBetween1_0() {
 #if defined(USE_AVX) && AML_TYPE_ID == AML_TYPE_DOUBLE
@@ -465,6 +462,10 @@ public:
 		return this;
 	}
 
+	AML_FUNCTION AML_TYPE dotP(const AML_PREFIX(AML_TYPE_NAME(Vector4D)) other) const {
+		return v.c[0] * other.v.c[0] + v.c[1] * other.v.c[1] + v.c[2] * other.v.c[2] + v.c[3] * other.v.c[3];
+	}
+
 	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector4D)) *set(AML_TYPE value, AML_PREFIX(VectorU8_4D) mask) {
 		if (mask.v.c[0]) { v.c[0] = value; }
 		if (mask.v.c[1]) { v.c[1] = value; }
@@ -570,11 +571,29 @@ public:
 	}
 
 	AML_CONSTEXPR AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Matrix4x4)) *identity() {
-		m.c[0] = 1.0f;
-		m.c[5] = 1.0f;
-		m.c[10] = 1.0f;
-		m.c[15] = 1.0f;
+		m.c[0] = 1.0;
+		m.c[1] = 0.0;
+		m.c[2] = 0.0;
+		m.c[3] = 0.0;
+		m.c[4] = 0.0;
+		m.c[5] = 1.0;
+		m.c[6] = 0.0;
+		m.c[7] = 0.0;
+		m.c[8] = 0.0;
+		m.c[9] = 0.0;
+		m.c[10] = 1.0;
+		m.c[11] = 0.0;
+		m.c[12] = 0.0;
+		m.c[13] = 0.0;
+		m.c[14] = 0.0;
+		m.c[15] = 1.0;
 		return this;
+	}
+
+	static AML_CONSTEXPR AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Matrix4x4)) Identity() {
+		AML_PREFIX(AML_TYPE_NAME(Matrix4x4)) m;
+		m.identity();
+		return m;
 	}
 
 	AML_CONSTEXPR AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Matrix4x4))
@@ -781,6 +800,31 @@ public:
 	ret.m.neon[7] = vfmaq_f64(ret.m.neon[7], m.neon[5], (float64x2_t) {b.m.c[14], b.m.c[14]});
 	ret.m.neon[7] = vfmaq_f64(ret.m.neon[7], m.neon[7], (float64x2_t) {b.m.c[15], b.m.c[15]});
 
+#elif defined(USE_FMA) && AML_TYPE_ID == AML_TYPE_FLOAT && !defined(__INTEL_COMPILER)
+		__m256 O0 = {b.m.c[0], b.m.c[0], b.m.c[0], b.m.c[0], b.m.c[4], b.m.c[4], b.m.c[4], b.m.c[4]};
+		__m256 O1 = {b.m.c[1], b.m.c[1], b.m.c[1], b.m.c[1], b.m.c[5], b.m.c[5], b.m.c[5], b.m.c[5]};
+		__m256 O2 = {b.m.c[2], b.m.c[2], b.m.c[2], b.m.c[2], b.m.c[6], b.m.c[6], b.m.c[6], b.m.c[6]};
+		__m256 O3 = {b.m.c[3], b.m.c[3], b.m.c[3], b.m.c[3], b.m.c[7], b.m.c[7], b.m.c[7], b.m.c[7]};
+
+		__m256 T0 = {m.c[0], m.c[1], m.c[2], m.c[3], m.c[0], m.c[1], m.c[2], m.c[3]};
+		__m256 T1 = {m.c[4], m.c[5], m.c[6], m.c[7], m.c[4], m.c[5], m.c[6], m.c[7]};
+		__m256 T2 = {m.c[8], m.c[9], m.c[10], m.c[11], m.c[8], m.c[9], m.c[10], m.c[11]};
+		__m256 T3 = {m.c[12], m.c[13], m.c[14], m.c[15], m.c[12], m.c[13], m.c[14], m.c[15]};
+
+		ret.m.avx[0] = _mm256_mul_ps(T0, O0);
+		ret.m.avx[0] = _mm256_fmadd_ps(T1, O1, ret.m.avx[0]);
+		ret.m.avx[0] = _mm256_fmadd_ps(T2, O2, ret.m.avx[0]);
+		ret.m.avx[0] = _mm256_fmadd_ps(T3, O3, ret.m.avx[0]);
+
+		__m256 O8 = {b.m.c[8], b.m.c[8], b.m.c[8], b.m.c[8], b.m.c[12], b.m.c[12], b.m.c[12], b.m.c[12]};
+		__m256 O9 = {b.m.c[9], b.m.c[9], b.m.c[9], b.m.c[9], b.m.c[13], b.m.c[13], b.m.c[13], b.m.c[13]};
+		__m256 O10 = {b.m.c[10], b.m.c[10], b.m.c[10], b.m.c[10], b.m.c[14], b.m.c[14], b.m.c[14], b.m.c[14]};
+		__m256 O11 = {b.m.c[11], b.m.c[11], b.m.c[11], b.m.c[11], b.m.c[15], b.m.c[15], b.m.c[15], b.m.c[15]};
+
+		ret.m.avx[1] = _mm256_mul_ps(T0, O8);
+		ret.m.avx[1] = _mm256_fmadd_ps(T1, O9, ret.m.avx[1]);
+		ret.m.avx[1] = _mm256_fmadd_ps(T2, O10, ret.m.avx[1]);
+		ret.m.avx[1] = _mm256_fmadd_ps(T3, O11, ret.m.avx[1]);
 
 #else
 		ret.m.c[0] = m.c[0] * b.m.c[0] + m.c[4] * b.m.c[1] + m.c[8] * b.m.c[2] + m.c[12] * b.m.c[3];
@@ -832,10 +876,30 @@ public:
 	}
 
 	AML_CONSTEXPR AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Matrix4x4))(const AML_TYPE value) {
+#if defined(__clang__) // check when compiler version changes
+		m = {};
 		m.c[0] = value;
 		m.c[5] = value;
 		m.c[10] = value;
 		m.c[15] = value;
+#else
+		m.c[0] = value;
+		m.c[1] = 0.0;
+		m.c[2] = 0.0;
+		m.c[3] = 0.0;
+		m.c[4] = 0.0;
+		m.c[5] = value;
+		m.c[6] = 0.0;
+		m.c[7] = 0.0;
+		m.c[8] = 0.0;
+		m.c[9] = 0.0;
+		m.c[10] = value;
+		m.c[11] = 0.0;
+		m.c[12] = 0.0;
+		m.c[13] = 0.0;
+		m.c[14] = 0.0;
+		m.c[15] = value;
+#endif
 	}
 
 	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Matrix4x4))(const AML_PREFIX(AML_TYPE_NAME(Vector4D)) &a,
@@ -872,21 +936,7 @@ public:
 	}
 
 	AML_CONSTEXPR AML_FUNCTION void operator=(const AML_PREFIX(AML_TYPE_NAME(Matrix4x4)) &b) {
-		if (std::is_constant_evaluated()) {
-			m = b.m;
-			return;
-		}
-#if defined(USE_AVX512) && AML_TYPE_ID == AML_TYPE_DOUBLE
-		m.avx512[0] = b.m.avx512[0];
-		m.avx512[1] = b.m.avx512[1];
-#elif defined(USE_AVX) && AML_TYPE_ID == AML_TYPE_DOUBLE
-		m.avx[0] = b.m.avx[0];
-		m.avx[1] = b.m.avx[1];
-		m.avx[2] = b.m.avx[2];
-		m.avx[3] = b.m.avx[3];
-#else
 		m = b.m;
-#endif
 	}
 };
 
