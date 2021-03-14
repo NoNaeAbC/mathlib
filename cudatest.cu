@@ -7,7 +7,6 @@
 
 #include "amathlib.h"
 
-
 __global__ void kernel(double width, double height, int accuracy, int *results) {
 	int i = blockIdx.x * blockDim.x + threadIdx.x; //width
 	if (i >= (int) width) {
@@ -17,9 +16,8 @@ __global__ void kernel(double width, double height, int accuracy, int *results) 
 	if (j >= (int) height) {
 		return;
 	}
-	results[i + j * (int) width] = 10000000;
+	results[i + j * (int) width] = accuracy;
 	results[i + j * (int) width] = 0;
-	//	return;
 	if (!(i >= width || j >= height)) {
 
 		CU_Complex64 c = {CU_AML::mapLinear((double) j, 0.0, (double) height, -1.5, 0.5),
@@ -32,17 +30,14 @@ __global__ void kernel(double width, double height, int accuracy, int *results) 
 				break;
 			}
 		}
-	} else {
 	}
 }
 
 
 int main() {
-
-	// Run kernel
-	int width = 250;
-	int height = 80;
-	int accuracy = 100000;
+	const int width = 250;
+	const int height = 80;
+	const int accuracy = 100000;
 
 	int *deviceResults;
 	cudaMalloc(&deviceResults, width * height * sizeof(int));
@@ -62,12 +57,11 @@ int main() {
 		for (int y = 0; y < width; y++) {
 			if (results[y + x * (int) width] >= accuracy) {
 				std::cout << " ";
-			} else if (results[y + x * (int) width] == 10) {
+			} else if (results[y + x * (int) width] == 10) UNLIKELY {
 				std::cout << ".";
-			} else {
+			} else LIKELY {
 				std::cout << "#";
 			}
-			//std::cout << results[y + x * width] << " ";
 		}
 		std::cout << "\n";
 	}

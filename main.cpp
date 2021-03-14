@@ -9,6 +9,10 @@
 #include <iostream>
 #include <algorithm>
 
+struct A {
+	double a[0];
+	double b[0];
+};
 
 int main() {
 
@@ -30,77 +34,25 @@ int main() {
 #if defined(USE_CONCEPTS)
 	std::cout << "C++ 20" << std::endl;
 #endif
+	if (std::is_constant_evaluated()) {
+		std::cout << "CONST" << std::endl;
+	}
 
-	std::cout << "size : " << sizeof(VectorDouble4D) << " align : " << alignof(VectorDouble4D) << std::endl;
+	std::cout << "size : " << sizeof(Vector4D_64) << " align : " << alignof(Vector4D_64) << std::endl;
 	std::cout << "size double : " << sizeof(double) << " size float : " << sizeof(float) << std::endl;
 	std::cout << "size : " << sizeof(Complex32) << " align : " << alignof(Complex32) << std::endl;
 	std::cout << "size : " << sizeof(Array2Complex32) << " align : " << alignof(Array2Complex32) << std::endl;
 	std::cout << "size : " << sizeof(Array4Complex32) << " align : " << alignof(Array4Complex32) << std::endl;
 	std::cout << "size : " << sizeof(Array8Complex32) << " align : " << alignof(Array8Complex32) << std::endl;
 	std::cout << "size : " << sizeof(AmlNumber) << " align : " << alignof(AmlNumber) << std::endl;
+	std::cout << "size : " << sizeof(Array3_64) << " align : " << alignof(Array3_64) << std::endl;
+	std::cout << "size : " << sizeof(ArrayN_64<5>) << " align : " << alignof(ArrayN_64<5>) << " array N" << std::endl;
 
-	{
-		AmlNumber a = 1.0;
-		AmlNumber b = 1.0;
-
-		AmlNumber c = a + ((AmlNumber) 1.0f) / b;
-		while (AML::precisionSufficient(a, c)) {
-			b *= 2.0;
-			c = a + ((AmlNumber) 1.0f) / b;
-		}
-		std::cout << (double) b << std::endl;
-	}
-
-	{
-		float a = 1.0;
-		float b = 1.0;
-
-		float c = a + ((float) 1.0f) / b;
-		while (AML::precisionSufficient(a, c)) {
-			b *= 1.5;
-			c = a + ((float) 1.0f) / b;
-		}
-		std::cout << (double) b << std::endl;
-	}
-	{
-		long double a = 1.0;
-		long double b = 1.0;
-
-		long double c = a + ((long double) 1.0f) / b;
-		while (AML::precisionSufficient(a, c)) {
-			b *= 2.0;
-			c = a + ((long double) 1.0f) / b;
-		}
-		std::cout << (double) b << std::endl;
-	}
-	AML_DEFAULT_PRECISION 50;
-	{
-		AML_DEFAULT_PRECISION 2000;
-		std::cout << AML::defaultPrecision << std::endl;
-
-		AmlNumber a = 1.0;
-		AmlNumber b = 1.0;
-
-		AmlNumber c = a + ((AmlNumber) 1.0f) / b;
-		while (AML::precisionSufficient(a, c)) {
-			b *= 2.0;
-			c = a + ((AmlNumber) 1.0f) / b;
-		}
-		std::cout << (double) b << std::endl;
-	}
-	std::cout << AML::defaultPrecision << std::endl;
-
-	{
-		float a = 0.0;
-		float b = 1.0;
-
-		float c = a + ((float) 1.0f) / b;
-		while (AML::precisionSufficient(a, c, [](float x) { return x / 10000000000000000000000000000000000000.0f; })) {
-			b *= 1.5;
-			c = a + ((float) 1.0f) / b;
-		}
-		std::cout << (double) b << std::endl;
-	}
+	ArrayN_64<2> a;
+	ArrayN_64<3> a1;
+	ArrayN_64<4> a2;
+	ArrayN_64<5> a3;
+	ArrayN_64<9> a4;
 
 	return 0;
 

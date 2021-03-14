@@ -9,20 +9,27 @@
 
 namespace AML_PREFIX(AML) {
 
-static thread_local unsigned int defaultPrecision = 0;
+	static thread_local unsigned int defaultPrecision = 0;
 
+	inline unsigned int
+	sySTeMDEfAulTutILs() { // hopefully it sounds boring enough that it wont be used. everything in Spongebob case is private
+		return defaultPrecision;
+	}
 }
 
-class AmlDefaultPrecision{
+class AmlDefaultPrecision {
 	unsigned int cache;
 public:
-	inline AmlDefaultPrecision(unsigned int defaultPrecision ){
+	inline AmlDefaultPrecision(unsigned int defaultPrecision) {
 		cache = AML::defaultPrecision;
 		AML::defaultPrecision = defaultPrecision;
 	}
-	inline ~AmlDefaultPrecision(){
+
+	inline ~AmlDefaultPrecision() {
 		AML::defaultPrecision = cache;
 	}
+
+
 };
 
 
@@ -33,9 +40,10 @@ public:
 
 #define AML__UNIQUE_NAME(base) AML__PP_CAT(base, __LINE__)
 
-#define AML_DEFAULT_PRECISION AmlDefaultPrecision AML__UNIQUE_NAME(amldefaultpre)  =
+#define AML_SET_DEFAULT_PRECISION AmlDefaultPrecision AML__UNIQUE_NAME(amldefaultpre)  =
 
 
+#define AML_DEFAULT_PRECISION (AML::sySTeMDEfAulTutILs())
 
 class AmlNumber {
 	mpfr_t number;
@@ -252,31 +260,31 @@ public:
 
 namespace AML_PREFIX(AML) {
 
-inline AmlNumber sqrt(const AmlNumber a) {
-	AmlNumber x = a;
-	x.sqrt();
-	return x;
-}
+	inline AmlNumber sqrt(const AmlNumber a) {
+		AmlNumber x = a;
+		x.sqrt();
+		return x;
+	}
 
-inline AmlNumber log(const AmlNumber a) {
-	AmlNumber x = a;
-	x.ln();
-	return x;
-}
+	inline AmlNumber log(const AmlNumber a) {
+		AmlNumber x = a;
+		x.ln();
+		return x;
+	}
 
-inline AmlNumber exp(const AmlNumber a) {
-	AmlNumber x = a;
-	x.exp();
-	return x;
-}
+	inline AmlNumber exp(const AmlNumber a) {
+		AmlNumber x = a;
+		x.exp();
+		return x;
+	}
 
-inline AmlNumber pow(const AmlNumber a, const AmlNumber b) {
-	AmlNumber x1 = a;
-	AmlNumber x2 = b;
-	x1.pow(x2);
-	return x1;
+	inline AmlNumber pow(const AmlNumber a, const AmlNumber b) {
+		AmlNumber x1 = a;
+		AmlNumber x2 = b;
+		x1.pow(x2);
+		return x1;
+	}
 }
-}
-
+#define defaultPrecision sySTeMDEfAulTutILs()
 
 #endif //MATHLIB_MULTIPRECISION_H
