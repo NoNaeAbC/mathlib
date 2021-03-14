@@ -569,28 +569,16 @@ public:
 		return ret;
 	}
 
-	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Matrix4x4)) *identity() {
+	AML_CONSTEXPR AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Matrix4x4)) *identity() {
 		m.c[0] = 1.0f;
-		m.c[1] = 0.0f;
-		m.c[2] = 0.0f;
-		m.c[3] = 0.0f;
-		m.c[4] = 0.0f;
 		m.c[5] = 1.0f;
-		m.c[6] = 0.0f;
-		m.c[7] = 0.0f;
-		m.c[8] = 0.0f;
-		m.c[9] = 0.0f;
 		m.c[10] = 1.0f;
-		m.c[11] = 0.0f;
-		m.c[12] = 0.0f;
-		m.c[13] = 0.0f;
-		m.c[14] = 0.0f;
 		m.c[15] = 1.0f;
 		return this;
 	}
 
 	AML_CONSTEXPR AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Matrix4x4))
-	operator*(const AML_PREFIX(AML_TYPE_NAME(Matrix4x4)) &b) const noexcept {
+	operator*(const AML_PREFIX(AML_TYPE_NAME(Matrix4x4)) &b) const {
 #if defined(__cpp_lib_is_constant_evaluated)
 		if (std::is_constant_evaluated()) {
 			AML_PREFIX(AML_TYPE_NAME(Matrix4x4)) ret;
@@ -638,46 +626,40 @@ public:
 	ret.m.avx512[1] = _mm512_fmadd_pd(T2, O6, ret.m.avx512[1]);
 	ret.m.avx512[1] = _mm512_fmadd_pd(T3, O7, ret.m.avx512[1]);
 #elif defined(USE_FMA) && AML_TYPE_ID == AML_TYPE_DOUBLE
-		/*
-	 * m0 * bcst 0
-	 * m0 * bcst 4
-	 * m0 * bcst 8
-	 * m0 * bcst 12
-	 */
-		__m256d O0 = _mm256_broadcastsd_pd((__m128d) {b.m.c[0], 0.0f});
-		__m256d O1 = _mm256_broadcastsd_pd((__m128d) {b.m.c[1], 0.0f});
-		__m256d O2 = _mm256_broadcastsd_pd((__m128d) {b.m.c[2], 0.0f});
-		__m256d O3 = _mm256_broadcastsd_pd((__m128d) {b.m.c[3], 0.0f});
+		__m256d O0 = {b.m.c[0], b.m.c[0],b.m.c[0],b.m.c[0]};
+		__m256d O1 = {b.m.c[1], b.m.c[1],b.m.c[1],b.m.c[1]};
+		__m256d O2 = {b.m.c[2], b.m.c[2],b.m.c[2],b.m.c[2]};
+		__m256d O3 = {b.m.c[3], b.m.c[3],b.m.c[3],b.m.c[3]};
 
 		ret.m.avx[0] = _mm256_mul_pd(m.avx[0], O0);
 		ret.m.avx[0] = _mm256_fmadd_pd(m.avx[1], O1, ret.m.avx[0]);
 		ret.m.avx[0] = _mm256_fmadd_pd(m.avx[2], O2, ret.m.avx[0]);
 		ret.m.avx[0] = _mm256_fmadd_pd(m.avx[3], O3, ret.m.avx[0]);
 
-		__m256d O4 = _mm256_broadcastsd_pd((__m128d) {b.m.c[4], 0.0f});
-		__m256d O5 = _mm256_broadcastsd_pd((__m128d) {b.m.c[5], 0.0f});
-		__m256d O6 = _mm256_broadcastsd_pd((__m128d) {b.m.c[6], 0.0f});
-		__m256d O7 = _mm256_broadcastsd_pd((__m128d) {b.m.c[7], 0.0f});
+		__m256d O4 = {b.m.c[4], b.m.c[4],b.m.c[4],b.m.c[4]};
+		__m256d O5 = {b.m.c[5], b.m.c[5],b.m.c[5],b.m.c[5]};
+		__m256d O6 = {b.m.c[6], b.m.c[6],b.m.c[6],b.m.c[6]};
+		__m256d O7 = {b.m.c[7], b.m.c[7],b.m.c[7],b.m.c[7]};
 
 		ret.m.avx[1] = _mm256_mul_pd(m.avx[0], O4);
 		ret.m.avx[1] = _mm256_fmadd_pd(m.avx[1], O5, ret.m.avx[1]);
 		ret.m.avx[1] = _mm256_fmadd_pd(m.avx[2], O6, ret.m.avx[1]);
 		ret.m.avx[1] = _mm256_fmadd_pd(m.avx[3], O7, ret.m.avx[1]);
 
-		__m256d O8 = _mm256_broadcastsd_pd((__m128d) {b.m.c[8], 0.0f});
-		__m256d O9 = _mm256_broadcastsd_pd((__m128d) {b.m.c[9], 0.0f});
-		__m256d O10 = _mm256_broadcastsd_pd((__m128d) {b.m.c[10], 0.0f});
-		__m256d O11 = _mm256_broadcastsd_pd((__m128d) {b.m.c[11], 0.0f});
+		__m256d O8 = {b.m.c[8], b.m.c[8],b.m.c[8],b.m.c[8]};
+		__m256d O9 = {b.m.c[9], b.m.c[9],b.m.c[9],b.m.c[9]};
+		__m256d O10 = {b.m.c[10], b.m.c[10],b.m.c[10],b.m.c[10]};
+		__m256d O11 = {b.m.c[11], b.m.c[11],b.m.c[11],b.m.c[11]};
 
 		ret.m.avx[2] = _mm256_mul_pd(m.avx[0], O8);
 		ret.m.avx[2] = _mm256_fmadd_pd(m.avx[1], O9, ret.m.avx[2]);
 		ret.m.avx[2] = _mm256_fmadd_pd(m.avx[2], O10, ret.m.avx[2]);
 		ret.m.avx[2] = _mm256_fmadd_pd(m.avx[3], O11, ret.m.avx[2]);
 
-		__m256d O12 = _mm256_broadcastsd_pd((__m128d) {b.m.c[12], 0.0f});
-		__m256d O13 = _mm256_broadcastsd_pd((__m128d) {b.m.c[13], 0.0f});
-		__m256d O14 = _mm256_broadcastsd_pd((__m128d) {b.m.c[14], 0.0f});
-		__m256d O15 = _mm256_broadcastsd_pd((__m128d) {b.m.c[15], 0.0f});
+		__m256d O12 = {b.m.c[12], b.m.c[12],b.m.c[12],b.m.c[12]};
+		__m256d O13 = {b.m.c[13], b.m.c[13],b.m.c[13],b.m.c[13]};
+		__m256d O14 = {b.m.c[14], b.m.c[14],b.m.c[14],b.m.c[14]};
+		__m256d O15 = {b.m.c[15], b.m.c[15],b.m.c[15],b.m.c[15]};
 
 		ret.m.avx[3] = _mm256_mul_pd(m.avx[0], O12);
 		ret.m.avx[3] = _mm256_fmadd_pd(m.avx[1], O13, ret.m.avx[3]);
@@ -849,6 +831,13 @@ public:
 		m.c[15] = 0.0f;
 	}
 
+	AML_CONSTEXPR AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Matrix4x4))(const AML_TYPE value) {
+		m.c[0] = value;
+		m.c[5] = value;
+		m.c[10] = value;
+		m.c[15] = value;
+	}
+
 	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Matrix4x4))(const AML_PREFIX(AML_TYPE_NAME(Vector4D)) &a,
 													  const AML_PREFIX(AML_TYPE_NAME(Vector4D)) &b,
 													  const AML_PREFIX(AML_TYPE_NAME(Vector4D)) &c,
@@ -879,45 +868,24 @@ public:
 	}
 
 	AML_CONSTEXPR AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Matrix4x4))(const AML_PREFIX(AML_TYPE_NAME(Matrix4x4)) &b) {
+		m = b.m;
+	}
+
+	AML_CONSTEXPR AML_FUNCTION void operator=(const AML_PREFIX(AML_TYPE_NAME(Matrix4x4)) &b) {
 		if (std::is_constant_evaluated()) {
-			m.c[0] = b.m.c[0];
-			m.c[1] = b.m.c[1];
-			m.c[2] = b.m.c[2];
-			m.c[3] = b.m.c[3];
-			m.c[4] = b.m.c[4];
-			m.c[5] = b.m.c[5];
-			m.c[6] = b.m.c[6];
-			m.c[7] = b.m.c[7];
-			m.c[8] = b.m.c[8];
-			m.c[9] = b.m.c[9];
-			m.c[10] = b.m.c[10];
-			m.c[11] = b.m.c[11];
-			m.c[12] = b.m.c[12];
-			m.c[13] = b.m.c[13];
-			m.c[14] = b.m.c[14];
-			m.c[15] = b.m.c[15];
+			m = b.m;
 			return;
 		}
 #if defined(USE_AVX512) && AML_TYPE_ID == AML_TYPE_DOUBLE
 		m.avx512[0] = b.m.avx512[0];
-	m.avx512[1] = b.m.avx512[1];
+		m.avx512[1] = b.m.avx512[1];
+#elif defined(USE_AVX) && AML_TYPE_ID == AML_TYPE_DOUBLE
+		m.avx[0] = b.m.avx[0];
+		m.avx[1] = b.m.avx[1];
+		m.avx[2] = b.m.avx[2];
+		m.avx[3] = b.m.avx[3];
 #else
-		m.c[0] = b.m.c[0];
-		m.c[1] = b.m.c[1];
-		m.c[2] = b.m.c[2];
-		m.c[3] = b.m.c[3];
-		m.c[4] = b.m.c[4];
-		m.c[5] = b.m.c[5];
-		m.c[6] = b.m.c[6];
-		m.c[7] = b.m.c[7];
-		m.c[8] = b.m.c[8];
-		m.c[9] = b.m.c[9];
-		m.c[10] = b.m.c[10];
-		m.c[11] = b.m.c[11];
-		m.c[12] = b.m.c[12];
-		m.c[13] = b.m.c[13];
-		m.c[14] = b.m.c[14];
-		m.c[15] = b.m.c[15];
+		m = b.m;
 #endif
 	}
 };

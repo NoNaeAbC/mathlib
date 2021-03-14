@@ -277,18 +277,18 @@ union AML_PREFIX(doublemat4x4) {
 
 union AML_PREFIX(floatmat4x4) {
 #ifdef USE_AVX512
-	__m512d avx512;
+	__m512 avx512;
 #endif
 #ifdef USE_AVX
-	__m256d avx[2];
+	__m256 avx[2];
 #endif
 #ifdef USE_SSE
-	__m128d sse[4];
+	__m128 sse[4];
 #endif
 #ifdef USE_NEON
-	float64x2_t neon[4];
+	float32x4_t neon[4];
 #endif
-	double c[16];
+	float c[16];
 };
 
 union AML_PREFIX(doublevec2) {
