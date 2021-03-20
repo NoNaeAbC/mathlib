@@ -93,6 +93,13 @@
 
 #endif
 
+
+#if defined(__cpp_lib_is_constant_evaluated)
+#define AML_CONSTEXPR constexpr
+#elif
+#define AML_CONSTEXPR
+#endif
+
 #if defined(__cpp_concepts)
 
 #define USE_CONCEPTS
@@ -446,6 +453,9 @@ union AML_PREFIX(u16vec32) {
 	uint16_t c[32];
 };
 
+union AML_PREFIX(u32vec2) {
+	uint32_t c[2];
+};
 
 union AML_PREFIX(u16vec64) {
 
@@ -1315,7 +1325,8 @@ public:
 //mul
 	AML_FUNCTION AML_PREFIX(Complex64) *multiply(const AML_PREFIX(Complex64) a) {
 		double d1 = c.c[0] * a.c.c[0] - c.c[1] * a.c.c[1];
-		double d2 = c.c[0] * a.c.c[1] + c.c[1] * a.c.c[0];
+		double d2 = c.c[0] * a.c.c[1];// + c.c[1] * a.c.c[0];
+		d2 += d2;
 		c.c[0] = d1;
 		c.c[1] = d2;
 		return this;
@@ -1354,7 +1365,7 @@ public:
 	}
 
 
-	AML_FUNCTION AML_PREFIX(Complex64) *square() {
+	constexpr AML_FUNCTION AML_PREFIX(Complex64) *square() {
 		double d1 = c.c[0] * c.c[0] - c.c[1] * c.c[1];
 		double d2 = c.c[0] * c.c[1] + c.c[1] * c.c[0];
 		c.c[0] = d1;

@@ -12,6 +12,7 @@ public:
 	AML_TYPE a[2];
 };
 
+
 class AML_PREFIX(AML_TYPE_NAME(Array3)) {
 public:
 	AML_TYPE a[3];
@@ -25,7 +26,8 @@ public:
 	AML_PREFIX(floatvec4) v{};
 #endif
 
-	constexpr AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Array4)) *add(const AML_PREFIX(AML_TYPE_NAME(Array4)) a) {
+	AML_CONSTEXPR AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Array4)) *add(const AML_PREFIX(AML_TYPE_NAME(Array4)) a) {
+#if defined(__cpp_lib_is_constant_evaluated)
 		if (std::is_constant_evaluated()) {
 			v.c[0] += a.v.c[0];
 			v.c[1] += a.v.c[1];
@@ -33,6 +35,7 @@ public:
 			v.c[3] += a.v.c[3];
 			return this;
 		}
+#endif
 #if defined(USE_AVX) && AML_TYPE == double
 		v.avx = _mm256_add_pd(v.avx, a.v.avx);
 #elif defined(USE_SSE) && AML_TYPE == double // SSE2

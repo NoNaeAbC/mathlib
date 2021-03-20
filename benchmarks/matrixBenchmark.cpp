@@ -9,7 +9,7 @@
 #include <glm/mat4x4.hpp> // glm::mat4
 #include <glm/ext/matrix_transform.hpp>
 
-static void BM_Mul(benchmark::State &state) {
+static void BM_MatrixMultiplicationBoth(benchmark::State &state) {
 	Matrix4x4_32 a(2.0);
 	Matrix4x4_32 b(1.0);
 	for (auto _ : state) {
@@ -22,36 +22,45 @@ static void BM_Mul(benchmark::State &state) {
 
 }
 
-BENCHMARK(BM_Mul);
+BENCHMARK(BM_MatrixMultiplicationBoth);
 
-static void BM_Mul1(benchmark::State &state) {
+static void BM_MatrixMultiplicationSecond(benchmark::State &state) {
 	Matrix4x4_32 a(2.0);
 	Matrix4x4_32 b(1.0);
 	for (auto _ : state) {
 		doNotOptimize(&a);
 		Matrix4x4_32 c = b * a;
-		//Matrix4x4_64 c = a;
 		doNotOptimize(&c);
 	}
 
 }
 
-BENCHMARK(BM_Mul1);
+BENCHMARK(BM_MatrixMultiplicationSecond);
 
-static void BM_Mul2(benchmark::State &state) {
+static void BM_MatrixMultiplicationFirst(benchmark::State &state) {
+	Matrix4x4_32 a(2.0);
+	Matrix4x4_32 b(1.0);
+	for (auto _ : state) {
+		doNotOptimize(&b);
+		Matrix4x4_32 c = b * a;
+		doNotOptimize(&c);
+	}
+}
+
+BENCHMARK(BM_MatrixMultiplicationFirst);
+
+static void BM_MatrixMultiplicationNone(benchmark::State &state) {
 	Matrix4x4_32 a(2.0);
 	Matrix4x4_32 b(1.0);
 	for (auto _ : state) {
 		Matrix4x4_32 c = b * a;
-		//Matrix4x4_64 c = a;
 		doNotOptimize(&c);
 	}
-
 }
 
-BENCHMARK(BM_Mul2);
+BENCHMARK(BM_MatrixMultiplicationNone);
 
-static void BM_GLM(benchmark::State &state) {
+static void BM_GLM_MatrixMultiplicationBoth(benchmark::State &state) {
 	glm::mat4 a(2.0);
 	glm::mat4 b(1.0);
 	for (auto _ : state) {
@@ -63,9 +72,9 @@ static void BM_GLM(benchmark::State &state) {
 
 }
 
-BENCHMARK(BM_GLM);
+BENCHMARK(BM_GLM_MatrixMultiplicationBoth);
 
-static void BM_GLM1(benchmark::State &state) {
+static void BM_GLM_MatrixMultiplicationSecond(benchmark::State &state) {
 	glm::mat4 a(2.0);
 	glm::mat4 b(1.0);
 	for (auto _ : state) {
@@ -76,10 +85,23 @@ static void BM_GLM1(benchmark::State &state) {
 
 }
 
-BENCHMARK(BM_GLM1);
+BENCHMARK(BM_GLM_MatrixMultiplicationSecond);
+
+static void BM_GLM_MatrixMultiplicationFirst(benchmark::State &state) {
+	glm::mat4 a(2.0);
+	glm::mat4 b(1.0);
+	for (auto _ : state) {
+		doNotOptimize(&b);
+		glm::mat4 c = b * a;
+		doNotOptimize(&c);
+	}
+
+}
+
+BENCHMARK(BM_GLM_MatrixMultiplicationFirst);
 
 
-static void BM_GLM2(benchmark::State &state) {
+static void BM_GLM_MatrixMultiplicationNone(benchmark::State &state) {
 	glm::mat4 a(2.0);
 	glm::mat4 b(1.0);
 	for (auto _ : state) {
@@ -89,7 +111,7 @@ static void BM_GLM2(benchmark::State &state) {
 
 }
 
-BENCHMARK(BM_GLM2);
+BENCHMARK(BM_GLM_MatrixMultiplicationNone);
 
 
 BENCHMARK_MAIN();

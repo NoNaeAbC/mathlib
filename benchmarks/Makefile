@@ -1,4 +1,4 @@
-ARGS = -Ofast -ffast-math -march=native -flto
+ARGS = -Ofast -march=native -flto
 #ARGS =
 
 matrixMul: matrixBenchmark.cpp

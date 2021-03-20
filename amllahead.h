@@ -26,3 +26,25 @@
 #undef AML_TYPE_ID
 #undef AML_TYPE_FLOAT
 #undef AML_TYPE_DOUBLE
+
+class AML_PREFIX(Array2UInt_32) {
+public:
+	uint32_t a[2];
+
+	AML_FUNCTION Array2UInt_32() {};
+
+	AML_FUNCTION Array2UInt_32(uint32_t *val) {
+		a[0] = val[0];
+		a[1] = val[1];
+	};
+
+	AML_FUNCTION Array2UInt_32(uint32_t v1, uint32_t v2) {
+		a[0] = v1;
+		a[1] = v2;
+	};
+
+	constexpr AML_FUNCTION uint32_t &operator[](uint32_t pos) {
+		return a[pos];
+	}
+};
+
