@@ -621,7 +621,7 @@ public:
 		}
 #endif
 		AML_PREFIX(AML_TYPE_NAME(Matrix4x4)) ret;
-#if defined(USE_AVX512F) && AML_TYPE_ID == AML_TYPE_DOUBLE
+#if defined(USE_AVX512F) && (AML_TYPE_ID == AML_TYPE_DOUBLE)
 		__m512d O0 = (__m512d) {b.m.c[0], b.m.c[0], b.m.c[0], b.m.c[0], b.m.c[4], b.m.c[4], b.m.c[4], b.m.c[4]};
 	__m512d O1 = (__m512d) {b.m.c[1], b.m.c[1], b.m.c[1], b.m.c[1], b.m.c[5], b.m.c[5], b.m.c[5], b.m.c[5]};
 	__m512d O2 = (__m512d) {b.m.c[2], b.m.c[2], b.m.c[2], b.m.c[2], b.m.c[6], b.m.c[6], b.m.c[6], b.m.c[6]};
@@ -644,7 +644,7 @@ public:
 	ret.m.avx512[1] = _mm512_fmadd_pd(T1, O5, ret.m.avx512[1]);
 	ret.m.avx512[1] = _mm512_fmadd_pd(T2, O6, ret.m.avx512[1]);
 	ret.m.avx512[1] = _mm512_fmadd_pd(T3, O7, ret.m.avx512[1]);
-#elif defined(USE_FMA) && AML_TYPE_ID == AML_TYPE_DOUBLE
+#elif defined(USE_FMA) && (AML_TYPE_ID == AML_TYPE_DOUBLE)
 		__m256d O0 = {b.m.c[0], b.m.c[0],b.m.c[0],b.m.c[0]};
 		__m256d O1 = {b.m.c[1], b.m.c[1],b.m.c[1],b.m.c[1]};
 		__m256d O2 = {b.m.c[2], b.m.c[2],b.m.c[2],b.m.c[2]};
@@ -685,7 +685,7 @@ public:
 		ret.m.avx[3] = _mm256_fmadd_pd(m.avx[2], O14, ret.m.avx[3]);
 		ret.m.avx[3] = _mm256_fmadd_pd(m.avx[3], O15, ret.m.avx[3]);
 
-#elif defined(USE_SSE2) && AML_TYPE_ID == AML_TYPE_DOUBLE
+#elif defined(USE_SSE2) && (AML_TYPE_ID == AML_TYPE_DOUBLE)
 
 		ret.m.sse[0] = _mm_mul_pd(m.sse[0], (__m128d) {b.m.c[0], b.m.c[0]});
 	__m128d cache = _mm_mul_pd(m.sse[2], (__m128d) {b.m.c[1], b.m.c[1]});
@@ -753,7 +753,7 @@ public:
 	ret.m.sse[7] = _mm_add_pd(cache, ret.m.sse[7]);
 	cache = _mm_mul_pd(m.sse[7], (__m128d) {b.m.c[15], b.m.c[15]});
 	ret.m.sse[7] = _mm_add_pd(cache, ret.m.sse[7]);
-#elif defined(USE_NEON) && AML_TYPE_ID == AML_TYPE_DOUBLE
+#elif defined(USE_NEON) && (AML_TYPE_ID == AML_TYPE_DOUBLE)
 		ret.m.neon[0] = vmulq_f64(m.neon[0], (float64x2_t) {b.m.c[0], b.m.c[0]});
 	ret.m.neon[0] = vfmaq_f64(ret.m.neon[0], m.neon[2], (float64x2_t) {b.m.c[1], b.m.c[1]});
 	ret.m.neon[0] = vfmaq_f64(ret.m.neon[0], m.neon[4], (float64x2_t) {b.m.c[2], b.m.c[2]});
@@ -800,7 +800,7 @@ public:
 	ret.m.neon[7] = vfmaq_f64(ret.m.neon[7], m.neon[5], (float64x2_t) {b.m.c[14], b.m.c[14]});
 	ret.m.neon[7] = vfmaq_f64(ret.m.neon[7], m.neon[7], (float64x2_t) {b.m.c[15], b.m.c[15]});
 
-#elif defined(USE_FMA) && AML_TYPE_ID == AML_TYPE_FLOAT && !defined(__INTEL_COMPILER)
+#elif defined(USE_FMA) && (AML_TYPE_ID == AML_TYPE_FLOAT) && !defined(__INTEL_COMPILER)
 		__m256 O0 = {b.m.c[0], b.m.c[0], b.m.c[0], b.m.c[0], b.m.c[4], b.m.c[4], b.m.c[4], b.m.c[4]};
 		__m256 O1 = {b.m.c[1], b.m.c[1], b.m.c[1], b.m.c[1], b.m.c[5], b.m.c[5], b.m.c[5], b.m.c[5]};
 		__m256 O2 = {b.m.c[2], b.m.c[2], b.m.c[2], b.m.c[2], b.m.c[6], b.m.c[6], b.m.c[6], b.m.c[6]};
