@@ -953,7 +953,7 @@ public:
 	}
 
 	AML_FUNCTION void operator+=(const AML_PREFIX(AML_TYPE_NAME(Vector8D)) &vec2) {
-#if defined(USE_AVX512F) || defined(KNCNI) && AML_TYPE_ID == AML_TYPE_DOUBLE
+#if (defined(USE_AVX512F) || defined(KNCNI)) && (AML_TYPE_ID == AML_TYPE_DOUBLE)
 		v.avx512 = _mm512_add_pd(v.avx512, vec2.v.avx512);
 #elif defined(USE_AVX) && AML_TYPE_ID == AML_TYPE_DOUBLE
 		v.avx[0] = _mm256_add_pd(v.avx[0], vec2.v.avx[0]);
