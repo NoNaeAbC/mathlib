@@ -1,6 +1,3 @@
-//
-// Created by af on 14.03.21.
-//
 
 #include <stdint.h>
 
@@ -292,7 +289,7 @@ public:
 		v.avx = _mm256_sqrt_pd(v.avx);
 #elif defined(USE_SSE) && AML_TYPE_ID == AML_TYPE_DOUBLE
 		v.sse[0] = _mm_sqrt_pd(v.sse[0]);
-	v.sse[1] = _mm_sqrt_pd(v.sse[1]);
+		v.sse[1] = _mm_sqrt_pd(v.sse[1]);
 #else
 		v.c[0] = sqrt(v.c[0]);
 		v.c[1] = sqrt(v.c[1]);
@@ -623,27 +620,27 @@ public:
 		AML_PREFIX(AML_TYPE_NAME(Matrix4x4)) ret;
 #if defined(USE_AVX512F) && (AML_TYPE_ID == AML_TYPE_DOUBLE)
 		__m512d O0 = (__m512d) {b.m.c[0], b.m.c[0], b.m.c[0], b.m.c[0], b.m.c[4], b.m.c[4], b.m.c[4], b.m.c[4]};
-	__m512d O1 = (__m512d) {b.m.c[1], b.m.c[1], b.m.c[1], b.m.c[1], b.m.c[5], b.m.c[5], b.m.c[5], b.m.c[5]};
-	__m512d O2 = (__m512d) {b.m.c[2], b.m.c[2], b.m.c[2], b.m.c[2], b.m.c[6], b.m.c[6], b.m.c[6], b.m.c[6]};
-	__m512d O3 = (__m512d) {b.m.c[3], b.m.c[3], b.m.c[3], b.m.c[3], b.m.c[7], b.m.c[7], b.m.c[7], b.m.c[7]};
+		__m512d O1 = (__m512d) {b.m.c[1], b.m.c[1], b.m.c[1], b.m.c[1], b.m.c[5], b.m.c[5], b.m.c[5], b.m.c[5]};
+		__m512d O2 = (__m512d) {b.m.c[2], b.m.c[2], b.m.c[2], b.m.c[2], b.m.c[6], b.m.c[6], b.m.c[6], b.m.c[6]};
+		__m512d O3 = (__m512d) {b.m.c[3], b.m.c[3], b.m.c[3], b.m.c[3], b.m.c[7], b.m.c[7], b.m.c[7], b.m.c[7]};
 
-	__m512d T0 = _mm512_insertf64x4(_mm512_castpd256_pd512(m.avx[0]), m.avx[0], 1);
-	__m512d T1 = _mm512_insertf64x4(_mm512_castpd256_pd512(m.avx[1]), m.avx[1], 1);
-	__m512d T2 = _mm512_insertf64x4(_mm512_castpd256_pd512(m.avx[2]), m.avx[2], 1);
-	__m512d T3 = _mm512_insertf64x4(_mm512_castpd256_pd512(m.avx[3]), m.avx[3], 1);
-	ret.m.avx512[0] = _mm512_mul_pd(T0, O0);
-	ret.m.avx512[0] = _mm512_fmadd_pd(T1, O1, ret.m.avx512[0]);
-	ret.m.avx512[0] = _mm512_fmadd_pd(T2, O2, ret.m.avx512[0]);
-	ret.m.avx512[0] = _mm512_fmadd_pd(T3, O3, ret.m.avx512[0]);
+		__m512d T0 = _mm512_insertf64x4(_mm512_castpd256_pd512(m.avx[0]), m.avx[0], 1);
+		__m512d T1 = _mm512_insertf64x4(_mm512_castpd256_pd512(m.avx[1]), m.avx[1], 1);
+		__m512d T2 = _mm512_insertf64x4(_mm512_castpd256_pd512(m.avx[2]), m.avx[2], 1);
+		__m512d T3 = _mm512_insertf64x4(_mm512_castpd256_pd512(m.avx[3]), m.avx[3], 1);
+		ret.m.avx512[0] = _mm512_mul_pd(T0, O0);
+		ret.m.avx512[0] = _mm512_fmadd_pd(T1, O1, ret.m.avx512[0]);
+		ret.m.avx512[0] = _mm512_fmadd_pd(T2, O2, ret.m.avx512[0]);
+		ret.m.avx512[0] = _mm512_fmadd_pd(T3, O3, ret.m.avx512[0]);
 
-	__m512d O4 = (__m512d) {b.m.c[8], b.m.c[8], b.m.c[8], b.m.c[8], b.m.c[12], b.m.c[12], b.m.c[12], b.m.c[12]};
-	__m512d O5 = (__m512d) {b.m.c[9], b.m.c[9], b.m.c[9], b.m.c[9], b.m.c[13], b.m.c[13], b.m.c[13], b.m.c[13]};
-	__m512d O6 = (__m512d) {b.m.c[10], b.m.c[10], b.m.c[10], b.m.c[10], b.m.c[14], b.m.c[14], b.m.c[14], b.m.c[14]};
-	__m512d O7 = (__m512d) {b.m.c[11], b.m.c[11], b.m.c[11], b.m.c[11], b.m.c[15], b.m.c[15], b.m.c[15], b.m.c[15]};
-	ret.m.avx512[1] = _mm512_mul_pd(T0, O4);
-	ret.m.avx512[1] = _mm512_fmadd_pd(T1, O5, ret.m.avx512[1]);
-	ret.m.avx512[1] = _mm512_fmadd_pd(T2, O6, ret.m.avx512[1]);
-	ret.m.avx512[1] = _mm512_fmadd_pd(T3, O7, ret.m.avx512[1]);
+		__m512d O4 = (__m512d) {b.m.c[8], b.m.c[8], b.m.c[8], b.m.c[8], b.m.c[12], b.m.c[12], b.m.c[12], b.m.c[12]};
+		__m512d O5 = (__m512d) {b.m.c[9], b.m.c[9], b.m.c[9], b.m.c[9], b.m.c[13], b.m.c[13], b.m.c[13], b.m.c[13]};
+		__m512d O6 = (__m512d) {b.m.c[10], b.m.c[10], b.m.c[10], b.m.c[10], b.m.c[14], b.m.c[14], b.m.c[14], b.m.c[14]};
+		__m512d O7 = (__m512d) {b.m.c[11], b.m.c[11], b.m.c[11], b.m.c[11], b.m.c[15], b.m.c[15], b.m.c[15], b.m.c[15]};
+		ret.m.avx512[1] = _mm512_mul_pd(T0, O4);
+		ret.m.avx512[1] = _mm512_fmadd_pd(T1, O5, ret.m.avx512[1]);
+		ret.m.avx512[1] = _mm512_fmadd_pd(T2, O6, ret.m.avx512[1]);
+		ret.m.avx512[1] = _mm512_fmadd_pd(T3, O7, ret.m.avx512[1]);
 #elif defined(USE_FMA) && (AML_TYPE_ID == AML_TYPE_DOUBLE)
 		__m256d O0 = {b.m.c[0], b.m.c[0],b.m.c[0],b.m.c[0]};
 		__m256d O1 = {b.m.c[1], b.m.c[1],b.m.c[1],b.m.c[1]};
@@ -688,117 +685,116 @@ public:
 #elif defined(USE_SSE2) && (AML_TYPE_ID == AML_TYPE_DOUBLE)
 
 		ret.m.sse[0] = _mm_mul_pd(m.sse[0], (__m128d) {b.m.c[0], b.m.c[0]});
-	__m128d cache = _mm_mul_pd(m.sse[2], (__m128d) {b.m.c[1], b.m.c[1]});
-	ret.m.sse[0] = _mm_add_pd(cache, ret.m.sse[0]);
-	cache = _mm_mul_pd(m.sse[4], (__m128d) {b.m.c[2], b.m.c[2]});
-	ret.m.sse[0] = _mm_add_pd(cache, ret.m.sse[0]);
-	cache = _mm_mul_pd(m.sse[6], (__m128d) {b.m.c[3], b.m.c[3]});
-	ret.m.sse[0] = _mm_add_pd(cache, ret.m.sse[0]);
-	//
-	ret.m.sse[1] = _mm_mul_pd(m.sse[1], (__m128d) {b.m.c[0], b.m.c[0]});
-	cache = _mm_mul_pd(m.sse[3], (__m128d) {b.m.c[1], b.m.c[1]});
-	ret.m.sse[1] = _mm_add_pd(cache, ret.m.sse[1]);
-	cache = _mm_mul_pd(m.sse[5], (__m128d) {b.m.c[2], b.m.c[2]});
-	ret.m.sse[1] = _mm_add_pd(cache, ret.m.sse[1]);
-	cache = _mm_mul_pd(m.sse[7], (__m128d) {b.m.c[3], b.m.c[3]});
-	ret.m.sse[1] = _mm_add_pd(cache, ret.m.sse[1]);
-	//
+		__m128d cache = _mm_mul_pd(m.sse[2], (__m128d) {b.m.c[1], b.m.c[1]});
+		ret.m.sse[0] = _mm_add_pd(cache, ret.m.sse[0]);
+		cache = _mm_mul_pd(m.sse[4], (__m128d) {b.m.c[2], b.m.c[2]});
+		ret.m.sse[0] = _mm_add_pd(cache, ret.m.sse[0]);
+		cache = _mm_mul_pd(m.sse[6], (__m128d) {b.m.c[3], b.m.c[3]});
+		ret.m.sse[0] = _mm_add_pd(cache, ret.m.sse[0]);
+		//
+		ret.m.sse[1] = _mm_mul_pd(m.sse[1], (__m128d) {b.m.c[0], b.m.c[0]});
+		cache = _mm_mul_pd(m.sse[3], (__m128d) {b.m.c[1], b.m.c[1]});
+		ret.m.sse[1] = _mm_add_pd(cache, ret.m.sse[1]);
+		cache = _mm_mul_pd(m.sse[5], (__m128d) {b.m.c[2], b.m.c[2]});
+		ret.m.sse[1] = _mm_add_pd(cache, ret.m.sse[1]);
+		cache = _mm_mul_pd(m.sse[7], (__m128d) {b.m.c[3], b.m.c[3]});
+		ret.m.sse[1] = _mm_add_pd(cache, ret.m.sse[1]);
+		//
 
-	ret.m.sse[2] = _mm_mul_pd(m.sse[0], (__m128d) {b.m.c[4], b.m.c[4]});
-	cache = _mm_mul_pd(m.sse[2], (__m128d) {b.m.c[5], b.m.c[5]});
-	ret.m.sse[2] = _mm_add_pd(cache, ret.m.sse[2]);
-	cache = _mm_mul_pd(m.sse[4], (__m128d) {b.m.c[6], b.m.c[6]});
-	ret.m.sse[2] = _mm_add_pd(cache, ret.m.sse[2]);
-	cache = _mm_mul_pd(m.sse[6], (__m128d) {b.m.c[7], b.m.c[7]});
-	ret.m.sse[2] = _mm_add_pd(cache, ret.m.sse[2]);
-	//
-	ret.m.sse[3] = _mm_mul_pd(m.sse[1], (__m128d) {b.m.c[4], b.m.c[4]});
-	cache = _mm_mul_pd(m.sse[3], (__m128d) {b.m.c[5], b.m.c[5]});
-	ret.m.sse[3] = _mm_add_pd(cache, ret.m.sse[3]);
-	cache = _mm_mul_pd(m.sse[5], (__m128d) {b.m.c[6], b.m.c[6]});
-	ret.m.sse[3] = _mm_add_pd(cache, ret.m.sse[3]);
-	cache = _mm_mul_pd(m.sse[7], (__m128d) {b.m.c[7], b.m.c[7]});
-	ret.m.sse[3] = _mm_add_pd(cache, ret.m.sse[3]);
-	//
+		ret.m.sse[2] = _mm_mul_pd(m.sse[0], (__m128d) {b.m.c[4], b.m.c[4]});
+		cache = _mm_mul_pd(m.sse[2], (__m128d) {b.m.c[5], b.m.c[5]});
+		ret.m.sse[2] = _mm_add_pd(cache, ret.m.sse[2]);
+		cache = _mm_mul_pd(m.sse[4], (__m128d) {b.m.c[6], b.m.c[6]});
+		ret.m.sse[2] = _mm_add_pd(cache, ret.m.sse[2]);
+		cache = _mm_mul_pd(m.sse[6], (__m128d) {b.m.c[7], b.m.c[7]});
+		ret.m.sse[2] = _mm_add_pd(cache, ret.m.sse[2]);
+		//
+		ret.m.sse[3] = _mm_mul_pd(m.sse[1], (__m128d) {b.m.c[4], b.m.c[4]});
+		cache = _mm_mul_pd(m.sse[3], (__m128d) {b.m.c[5], b.m.c[5]});
+		ret.m.sse[3] = _mm_add_pd(cache, ret.m.sse[3]);
+		cache = _mm_mul_pd(m.sse[5], (__m128d) {b.m.c[6], b.m.c[6]});
+		ret.m.sse[3] = _mm_add_pd(cache, ret.m.sse[3]);
+		cache = _mm_mul_pd(m.sse[7], (__m128d) {b.m.c[7], b.m.c[7]});
+		ret.m.sse[3] = _mm_add_pd(cache, ret.m.sse[3]);
 
-	ret.m.sse[4] = _mm_mul_pd(m.sse[0], (__m128d) {b.m.c[8], b.m.c[8]});
-	cache = _mm_mul_pd(m.sse[2], (__m128d) {b.m.c[9], b.m.c[9]});
-	ret.m.sse[4] = _mm_add_pd(cache, ret.m.sse[4]);
-	cache = _mm_mul_pd(m.sse[4], (__m128d) {b.m.c[10], b.m.c[10]});
-	ret.m.sse[4] = _mm_add_pd(cache, ret.m.sse[4]);
-	cache = _mm_mul_pd(m.sse[6], (__m128d) {b.m.c[11], b.m.c[11]});
-	ret.m.sse[4] = _mm_add_pd(cache, ret.m.sse[4]);
-	//
-	ret.m.sse[5] = _mm_mul_pd(m.sse[1], (__m128d) {b.m.c[8], b.m.c[8]});
-	cache = _mm_mul_pd(m.sse[3], (__m128d) {b.m.c[9], b.m.c[9]});
-	ret.m.sse[5] = _mm_add_pd(cache, ret.m.sse[5]);
-	cache = _mm_mul_pd(m.sse[5], (__m128d) {b.m.c[10], b.m.c[10]});
-	ret.m.sse[5] = _mm_add_pd(cache, ret.m.sse[5]);
-	cache = _mm_mul_pd(m.sse[7], (__m128d) {b.m.c[11], b.m.c[11]});
-	ret.m.sse[5] = _mm_add_pd(cache, ret.m.sse[5]);
-	//
+		ret.m.sse[4] = _mm_mul_pd(m.sse[0], (__m128d) {b.m.c[8], b.m.c[8]});
+		cache = _mm_mul_pd(m.sse[2], (__m128d) {b.m.c[9], b.m.c[9]});
+		ret.m.sse[4] = _mm_add_pd(cache, ret.m.sse[4]);
+		cache = _mm_mul_pd(m.sse[4], (__m128d) {b.m.c[10], b.m.c[10]});
+		ret.m.sse[4] = _mm_add_pd(cache, ret.m.sse[4]);
+		cache = _mm_mul_pd(m.sse[6], (__m128d) {b.m.c[11], b.m.c[11]});
+		ret.m.sse[4] = _mm_add_pd(cache, ret.m.sse[4]);
+		//
+		ret.m.sse[5] = _mm_mul_pd(m.sse[1], (__m128d) {b.m.c[8], b.m.c[8]});
+		cache = _mm_mul_pd(m.sse[3], (__m128d) {b.m.c[9], b.m.c[9]});
+		ret.m.sse[5] = _mm_add_pd(cache, ret.m.sse[5]);
+		cache = _mm_mul_pd(m.sse[5], (__m128d) {b.m.c[10], b.m.c[10]});
+		ret.m.sse[5] = _mm_add_pd(cache, ret.m.sse[5]);
+		cache = _mm_mul_pd(m.sse[7], (__m128d) {b.m.c[11], b.m.c[11]});
+		ret.m.sse[5] = _mm_add_pd(cache, ret.m.sse[5]);
+		//
 
-	ret.m.sse[6] = _mm_mul_pd(m.sse[0], (__m128d) {b.m.c[12], b.m.c[12]});
-	cache = _mm_mul_pd(m.sse[2], (__m128d) {b.m.c[13], b.m.c[13]});
-	ret.m.sse[6] = _mm_add_pd(cache, ret.m.sse[6]);
-	cache = _mm_mul_pd(m.sse[4], (__m128d) {b.m.c[14], b.m.c[14]});
-	ret.m.sse[6] = _mm_add_pd(cache, ret.m.sse[6]);
-	cache = _mm_mul_pd(m.sse[6], (__m128d) {b.m.c[15], b.m.c[15]});
-	ret.m.sse[6] = _mm_add_pd(cache, ret.m.sse[6]);
-	//
-	ret.m.sse[7] = _mm_mul_pd(m.sse[1], (__m128d) {b.m.c[12], b.m.c[12]});
-	cache = _mm_mul_pd(m.sse[3], (__m128d) {b.m.c[13], b.m.c[13]});
-	ret.m.sse[7] = _mm_add_pd(cache, ret.m.sse[7]);
-	cache = _mm_mul_pd(m.sse[5], (__m128d) {b.m.c[14], b.m.c[14]});
-	ret.m.sse[7] = _mm_add_pd(cache, ret.m.sse[7]);
-	cache = _mm_mul_pd(m.sse[7], (__m128d) {b.m.c[15], b.m.c[15]});
-	ret.m.sse[7] = _mm_add_pd(cache, ret.m.sse[7]);
+		ret.m.sse[6] = _mm_mul_pd(m.sse[0], (__m128d) {b.m.c[12], b.m.c[12]});
+		cache = _mm_mul_pd(m.sse[2], (__m128d) {b.m.c[13], b.m.c[13]});
+		ret.m.sse[6] = _mm_add_pd(cache, ret.m.sse[6]);
+		cache = _mm_mul_pd(m.sse[4], (__m128d) {b.m.c[14], b.m.c[14]});
+		ret.m.sse[6] = _mm_add_pd(cache, ret.m.sse[6]);
+		cache = _mm_mul_pd(m.sse[6], (__m128d) {b.m.c[15], b.m.c[15]});
+		ret.m.sse[6] = _mm_add_pd(cache, ret.m.sse[6]);
+		//
+		ret.m.sse[7] = _mm_mul_pd(m.sse[1], (__m128d) {b.m.c[12], b.m.c[12]});
+		cache = _mm_mul_pd(m.sse[3], (__m128d) {b.m.c[13], b.m.c[13]});
+		ret.m.sse[7] = _mm_add_pd(cache, ret.m.sse[7]);
+		cache = _mm_mul_pd(m.sse[5], (__m128d) {b.m.c[14], b.m.c[14]});
+		ret.m.sse[7] = _mm_add_pd(cache, ret.m.sse[7]);
+		cache = _mm_mul_pd(m.sse[7], (__m128d) {b.m.c[15], b.m.c[15]});
+		ret.m.sse[7] = _mm_add_pd(cache, ret.m.sse[7]);
 #elif defined(USE_NEON) && (AML_TYPE_ID == AML_TYPE_DOUBLE)
 		ret.m.neon[0] = vmulq_f64(m.neon[0], (float64x2_t) {b.m.c[0], b.m.c[0]});
-	ret.m.neon[0] = vfmaq_f64(ret.m.neon[0], m.neon[2], (float64x2_t) {b.m.c[1], b.m.c[1]});
-	ret.m.neon[0] = vfmaq_f64(ret.m.neon[0], m.neon[4], (float64x2_t) {b.m.c[2], b.m.c[2]});
-	ret.m.neon[0] = vfmaq_f64(ret.m.neon[0], m.neon[6], (float64x2_t) {b.m.c[3], b.m.c[3]});
-	//
-	ret.m.neon[1] = vmulq_f64(m.neon[1], (float64x2_t) {b.m.c[0], b.m.c[0]});
-	ret.m.neon[1] = vfmaq_f64(ret.m.neon[1], m.neon[3], (float64x2_t) {b.m.c[1], b.m.c[1]});
-	ret.m.neon[1] = vfmaq_f64(ret.m.neon[1], m.neon[5], (float64x2_t) {b.m.c[2], b.m.c[2]});
-	ret.m.neon[1] = vfmaq_f64(ret.m.neon[1], m.neon[7], (float64x2_t) {b.m.c[3], b.m.c[3]});
-	//
-	ret.m.neon[2] = vmulq_f64(m.neon[0], (float64x2_t) {b.m.c[4], b.m.c[4]});
-	ret.m.neon[2] = vfmaq_f64(ret.m.neon[2], m.neon[2], (float64x2_t) {b.m.c[5], b.m.c[5]});
-	ret.m.neon[2] = vfmaq_f64(ret.m.neon[2], m.neon[4], (float64x2_t) {b.m.c[6], b.m.c[6]});
-	ret.m.neon[2] = vfmaq_f64(ret.m.neon[2], m.neon[6], (float64x2_t) {b.m.c[7], b.m.c[7]});
+		ret.m.neon[0] = vfmaq_f64(ret.m.neon[0], m.neon[2], (float64x2_t) {b.m.c[1], b.m.c[1]});
+		ret.m.neon[0] = vfmaq_f64(ret.m.neon[0], m.neon[4], (float64x2_t) {b.m.c[2], b.m.c[2]});
+		ret.m.neon[0] = vfmaq_f64(ret.m.neon[0], m.neon[6], (float64x2_t) {b.m.c[3], b.m.c[3]});
+		//
+		ret.m.neon[1] = vmulq_f64(m.neon[1], (float64x2_t) {b.m.c[0], b.m.c[0]});
+		ret.m.neon[1] = vfmaq_f64(ret.m.neon[1], m.neon[3], (float64x2_t) {b.m.c[1], b.m.c[1]});
+		ret.m.neon[1] = vfmaq_f64(ret.m.neon[1], m.neon[5], (float64x2_t) {b.m.c[2], b.m.c[2]});
+		ret.m.neon[1] = vfmaq_f64(ret.m.neon[1], m.neon[7], (float64x2_t) {b.m.c[3], b.m.c[3]});
+		//
+		ret.m.neon[2] = vmulq_f64(m.neon[0], (float64x2_t) {b.m.c[4], b.m.c[4]});
+		ret.m.neon[2] = vfmaq_f64(ret.m.neon[2], m.neon[2], (float64x2_t) {b.m.c[5], b.m.c[5]});
+		ret.m.neon[2] = vfmaq_f64(ret.m.neon[2], m.neon[4], (float64x2_t) {b.m.c[6], b.m.c[6]});
+		ret.m.neon[2] = vfmaq_f64(ret.m.neon[2], m.neon[6], (float64x2_t) {b.m.c[7], b.m.c[7]});
 
-	//
-	ret.m.neon[3] = vmulq_f64(m.neon[1], (float64x2_t) {b.m.c[4], b.m.c[4]});
-	ret.m.neon[3] = vfmaq_f64(ret.m.neon[3], m.neon[3], (float64x2_t) {b.m.c[5], b.m.c[5]});
-	ret.m.neon[3] = vfmaq_f64(ret.m.neon[3], m.neon[5], (float64x2_t) {b.m.c[6], b.m.c[6]});
-	ret.m.neon[3] = vfmaq_f64(ret.m.neon[3], m.neon[7], (float64x2_t) {b.m.c[7], b.m.c[7]});
+		//
+		ret.m.neon[3] = vmulq_f64(m.neon[1], (float64x2_t) {b.m.c[4], b.m.c[4]});
+		ret.m.neon[3] = vfmaq_f64(ret.m.neon[3], m.neon[3], (float64x2_t) {b.m.c[5], b.m.c[5]});
+		ret.m.neon[3] = vfmaq_f64(ret.m.neon[3], m.neon[5], (float64x2_t) {b.m.c[6], b.m.c[6]});
+		ret.m.neon[3] = vfmaq_f64(ret.m.neon[3], m.neon[7], (float64x2_t) {b.m.c[7], b.m.c[7]});
 
-	//
-	ret.m.neon[4] = vmulq_f64(m.neon[0], (float64x2_t) {b.m.c[8], b.m.c[8]});
-	ret.m.neon[4] = vfmaq_f64(ret.m.neon[4], m.neon[2], (float64x2_t) {b.m.c[9], b.m.c[9]});
-	ret.m.neon[4] = vfmaq_f64(ret.m.neon[4], m.neon[4], (float64x2_t) {b.m.c[10], b.m.c[10]});
-	ret.m.neon[4] = vfmaq_f64(ret.m.neon[4], m.neon[6], (float64x2_t) {b.m.c[11], b.m.c[11]});
+		//
+		ret.m.neon[4] = vmulq_f64(m.neon[0], (float64x2_t) {b.m.c[8], b.m.c[8]});
+		ret.m.neon[4] = vfmaq_f64(ret.m.neon[4], m.neon[2], (float64x2_t) {b.m.c[9], b.m.c[9]});
+		ret.m.neon[4] = vfmaq_f64(ret.m.neon[4], m.neon[4], (float64x2_t) {b.m.c[10], b.m.c[10]});
+		ret.m.neon[4] = vfmaq_f64(ret.m.neon[4], m.neon[6], (float64x2_t) {b.m.c[11], b.m.c[11]});
 
-	//
-	ret.m.neon[5] = vmulq_f64(m.neon[1], (float64x2_t) {b.m.c[8], b.m.c[8]});
-	ret.m.neon[5] = vfmaq_f64(ret.m.neon[5], m.neon[3], (float64x2_t) {b.m.c[9], b.m.c[9]});
-	ret.m.neon[5] = vfmaq_f64(ret.m.neon[5], m.neon[5], (float64x2_t) {b.m.c[10], b.m.c[10]});
-	ret.m.neon[5] = vfmaq_f64(ret.m.neon[5], m.neon[7], (float64x2_t) {b.m.c[11], b.m.c[11]});
+		//
+		ret.m.neon[5] = vmulq_f64(m.neon[1], (float64x2_t) {b.m.c[8], b.m.c[8]});
+		ret.m.neon[5] = vfmaq_f64(ret.m.neon[5], m.neon[3], (float64x2_t) {b.m.c[9], b.m.c[9]});
+		ret.m.neon[5] = vfmaq_f64(ret.m.neon[5], m.neon[5], (float64x2_t) {b.m.c[10], b.m.c[10]});
+		ret.m.neon[5] = vfmaq_f64(ret.m.neon[5], m.neon[7], (float64x2_t) {b.m.c[11], b.m.c[11]});
 
-	//
+		//
 
-	ret.m.neon[6] = vmulq_f64(m.neon[0], (float64x2_t) {b.m.c[12], b.m.c[12]});
-	ret.m.neon[6] = vfmaq_f64(ret.m.neon[6], m.neon[2], (float64x2_t) {b.m.c[13], b.m.c[13]});
-	ret.m.neon[6] = vfmaq_f64(ret.m.neon[6], m.neon[4], (float64x2_t) {b.m.c[14], b.m.c[14]});
-	ret.m.neon[6] = vfmaq_f64(ret.m.neon[6], m.neon[6], (float64x2_t) {b.m.c[15], b.m.c[15]});
+		ret.m.neon[6] = vmulq_f64(m.neon[0], (float64x2_t) {b.m.c[12], b.m.c[12]});
+		ret.m.neon[6] = vfmaq_f64(ret.m.neon[6], m.neon[2], (float64x2_t) {b.m.c[13], b.m.c[13]});
+		ret.m.neon[6] = vfmaq_f64(ret.m.neon[6], m.neon[4], (float64x2_t) {b.m.c[14], b.m.c[14]});
+		ret.m.neon[6] = vfmaq_f64(ret.m.neon[6], m.neon[6], (float64x2_t) {b.m.c[15], b.m.c[15]});
 
-	//
-	ret.m.neon[7] = vmulq_f64(m.neon[1], (float64x2_t) {b.m.c[12], b.m.c[12]});
-	ret.m.neon[7] = vfmaq_f64(ret.m.neon[7], m.neon[3], (float64x2_t) {b.m.c[13], b.m.c[13]});
-	ret.m.neon[7] = vfmaq_f64(ret.m.neon[7], m.neon[5], (float64x2_t) {b.m.c[14], b.m.c[14]});
-	ret.m.neon[7] = vfmaq_f64(ret.m.neon[7], m.neon[7], (float64x2_t) {b.m.c[15], b.m.c[15]});
+		//
+		ret.m.neon[7] = vmulq_f64(m.neon[1], (float64x2_t) {b.m.c[12], b.m.c[12]});
+		ret.m.neon[7] = vfmaq_f64(ret.m.neon[7], m.neon[3], (float64x2_t) {b.m.c[13], b.m.c[13]});
+		ret.m.neon[7] = vfmaq_f64(ret.m.neon[7], m.neon[5], (float64x2_t) {b.m.c[14], b.m.c[14]});
+		ret.m.neon[7] = vfmaq_f64(ret.m.neon[7], m.neon[7], (float64x2_t) {b.m.c[15], b.m.c[15]});
 
 #elif defined(USE_FMA) && (AML_TYPE_ID == AML_TYPE_FLOAT) && !defined(__INTEL_COMPILER)
 		__m256 O0 = {b.m.c[0], b.m.c[0], b.m.c[0], b.m.c[0], b.m.c[4], b.m.c[4], b.m.c[4], b.m.c[4]};
@@ -960,9 +956,9 @@ public:
 		v.avx[1] = _mm256_add_pd(v.avx[1], vec2.v.avx[1]);
 #elif defined(USE_SSE) && AML_TYPE_ID == AML_TYPE_DOUBLE // SSE2
 		v.sse[0] = _mm_add_pd(v.sse[0], vec2.v.sse[0]);
-	v.sse[1] = _mm_add_pd(v.sse[1], vec2.v.sse[1]);
-	v.sse[2] = _mm_add_pd(v.sse[2], vec2.v.sse[2]);
-	v.sse[3] = _mm_add_pd(v.sse[3], vec2.v.sse[3]);
+		v.sse[1] = _mm_add_pd(v.sse[1], vec2.v.sse[1]);
+		v.sse[2] = _mm_add_pd(v.sse[2], vec2.v.sse[2]);
+		v.sse[3] = _mm_add_pd(v.sse[3], vec2.v.sse[3]);
 #else
 		v.c[0] += vec2.v.c[0];
 		v.c[1] += vec2.v.c[1];
@@ -1040,8 +1036,8 @@ public:
 #if defined(USE_AVX512) && AML_TYPE_ID == AML_TYPE_DOUBLE
 
 	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector8D))(__m512d value) {
-	v.avx512 = value;
-}
+		v.avx512 = value;
+	}
 
 #endif
 
