@@ -1,6 +1,3 @@
-//
-// Created by af on 14.03.21.
-//
 
 #include <stdint.h>
 
@@ -10,24 +7,24 @@
 #define AML_CONSTEXPR
 #endif
 
-class AML_PREFIX(AML_TYPE_NAME(Vector1D)) {
+class AML_TYPE_NAME(Vector1D) {
 public:
 	AML_TYPE v{};
 
-	AML_PREFIX(AML_TYPE_NAME(Vector1D)) *set(AML_TYPE value, AML_PREFIX(VectorU8_1D) mask) {
+	AML_TYPE_NAME(Vector1D) *set(AML_TYPE value, AML_PREFIX(VectorU8_1D) mask) {
 		if (mask.v.c) { v = value; }
 		return this;
 	}
 
-	AML_CONSTEXPR AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector1D))(const AML_TYPE *const values) {
+	AML_CONSTEXPR AML_FUNCTION AML_TYPE_NAME(Vector1D)(const AML_TYPE *const values) {
 		v = values[0];
 	}
 
-	AML_CONSTEXPR AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector1D))() {
+	AML_CONSTEXPR AML_FUNCTION AML_TYPE_NAME(Vector1D)() {
 		v = 0.0f;
 	}
 
-	AML_CONSTEXPR AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector1D))(AML_TYPE value) {
+	AML_CONSTEXPR AML_FUNCTION AML_TYPE_NAME(Vector1D)(AML_TYPE value) {
 		v = value;
 	}
 
@@ -37,7 +34,7 @@ public:
 
 };
 
-class AML_PREFIX(AML_TYPE_NAME(Vector2D)) {
+class AML_TYPE_NAME(Vector2D) {
 public:
 #if AML_TYPE_ID == AML_TYPE_DOUBLE
 	AML_PREFIX(doublevec2) v{};
@@ -45,28 +42,28 @@ public:
 	AML_PREFIX(floatvec2) v{};
 #endif
 
-	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector2D)) *set(AML_TYPE value, const AML_PREFIX(VectorU8_2D) mask) {
+	AML_FUNCTION AML_TYPE_NAME(Vector2D) *set(AML_TYPE value, const AML_PREFIX(VectorU8_2D) mask) {
 		if (mask.v.c[0]) { v.c[0] = value; }
 		if (mask.v.c[1]) { v.c[1] = value; }
 		return this;
 	}
 
-	AML_CONSTEXPR AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector2D))(const AML_TYPE *const values) {
+	AML_CONSTEXPR AML_FUNCTION AML_TYPE_NAME(Vector2D)(const AML_TYPE *const values) {
 		v.c[0] = values[0];
 		v.c[1] = values[1];
 	}
 
-	AML_CONSTEXPR AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector2D))() {
+	AML_CONSTEXPR AML_FUNCTION AML_TYPE_NAME(Vector2D)() {
 		v.c[0] = 0.0;
 		v.c[1] = 0.0;
 	}
 
-	AML_CONSTEXPR AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector2D))(AML_PREFIX(const AML_TYPE_NAME(Vector1D)) value) {
+	AML_CONSTEXPR AML_FUNCTION AML_TYPE_NAME(Vector2D)(const AML_TYPE_NAME(Vector1D) value) {
 		v.c[0] = value.v;
 		v.c[1] = 0.0;
 	};
 
-	AML_CONSTEXPR AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector2D))(AML_TYPE value) {
+	AML_CONSTEXPR AML_FUNCTION AML_TYPE_NAME(Vector2D)(AML_TYPE value) {
 		v.c[0] = value;
 		v.c[1] = value;
 	}
@@ -77,7 +74,7 @@ public:
 
 #if defined(USE_SSE) && AML_TYPE_ID == AML_TYPE_DOUBLE
 
-	AML_CONSTEXPR AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector2D))(const __m128d value) {
+	AML_CONSTEXPR AML_FUNCTION AML_TYPE_NAME(Vector2D)(const __m128d value) {
 		v.sse = value;
 	}
 
@@ -85,7 +82,7 @@ public:
 
 };
 
-class AML_PREFIX(AML_TYPE_NAME(Vector4D)) {
+class AML_TYPE_NAME(Vector4D) {
 private:
 
 public:
@@ -100,7 +97,7 @@ public:
 		return v.c[position];
 	}
 
-	AML_FUNCTION void operator+=(AML_PREFIX(AML_TYPE_NAME(Vector4D)) vec2) {
+	AML_FUNCTION void operator+=(AML_TYPE_NAME(Vector4D) vec2) {
 #if defined(USE_AVX) && AML_TYPE_ID == AML_TYPE_DOUBLE
 		v.avx = _mm256_add_pd(v.avx, vec2.v.avx);
 #elif defined(USE_SSE) && AML_TYPE_ID == AML_TYPE_DOUBLE // SSE2
@@ -119,62 +116,62 @@ public:
 
 	}
 
-	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector4D)) operator+(const AML_PREFIX(AML_TYPE_NAME(Vector4D)) vec2) {
+	AML_FUNCTION AML_TYPE_NAME(Vector4D) operator+(const AML_TYPE_NAME(Vector4D) vec2) {
 #if defined(USE_AVX) && AML_TYPE_ID == AML_TYPE_DOUBLE
-		AML_PREFIX(AML_TYPE_NAME(Vector4D)) ret;
+		AML_TYPE_NAME(Vector4D) ret;
 		ret.v.avx = _mm256_add_pd(v.avx, vec2.v.avx);
 		return ret;
 #elif defined(USE_SSE2) && AML_TYPE_ID == AML_TYPE_DOUBLE
-		AML_PREFIX(AML_TYPE_NAME(Vector4D)) ret;
-	ret.v.sse[0] = _mm_add_pd(v.sse[0], vec2.v.sse[0]);
-	ret.v.sse[1] = _mm_add_pd(v.sse[1], vec2.v.sse[1]);
-	return ret;
+		AML_TYPE_NAME(Vector4D) ret;
+		ret.v.sse[0] = _mm_add_pd(v.sse[0], vec2.v.sse[0]);
+		ret.v.sse[1] = _mm_add_pd(v.sse[1], vec2.v.sse[1]);
+		return ret;
 #elif defined(USE_NEON) && AML_TYPE_ID == AML_TYPE_DOUBLE
-		AML_PREFIX(AML_TYPE_NAME(Vector4D)) ret;
-	ret.v.neon[0] = vaddq_f64(v.neon[0], vec2.v.neon[0]);
-	ret.v.neon[1] = vaddq_f64(v.neon[1], vec2.v.neon[1]);
-	return ret;
+		AML_TYPE_NAME(Vector4D) ret;
+		ret.v.neon[0] = vaddq_f64(v.neon[0], vec2.v.neon[0]);
+		ret.v.neon[1] = vaddq_f64(v.neon[1], vec2.v.neon[1]);
+		return ret;
 #else
-		AML_PREFIX(AML_TYPE_NAME(Vector4D)) ret(v.c[0] + vec2.v.c[0], v.c[1] + vec2.v.c[1], v.c[2] + vec2.v.c[2],
-												v.c[3] + vec2.v.c[3]);
+		AML_TYPE_NAME(Vector4D) ret(v.c[0] + vec2.v.c[0], v.c[1] + vec2.v.c[1], v.c[2] + vec2.v.c[2],
+									v.c[3] + vec2.v.c[3]);
 		return ret;
 #endif
 
 
 	}
 
-	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector4D)) operator+(AML_TYPE a) {
+	AML_FUNCTION AML_TYPE_NAME(Vector4D) operator+(AML_TYPE a) {
 #if defined(USE_AVX) && AML_TYPE_ID == AML_TYPE_DOUBLE
-		AML_PREFIX(AML_TYPE_NAME(Vector4D)) ret(a);
+		AML_TYPE_NAME(Vector4D) ret(a);
 		ret.v.avx = _mm256_add_pd(v.avx, ret.v.avx);
 		return ret;
 #elif defined(USE_SSE2) && AML_TYPE_ID == AML_TYPE_DOUBLE
-		AML_PREFIX(AML_TYPE_NAME(Vector4D)) ret(a);
-	ret.v.sse[0] = _mm_add_pd(v.sse[0], ret.v.sse[0]);
-	ret.v.sse[1] = _mm_add_pd(v.sse[1], ret.v.sse[1]);
-	return ret;
+		AML_TYPE_NAME(Vector4D) ret(a);
+		ret.v.sse[0] = _mm_add_pd(v.sse[0], ret.v.sse[0]);
+		ret.v.sse[1] = _mm_add_pd(v.sse[1], ret.v.sse[1]);
+		return ret;
 #elif defined(USE_NEON) && AML_TYPE_ID == AML_TYPE_DOUBLE
-		AML_PREFIX(AML_TYPE_NAME(Vector4D)) ret(a);
-	ret.v.neon[0] = vaddq_f64(v.neon[0], ret.v.neon[0]);
-	ret.v.neon[1] = vaddq_f64(v.neon[1], ret.v.neon[1]);
-	return ret;
+		AML_TYPE_NAME(Vector4D) ret(a);
+		ret.v.neon[0] = vaddq_f64(v.neon[0], ret.v.neon[0]);
+		ret.v.neon[1] = vaddq_f64(v.neon[1], ret.v.neon[1]);
+		return ret;
 #else
-		AML_PREFIX(AML_TYPE_NAME(Vector4D)) ret(v.c[0] + a, v.c[1] + a, v.c[2] + a, v.c[3] + a);
+		AML_TYPE_NAME(Vector4D) ret(v.c[0] + a, v.c[1] + a, v.c[2] + a, v.c[3] + a);
 		return ret;
 #endif
 
 
 	}
 
-	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector4D)) *add(const AML_PREFIX(AML_TYPE_NAME(Vector4D)) a) {
+	AML_FUNCTION AML_TYPE_NAME(Vector4D) *add(const AML_TYPE_NAME(Vector4D) a) {
 #if defined(USE_AVX) && AML_TYPE_ID == AML_TYPE_DOUBLE
 		v.avx = _mm256_add_pd(v.avx, a.v.avx);
 #elif defined(USE_SSE) && AML_TYPE_ID == AML_TYPE_DOUBLE // SSE2
 		v.sse[0] = _mm_add_pd(v.sse[0], a.v.sse[0]);
-	v.sse[1] = _mm_add_pd(v.sse[1], a.v.sse[1]);
+		v.sse[1] = _mm_add_pd(v.sse[1], a.v.sse[1]);
 #elif defined(USE_NEON) && AML_TYPE_ID == AML_TYPE_DOUBLE
 		v.neon[0] = vaddq_f64(v.neon[0], a.v.neon[0]);
-	v.neon[1] = vaddq_f64(v.neon[1], a.v.neon[1]);
+		v.neon[1] = vaddq_f64(v.neon[1], a.v.neon[1]);
 #else
 		v.c[0] += a.v.c[0];
 		v.c[1] += a.v.c[1];
@@ -191,9 +188,9 @@ public:
 		v.avx = _mm256_sub_pd(a.avx, v.avx);
 #elif defined(USE_SSE) && AML_TYPE_ID == AML_TYPE_DOUBLE // SSE2
 		AML_TYPE a[2] = {0.0f, 0.0f};
-	__m128d b = _mm_loadu_pd(a);
-	v.sse[0] = _mm_sub_pd(b, v.sse[0]);
-	v.sse[1] = _mm_sub_pd(b, v.sse[1]);
+		__m128d b = _mm_loadu_pd(a);
+		v.sse[0] = _mm_sub_pd(b, v.sse[0]);
+		v.sse[1] = _mm_sub_pd(b, v.sse[1]);
 #else
 		v.c[0] = 0 - v.c[0];
 		v.c[1] = 0 - v.c[1];
@@ -202,7 +199,7 @@ public:
 #endif
 	}
 
-	AML_FUNCTION void operator-=(AML_PREFIX(AML_TYPE_NAME(Vector4D)) vec2) {
+	AML_FUNCTION void operator-=(AML_TYPE_NAME(Vector4D) vec2) {
 #if defined(USE_AVX) && AML_TYPE_ID == AML_TYPE_DOUBLE
 		v.avx = _mm256_sub_pd(v.avx, vec2.v.avx);
 #else
@@ -211,31 +208,29 @@ public:
 		v.c[2] -= vec2[2];
 		v.c[3] -= vec2[3];
 #endif
-
-
 	}
 
-	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector4D)) operator-(const AML_PREFIX(AML_TYPE_NAME(Vector4D)) vec2) {
+	AML_FUNCTION AML_TYPE_NAME(Vector4D) operator-(const AML_TYPE_NAME(Vector4D) vec2) {
 #if defined(USE_AVX) && AML_TYPE_ID == AML_TYPE_DOUBLE
-		AML_PREFIX(AML_TYPE_NAME(Vector4D)) ret;
+		AML_TYPE_NAME(Vector4D) ret;
 		ret.v.avx = _mm256_sub_pd(v.avx, vec2.v.avx);
 		return ret;
 #else
-		AML_PREFIX(AML_TYPE_NAME(Vector4D)) ret(v.c[0] - vec2.v.c[0], v.c[1] - vec2.v.c[1], v.c[2] - vec2.v.c[2],
-												v.c[3] - vec2.v.c[3]);
+		AML_TYPE_NAME(Vector4D) ret(v.c[0] - vec2.v.c[0], v.c[1] - vec2.v.c[1], v.c[2] - vec2.v.c[2],
+									v.c[3] - vec2.v.c[3]);
 		return ret;
 #endif
 
 
 	}
 
-	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector4D)) operator-(AML_TYPE a) {
-		AML_PREFIX(AML_TYPE_NAME(Vector4D)) ret(a);
+	AML_FUNCTION AML_TYPE_NAME(Vector4D) operator-(AML_TYPE a) {
+		AML_TYPE_NAME(Vector4D) ret(a);
 #if defined(USE_AVX) && AML_TYPE_ID == AML_TYPE_DOUBLE
 		ret.v.avx = _mm256_sub_pd(v.avx, ret.v.avx);
 		return ret;
 #else
-		ret = AML_PREFIX(AML_TYPE_NAME(Vector4D))(v.c[0] - a, v.c[1] - a, v.c[2] - a, v.c[3] - a);
+		ret = AML_TYPE_NAME(Vector4D)(v.c[0] - a, v.c[1] - a, v.c[2] - a, v.c[3] - a);
 		return ret;
 #endif
 
@@ -254,7 +249,7 @@ public:
 		v.c[3] *= vecLength;
 	}
 
-	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector4D)) *forEachSin() {
+	AML_FUNCTION AML_TYPE_NAME(Vector4D) *forEachSin() {
 #if defined(USE_AVX) && defined(__INTEL_COMPILER) && AML_TYPE_ID == AML_TYPE_DOUBLE
 		v.avx = _mm256_sin_pd(v.avx);
 #else
@@ -273,12 +268,12 @@ public:
 		v.c[3] *= scalar;
 	}
 
-	AML_FUNCTION void operator*=(AML_PREFIX(AML_TYPE_NAME(Vector4D)) vec2) {
+	AML_FUNCTION void operator*=(AML_TYPE_NAME(Vector4D) vec2) {
 #if defined(USE_AVX) && AML_TYPE_ID == AML_TYPE_DOUBLE
 		v.avx = _mm256_mul_pd(v.avx, vec2.v.avx);
 #elif defined(USE_NEON) && AML_TYPE_ID == AML_TYPE_DOUBLE
 		v.neon[0] = vmulq_f64(v.neon[0], vec2.v.neon[0]);
-	v.neon[1] = vmulq_f64(v.neon[1], vec2.v.neon[1]);
+		v.neon[1] = vmulq_f64(v.neon[1], vec2.v.neon[1]);
 #else
 		v.c[0] *= vec2.v.c[0];
 		v.c[1] *= vec2.v.c[1];
@@ -287,12 +282,12 @@ public:
 #endif
 	}
 
-	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector4D)) *forEachSqrt() {
+	AML_FUNCTION AML_TYPE_NAME(Vector4D) *forEachSqrt() {
 #if defined(USE_AVX) && AML_TYPE_ID == AML_TYPE_DOUBLE
 		v.avx = _mm256_sqrt_pd(v.avx);
 #elif defined(USE_SSE) && AML_TYPE_ID == AML_TYPE_DOUBLE
 		v.sse[0] = _mm_sqrt_pd(v.sse[0]);
-	v.sse[1] = _mm_sqrt_pd(v.sse[1]);
+		v.sse[1] = _mm_sqrt_pd(v.sse[1]);
 #else
 		v.c[0] = sqrt(v.c[0]);
 		v.c[1] = sqrt(v.c[1]);
@@ -303,8 +298,8 @@ public:
 
 	}
 
-	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector4D)) operator*(AML_TYPE a) {
-		AML_PREFIX(AML_TYPE_NAME(Vector4D)) ret;
+	AML_FUNCTION AML_TYPE_NAME(Vector4D) operator*(AML_TYPE a) {
+		AML_TYPE_NAME(Vector4D) ret;
 #if defined(USE_AVX) && AML_TYPE_ID == AML_TYPE_DOUBLE
 		AML_PREFIX(doublevec4) b = {a, a, a, a};
 		ret.v.avx = _mm256_mul_pd(v.avx, b.avx);
@@ -317,8 +312,8 @@ public:
 		return ret;
 	}
 
-	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector4D)) operator/(AML_TYPE a) {
-		AML_PREFIX(AML_TYPE_NAME(Vector4D)) ret;
+	AML_FUNCTION AML_TYPE_NAME(Vector4D) operator/(AML_TYPE a) {
+		AML_TYPE_NAME(Vector4D) ret;
 #if defined(USE_AVX) && AML_TYPE_ID == AML_TYPE_DOUBLE
 		AML_PREFIX(doublevec4) b = {a, a, a, a};
 		ret.v.avx = _mm256_div_pd(v.avx, b.avx);
@@ -331,7 +326,7 @@ public:
 		return ret;
 	}
 
-	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector4D)) *capBetween1_0() {
+	AML_FUNCTION AML_TYPE_NAME(Vector4D) *capBetween1_0() {
 #if defined(USE_AVX) && AML_TYPE_ID == AML_TYPE_DOUBLE
 		AML_PREFIX(doublevec4) one = {1.0f, 1.0f, 1.0f, 1.0f};
 		v.avx = _mm256_max_pd(v.avx, one.avx);
@@ -361,7 +356,7 @@ public:
 		return this;
 	}
 
-	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector4D)) *
+	AML_FUNCTION AML_TYPE_NAME(Vector4D) *
 	capBetweenX_Y(const AML_TYPE upperBoundary, const AML_TYPE lowerBoundary) {
 #if defined(USE_AVX) && AML_TYPE_ID == AML_TYPE_DOUBLE
 		AML_PREFIX(doublevec4) upper = {upperBoundary, upperBoundary, upperBoundary, upperBoundary};
@@ -393,7 +388,7 @@ public:
 		return this;
 	}
 
-	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector4D)) *
+	AML_FUNCTION AML_TYPE_NAME(Vector4D) *
 	map(const AML_TYPE lowerInput, const AML_TYPE upperInput, const AML_TYPE lowerOutput, const AML_TYPE upperOutput) {
 #if defined(USE_AVX) && AML_TYPE_ID == AML_TYPE_DOUBLE
 		AML_PREFIX(doublevec4) a = {lowerInput, lowerInput, lowerInput, lowerInput};
@@ -412,10 +407,10 @@ public:
 		return this;
 	}
 
-	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector4D)) *mapNonLinear(const AML_TYPE lowerInput, const AML_TYPE upperInput,
-																   const AML_TYPE lowerOutput,
-																   const AML_TYPE upperOutput,
-																   const AML_TYPE factor) {
+	AML_FUNCTION AML_TYPE_NAME(Vector4D) *mapNonLinear(const AML_TYPE lowerInput, const AML_TYPE upperInput,
+													   const AML_TYPE lowerOutput,
+													   const AML_TYPE upperOutput,
+													   const AML_TYPE factor) {
 		v.c[0] = (((pow(((v.c[0] - lowerInput) / (upperInput - lowerInput)), factor)) * (upperOutput - lowerOutput)) +
 				  lowerOutput);
 		v.c[1] = (((pow(((v.c[1] - lowerInput) / (upperInput - lowerInput)), factor)) * (upperOutput - lowerOutput)) +
@@ -427,7 +422,7 @@ public:
 		return this;
 	}
 
-	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector4D)) *forEachInterpolate(const AML_TYPE min, const AML_TYPE max) {
+	AML_FUNCTION AML_TYPE_NAME(Vector4D) *forEachInterpolate(const AML_TYPE min, const AML_TYPE max) {
 		v.c[0] = (v.c[0] * (min - max) + max);
 		v.c[1] = (v.c[1] * (min - max) + max);
 		v.c[2] = (v.c[2] * (min - max) + max);
@@ -435,8 +430,7 @@ public:
 		return this;
 	}
 
-	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector4D)) *
-	interpolate(const AML_PREFIX(AML_TYPE_NAME(Vector4D)) max, AML_TYPE ratio) {
+	AML_FUNCTION AML_TYPE_NAME(Vector4D) *interpolate(const AML_TYPE_NAME(Vector4D) max, AML_TYPE ratio) {
 		v.c[0] = (ratio * (v.c[0] - max.v.c[0]) + max.v.c[0]);
 		v.c[1] = (ratio * (v.c[1] - max.v.c[1]) + max.v.c[1]);
 		v.c[2] = (ratio * (v.c[2] - max.v.c[2]) + max.v.c[2]);
@@ -444,8 +438,8 @@ public:
 		return this;
 	}
 
-	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector4D)) *
-	interpolate(const AML_PREFIX(AML_TYPE_NAME(Vector4D)) val2, const AML_PREFIX(AML_TYPE_NAME(Vector4D)) val3,
+	AML_FUNCTION AML_TYPE_NAME(Vector4D) *
+	interpolate(const AML_TYPE_NAME(Vector4D) val2, const AML_TYPE_NAME(Vector4D) val3,
 				AML_TYPE ratio) {
 		v.c[0] = ratio *
 				 (ratio * (v.c[0] - val2.v.c[0] - val2.v.c[0] + val3.v.c[0]) + val2.v.c[0] + val2.v.c[0] - val3.v.c[0] -
@@ -462,11 +456,11 @@ public:
 		return this;
 	}
 
-	AML_FUNCTION AML_TYPE dotP(const AML_PREFIX(AML_TYPE_NAME(Vector4D)) other) const {
+	AML_FUNCTION AML_TYPE dotP(const AML_TYPE_NAME(Vector4D) other) const {
 		return v.c[0] * other.v.c[0] + v.c[1] * other.v.c[1] + v.c[2] * other.v.c[2] + v.c[3] * other.v.c[3];
 	}
 
-	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector4D)) *set(AML_TYPE value, AML_PREFIX(VectorU8_4D) mask) {
+	AML_FUNCTION AML_TYPE_NAME(Vector4D) *set(AML_TYPE value, AML_PREFIX(VectorU8_4D) mask) {
 		if (mask.v.c[0]) { v.c[0] = value; }
 		if (mask.v.c[1]) { v.c[1] = value; }
 		if (mask.v.c[2]) { v.c[2] = value; }
@@ -474,8 +468,8 @@ public:
 		return this;
 	}
 
-	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector4D)) *
-	set(const AML_PREFIX(AML_TYPE_NAME(Vector4D)) value, AML_PREFIX(VectorU8_4D) mask) {
+	AML_FUNCTION AML_TYPE_NAME(Vector4D) *
+	set(const AML_TYPE_NAME(Vector4D) value, AML_PREFIX(VectorU8_4D) mask) {
 		if (mask.v.c[0]) { v.c[0] = value.v.c[0]; }
 		if (mask.v.c[1]) { v.c[1] = value.v.c[1]; }
 		if (mask.v.c[2]) { v.c[2] = value.v.c[2]; }
@@ -484,7 +478,7 @@ public:
 	}
 
 	template<const int a, const int b, const int c, const int d>
-	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector4D)) *permutation() {
+	AML_FUNCTION AML_TYPE_NAME(Vector4D) *permutation() {
 #if defined(USE_AVX2) && AML_TYPE_ID == AML_TYPE_DOUBLE
 		v.avx = _mm256_permute4x64_pd(v.avx, a + (b << 2) + (c << 4) + (d << 6));
 #else
@@ -501,21 +495,21 @@ public:
 	}
 
 
-	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector4D))(AML_TYPE a, AML_TYPE b, AML_TYPE c, AML_TYPE d) {
+	AML_FUNCTION AML_TYPE_NAME(Vector4D)(AML_TYPE a, AML_TYPE b, AML_TYPE c, AML_TYPE d) {
 		v.c[0] = a;
 		v.c[1] = b;
 		v.c[2] = c;
 		v.c[3] = d;
 	}
 
-	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector4D))() {
+	AML_FUNCTION AML_TYPE_NAME(Vector4D)() {
 		v.c[0] = 0;
 		v.c[1] = 0;
 		v.c[2] = 0;
 		v.c[3] = 0;
 	}
 
-	AML_FUNCTION explicit AML_PREFIX(AML_TYPE_NAME(Vector4D))(const AML_TYPE a) {
+	AML_FUNCTION explicit AML_TYPE_NAME(Vector4D)(const AML_TYPE a) {
 		v.c[0] = a;
 		v.c[1] = a;
 		v.c[2] = a;
@@ -524,7 +518,7 @@ public:
 
 #if defined(USE_AVX) && AML_TYPE_ID == AML_TYPE_DOUBLE
 
-	AML_FUNCTION explicit AML_PREFIX(AML_TYPE_NAME(Vector4D))(const __m256d a) {
+	AML_FUNCTION explicit AML_TYPE_NAME(Vector4D)(const __m256d a) {
 		v.avx = a;
 	}
 
@@ -532,14 +526,14 @@ public:
 
 #if defined(USE_SSE) && AML_TYPE_ID == AML_TYPE_DOUBLE
 
-	AML_FUNCTION explicit AML_PREFIX(AML_TYPE_NAME(Vector4D))(const __m128d *const values) {
+	AML_FUNCTION explicit AML_TYPE_NAME(Vector4D)(const __m128d *const values) {
 		v.sse[0] = values[0];
 		v.sse[1] = values[1];
 	}
 
 #endif
 
-	AML_FUNCTION explicit AML_PREFIX(AML_TYPE_NAME(Vector4D))(const AML_TYPE *const values) {
+	AML_FUNCTION explicit AML_TYPE_NAME(Vector4D)(const AML_TYPE *const values) {
 		v.c[0] = values[0];
 		v.c[1] = values[1];
 		v.c[2] = values[2];
@@ -548,7 +542,7 @@ public:
 
 };
 
-class AML_PREFIX(AML_TYPE_NAME(Matrix4x4)) {
+class AML_TYPE_NAME(Matrix4x4) {
 public:
 
 #if AML_TYPE_ID == AML_TYPE_DOUBLE
@@ -557,8 +551,8 @@ public:
 	AML_PREFIX(floatmat4x4) m{};
 #endif
 
-	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector4D)) operator[](uint32_t column) {
-		AML_PREFIX(AML_TYPE_NAME(Vector4D)) ret;
+	AML_FUNCTION AML_TYPE_NAME(Vector4D) operator[](uint32_t column) {
+		AML_TYPE_NAME(Vector4D) ret;
 #if defined(USE_AVX) && AML_TYPE_ID == AML_TYPE_DOUBLE
 		ret.v.avx = m.avx[column];
 #else
@@ -570,7 +564,7 @@ public:
 		return ret;
 	}
 
-	AML_CONSTEXPR AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Matrix4x4)) *identity() {
+	AML_CONSTEXPR AML_FUNCTION AML_TYPE_NAME(Matrix4x4) *identity() {
 		m.c[0] = 1.0;
 		m.c[1] = 0.0;
 		m.c[2] = 0.0;
@@ -590,17 +584,17 @@ public:
 		return this;
 	}
 
-	static AML_CONSTEXPR AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Matrix4x4)) Identity() {
-		AML_PREFIX(AML_TYPE_NAME(Matrix4x4)) m;
+	static AML_CONSTEXPR AML_FUNCTION AML_TYPE_NAME(Matrix4x4) Identity() {
+		AML_TYPE_NAME(Matrix4x4) m;
 		m.identity();
 		return m;
 	}
 
-	AML_CONSTEXPR AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Matrix4x4))
-	operator*(const AML_PREFIX(AML_TYPE_NAME(Matrix4x4)) &b) const {
+	AML_CONSTEXPR AML_FUNCTION AML_TYPE_NAME(Matrix4x4)
+	operator*(const AML_TYPE_NAME(Matrix4x4) &b) const {
 #if defined(__cpp_lib_is_constant_evaluated)
 		if (std::is_constant_evaluated()) {
-			AML_PREFIX(AML_TYPE_NAME(Matrix4x4)) ret;
+			AML_TYPE_NAME(Matrix4x4) ret;
 			ret.m.c[0] = m.c[0] * b.m.c[0] + m.c[4] * b.m.c[1] + m.c[8] * b.m.c[2] + m.c[12] * b.m.c[3];
 			ret.m.c[1] = m.c[1] * b.m.c[0] + m.c[5] * b.m.c[1] + m.c[9] * b.m.c[2] + m.c[13] * b.m.c[3];
 			ret.m.c[2] = m.c[2] * b.m.c[0] + m.c[6] * b.m.c[1] + m.c[10] * b.m.c[2] + m.c[14] * b.m.c[3];
@@ -620,30 +614,30 @@ public:
 			return ret;
 		}
 #endif
-		AML_PREFIX(AML_TYPE_NAME(Matrix4x4)) ret;
+		AML_TYPE_NAME(Matrix4x4) ret;
 #if defined(USE_AVX512F) && (AML_TYPE_ID == AML_TYPE_DOUBLE)
 		__m512d O0 = (__m512d) {b.m.c[0], b.m.c[0], b.m.c[0], b.m.c[0], b.m.c[4], b.m.c[4], b.m.c[4], b.m.c[4]};
-	__m512d O1 = (__m512d) {b.m.c[1], b.m.c[1], b.m.c[1], b.m.c[1], b.m.c[5], b.m.c[5], b.m.c[5], b.m.c[5]};
-	__m512d O2 = (__m512d) {b.m.c[2], b.m.c[2], b.m.c[2], b.m.c[2], b.m.c[6], b.m.c[6], b.m.c[6], b.m.c[6]};
-	__m512d O3 = (__m512d) {b.m.c[3], b.m.c[3], b.m.c[3], b.m.c[3], b.m.c[7], b.m.c[7], b.m.c[7], b.m.c[7]};
+		__m512d O1 = (__m512d) {b.m.c[1], b.m.c[1], b.m.c[1], b.m.c[1], b.m.c[5], b.m.c[5], b.m.c[5], b.m.c[5]};
+		__m512d O2 = (__m512d) {b.m.c[2], b.m.c[2], b.m.c[2], b.m.c[2], b.m.c[6], b.m.c[6], b.m.c[6], b.m.c[6]};
+		__m512d O3 = (__m512d) {b.m.c[3], b.m.c[3], b.m.c[3], b.m.c[3], b.m.c[7], b.m.c[7], b.m.c[7], b.m.c[7]};
 
-	__m512d T0 = _mm512_insertf64x4(_mm512_castpd256_pd512(m.avx[0]), m.avx[0], 1);
-	__m512d T1 = _mm512_insertf64x4(_mm512_castpd256_pd512(m.avx[1]), m.avx[1], 1);
-	__m512d T2 = _mm512_insertf64x4(_mm512_castpd256_pd512(m.avx[2]), m.avx[2], 1);
-	__m512d T3 = _mm512_insertf64x4(_mm512_castpd256_pd512(m.avx[3]), m.avx[3], 1);
-	ret.m.avx512[0] = _mm512_mul_pd(T0, O0);
-	ret.m.avx512[0] = _mm512_fmadd_pd(T1, O1, ret.m.avx512[0]);
-	ret.m.avx512[0] = _mm512_fmadd_pd(T2, O2, ret.m.avx512[0]);
-	ret.m.avx512[0] = _mm512_fmadd_pd(T3, O3, ret.m.avx512[0]);
+		__m512d T0 = _mm512_insertf64x4(_mm512_castpd256_pd512(m.avx[0]), m.avx[0], 1);
+		__m512d T1 = _mm512_insertf64x4(_mm512_castpd256_pd512(m.avx[1]), m.avx[1], 1);
+		__m512d T2 = _mm512_insertf64x4(_mm512_castpd256_pd512(m.avx[2]), m.avx[2], 1);
+		__m512d T3 = _mm512_insertf64x4(_mm512_castpd256_pd512(m.avx[3]), m.avx[3], 1);
+		ret.m.avx512[0] = _mm512_mul_pd(T0, O0);
+		ret.m.avx512[0] = _mm512_fmadd_pd(T1, O1, ret.m.avx512[0]);
+		ret.m.avx512[0] = _mm512_fmadd_pd(T2, O2, ret.m.avx512[0]);
+		ret.m.avx512[0] = _mm512_fmadd_pd(T3, O3, ret.m.avx512[0]);
 
-	__m512d O4 = (__m512d) {b.m.c[8], b.m.c[8], b.m.c[8], b.m.c[8], b.m.c[12], b.m.c[12], b.m.c[12], b.m.c[12]};
-	__m512d O5 = (__m512d) {b.m.c[9], b.m.c[9], b.m.c[9], b.m.c[9], b.m.c[13], b.m.c[13], b.m.c[13], b.m.c[13]};
-	__m512d O6 = (__m512d) {b.m.c[10], b.m.c[10], b.m.c[10], b.m.c[10], b.m.c[14], b.m.c[14], b.m.c[14], b.m.c[14]};
-	__m512d O7 = (__m512d) {b.m.c[11], b.m.c[11], b.m.c[11], b.m.c[11], b.m.c[15], b.m.c[15], b.m.c[15], b.m.c[15]};
-	ret.m.avx512[1] = _mm512_mul_pd(T0, O4);
-	ret.m.avx512[1] = _mm512_fmadd_pd(T1, O5, ret.m.avx512[1]);
-	ret.m.avx512[1] = _mm512_fmadd_pd(T2, O6, ret.m.avx512[1]);
-	ret.m.avx512[1] = _mm512_fmadd_pd(T3, O7, ret.m.avx512[1]);
+		__m512d O4 = (__m512d) {b.m.c[8], b.m.c[8], b.m.c[8], b.m.c[8], b.m.c[12], b.m.c[12], b.m.c[12], b.m.c[12]};
+		__m512d O5 = (__m512d) {b.m.c[9], b.m.c[9], b.m.c[9], b.m.c[9], b.m.c[13], b.m.c[13], b.m.c[13], b.m.c[13]};
+		__m512d O6 = (__m512d) {b.m.c[10], b.m.c[10], b.m.c[10], b.m.c[10], b.m.c[14], b.m.c[14], b.m.c[14], b.m.c[14]};
+		__m512d O7 = (__m512d) {b.m.c[11], b.m.c[11], b.m.c[11], b.m.c[11], b.m.c[15], b.m.c[15], b.m.c[15], b.m.c[15]};
+		ret.m.avx512[1] = _mm512_mul_pd(T0, O4);
+		ret.m.avx512[1] = _mm512_fmadd_pd(T1, O5, ret.m.avx512[1]);
+		ret.m.avx512[1] = _mm512_fmadd_pd(T2, O6, ret.m.avx512[1]);
+		ret.m.avx512[1] = _mm512_fmadd_pd(T3, O7, ret.m.avx512[1]);
 #elif defined(USE_FMA) && (AML_TYPE_ID == AML_TYPE_DOUBLE)
 		__m256d O0 = {b.m.c[0], b.m.c[0],b.m.c[0],b.m.c[0]};
 		__m256d O1 = {b.m.c[1], b.m.c[1],b.m.c[1],b.m.c[1]};
@@ -688,117 +682,116 @@ public:
 #elif defined(USE_SSE2) && (AML_TYPE_ID == AML_TYPE_DOUBLE)
 
 		ret.m.sse[0] = _mm_mul_pd(m.sse[0], (__m128d) {b.m.c[0], b.m.c[0]});
-	__m128d cache = _mm_mul_pd(m.sse[2], (__m128d) {b.m.c[1], b.m.c[1]});
-	ret.m.sse[0] = _mm_add_pd(cache, ret.m.sse[0]);
-	cache = _mm_mul_pd(m.sse[4], (__m128d) {b.m.c[2], b.m.c[2]});
-	ret.m.sse[0] = _mm_add_pd(cache, ret.m.sse[0]);
-	cache = _mm_mul_pd(m.sse[6], (__m128d) {b.m.c[3], b.m.c[3]});
-	ret.m.sse[0] = _mm_add_pd(cache, ret.m.sse[0]);
-	//
-	ret.m.sse[1] = _mm_mul_pd(m.sse[1], (__m128d) {b.m.c[0], b.m.c[0]});
-	cache = _mm_mul_pd(m.sse[3], (__m128d) {b.m.c[1], b.m.c[1]});
-	ret.m.sse[1] = _mm_add_pd(cache, ret.m.sse[1]);
-	cache = _mm_mul_pd(m.sse[5], (__m128d) {b.m.c[2], b.m.c[2]});
-	ret.m.sse[1] = _mm_add_pd(cache, ret.m.sse[1]);
-	cache = _mm_mul_pd(m.sse[7], (__m128d) {b.m.c[3], b.m.c[3]});
-	ret.m.sse[1] = _mm_add_pd(cache, ret.m.sse[1]);
-	//
+		__m128d cache = _mm_mul_pd(m.sse[2], (__m128d) {b.m.c[1], b.m.c[1]});
+		ret.m.sse[0] = _mm_add_pd(cache, ret.m.sse[0]);
+		cache = _mm_mul_pd(m.sse[4], (__m128d) {b.m.c[2], b.m.c[2]});
+		ret.m.sse[0] = _mm_add_pd(cache, ret.m.sse[0]);
+		cache = _mm_mul_pd(m.sse[6], (__m128d) {b.m.c[3], b.m.c[3]});
+		ret.m.sse[0] = _mm_add_pd(cache, ret.m.sse[0]);
+		//
+		ret.m.sse[1] = _mm_mul_pd(m.sse[1], (__m128d) {b.m.c[0], b.m.c[0]});
+		cache = _mm_mul_pd(m.sse[3], (__m128d) {b.m.c[1], b.m.c[1]});
+		ret.m.sse[1] = _mm_add_pd(cache, ret.m.sse[1]);
+		cache = _mm_mul_pd(m.sse[5], (__m128d) {b.m.c[2], b.m.c[2]});
+		ret.m.sse[1] = _mm_add_pd(cache, ret.m.sse[1]);
+		cache = _mm_mul_pd(m.sse[7], (__m128d) {b.m.c[3], b.m.c[3]});
+		ret.m.sse[1] = _mm_add_pd(cache, ret.m.sse[1]);
+		//
 
-	ret.m.sse[2] = _mm_mul_pd(m.sse[0], (__m128d) {b.m.c[4], b.m.c[4]});
-	cache = _mm_mul_pd(m.sse[2], (__m128d) {b.m.c[5], b.m.c[5]});
-	ret.m.sse[2] = _mm_add_pd(cache, ret.m.sse[2]);
-	cache = _mm_mul_pd(m.sse[4], (__m128d) {b.m.c[6], b.m.c[6]});
-	ret.m.sse[2] = _mm_add_pd(cache, ret.m.sse[2]);
-	cache = _mm_mul_pd(m.sse[6], (__m128d) {b.m.c[7], b.m.c[7]});
-	ret.m.sse[2] = _mm_add_pd(cache, ret.m.sse[2]);
-	//
-	ret.m.sse[3] = _mm_mul_pd(m.sse[1], (__m128d) {b.m.c[4], b.m.c[4]});
-	cache = _mm_mul_pd(m.sse[3], (__m128d) {b.m.c[5], b.m.c[5]});
-	ret.m.sse[3] = _mm_add_pd(cache, ret.m.sse[3]);
-	cache = _mm_mul_pd(m.sse[5], (__m128d) {b.m.c[6], b.m.c[6]});
-	ret.m.sse[3] = _mm_add_pd(cache, ret.m.sse[3]);
-	cache = _mm_mul_pd(m.sse[7], (__m128d) {b.m.c[7], b.m.c[7]});
-	ret.m.sse[3] = _mm_add_pd(cache, ret.m.sse[3]);
-	//
+		ret.m.sse[2] = _mm_mul_pd(m.sse[0], (__m128d) {b.m.c[4], b.m.c[4]});
+		cache = _mm_mul_pd(m.sse[2], (__m128d) {b.m.c[5], b.m.c[5]});
+		ret.m.sse[2] = _mm_add_pd(cache, ret.m.sse[2]);
+		cache = _mm_mul_pd(m.sse[4], (__m128d) {b.m.c[6], b.m.c[6]});
+		ret.m.sse[2] = _mm_add_pd(cache, ret.m.sse[2]);
+		cache = _mm_mul_pd(m.sse[6], (__m128d) {b.m.c[7], b.m.c[7]});
+		ret.m.sse[2] = _mm_add_pd(cache, ret.m.sse[2]);
+		//
+		ret.m.sse[3] = _mm_mul_pd(m.sse[1], (__m128d) {b.m.c[4], b.m.c[4]});
+		cache = _mm_mul_pd(m.sse[3], (__m128d) {b.m.c[5], b.m.c[5]});
+		ret.m.sse[3] = _mm_add_pd(cache, ret.m.sse[3]);
+		cache = _mm_mul_pd(m.sse[5], (__m128d) {b.m.c[6], b.m.c[6]});
+		ret.m.sse[3] = _mm_add_pd(cache, ret.m.sse[3]);
+		cache = _mm_mul_pd(m.sse[7], (__m128d) {b.m.c[7], b.m.c[7]});
+		ret.m.sse[3] = _mm_add_pd(cache, ret.m.sse[3]);
 
-	ret.m.sse[4] = _mm_mul_pd(m.sse[0], (__m128d) {b.m.c[8], b.m.c[8]});
-	cache = _mm_mul_pd(m.sse[2], (__m128d) {b.m.c[9], b.m.c[9]});
-	ret.m.sse[4] = _mm_add_pd(cache, ret.m.sse[4]);
-	cache = _mm_mul_pd(m.sse[4], (__m128d) {b.m.c[10], b.m.c[10]});
-	ret.m.sse[4] = _mm_add_pd(cache, ret.m.sse[4]);
-	cache = _mm_mul_pd(m.sse[6], (__m128d) {b.m.c[11], b.m.c[11]});
-	ret.m.sse[4] = _mm_add_pd(cache, ret.m.sse[4]);
-	//
-	ret.m.sse[5] = _mm_mul_pd(m.sse[1], (__m128d) {b.m.c[8], b.m.c[8]});
-	cache = _mm_mul_pd(m.sse[3], (__m128d) {b.m.c[9], b.m.c[9]});
-	ret.m.sse[5] = _mm_add_pd(cache, ret.m.sse[5]);
-	cache = _mm_mul_pd(m.sse[5], (__m128d) {b.m.c[10], b.m.c[10]});
-	ret.m.sse[5] = _mm_add_pd(cache, ret.m.sse[5]);
-	cache = _mm_mul_pd(m.sse[7], (__m128d) {b.m.c[11], b.m.c[11]});
-	ret.m.sse[5] = _mm_add_pd(cache, ret.m.sse[5]);
-	//
+		ret.m.sse[4] = _mm_mul_pd(m.sse[0], (__m128d) {b.m.c[8], b.m.c[8]});
+		cache = _mm_mul_pd(m.sse[2], (__m128d) {b.m.c[9], b.m.c[9]});
+		ret.m.sse[4] = _mm_add_pd(cache, ret.m.sse[4]);
+		cache = _mm_mul_pd(m.sse[4], (__m128d) {b.m.c[10], b.m.c[10]});
+		ret.m.sse[4] = _mm_add_pd(cache, ret.m.sse[4]);
+		cache = _mm_mul_pd(m.sse[6], (__m128d) {b.m.c[11], b.m.c[11]});
+		ret.m.sse[4] = _mm_add_pd(cache, ret.m.sse[4]);
+		//
+		ret.m.sse[5] = _mm_mul_pd(m.sse[1], (__m128d) {b.m.c[8], b.m.c[8]});
+		cache = _mm_mul_pd(m.sse[3], (__m128d) {b.m.c[9], b.m.c[9]});
+		ret.m.sse[5] = _mm_add_pd(cache, ret.m.sse[5]);
+		cache = _mm_mul_pd(m.sse[5], (__m128d) {b.m.c[10], b.m.c[10]});
+		ret.m.sse[5] = _mm_add_pd(cache, ret.m.sse[5]);
+		cache = _mm_mul_pd(m.sse[7], (__m128d) {b.m.c[11], b.m.c[11]});
+		ret.m.sse[5] = _mm_add_pd(cache, ret.m.sse[5]);
+		//
 
-	ret.m.sse[6] = _mm_mul_pd(m.sse[0], (__m128d) {b.m.c[12], b.m.c[12]});
-	cache = _mm_mul_pd(m.sse[2], (__m128d) {b.m.c[13], b.m.c[13]});
-	ret.m.sse[6] = _mm_add_pd(cache, ret.m.sse[6]);
-	cache = _mm_mul_pd(m.sse[4], (__m128d) {b.m.c[14], b.m.c[14]});
-	ret.m.sse[6] = _mm_add_pd(cache, ret.m.sse[6]);
-	cache = _mm_mul_pd(m.sse[6], (__m128d) {b.m.c[15], b.m.c[15]});
-	ret.m.sse[6] = _mm_add_pd(cache, ret.m.sse[6]);
-	//
-	ret.m.sse[7] = _mm_mul_pd(m.sse[1], (__m128d) {b.m.c[12], b.m.c[12]});
-	cache = _mm_mul_pd(m.sse[3], (__m128d) {b.m.c[13], b.m.c[13]});
-	ret.m.sse[7] = _mm_add_pd(cache, ret.m.sse[7]);
-	cache = _mm_mul_pd(m.sse[5], (__m128d) {b.m.c[14], b.m.c[14]});
-	ret.m.sse[7] = _mm_add_pd(cache, ret.m.sse[7]);
-	cache = _mm_mul_pd(m.sse[7], (__m128d) {b.m.c[15], b.m.c[15]});
-	ret.m.sse[7] = _mm_add_pd(cache, ret.m.sse[7]);
+		ret.m.sse[6] = _mm_mul_pd(m.sse[0], (__m128d) {b.m.c[12], b.m.c[12]});
+		cache = _mm_mul_pd(m.sse[2], (__m128d) {b.m.c[13], b.m.c[13]});
+		ret.m.sse[6] = _mm_add_pd(cache, ret.m.sse[6]);
+		cache = _mm_mul_pd(m.sse[4], (__m128d) {b.m.c[14], b.m.c[14]});
+		ret.m.sse[6] = _mm_add_pd(cache, ret.m.sse[6]);
+		cache = _mm_mul_pd(m.sse[6], (__m128d) {b.m.c[15], b.m.c[15]});
+		ret.m.sse[6] = _mm_add_pd(cache, ret.m.sse[6]);
+		//
+		ret.m.sse[7] = _mm_mul_pd(m.sse[1], (__m128d) {b.m.c[12], b.m.c[12]});
+		cache = _mm_mul_pd(m.sse[3], (__m128d) {b.m.c[13], b.m.c[13]});
+		ret.m.sse[7] = _mm_add_pd(cache, ret.m.sse[7]);
+		cache = _mm_mul_pd(m.sse[5], (__m128d) {b.m.c[14], b.m.c[14]});
+		ret.m.sse[7] = _mm_add_pd(cache, ret.m.sse[7]);
+		cache = _mm_mul_pd(m.sse[7], (__m128d) {b.m.c[15], b.m.c[15]});
+		ret.m.sse[7] = _mm_add_pd(cache, ret.m.sse[7]);
 #elif defined(USE_NEON) && (AML_TYPE_ID == AML_TYPE_DOUBLE)
 		ret.m.neon[0] = vmulq_f64(m.neon[0], (float64x2_t) {b.m.c[0], b.m.c[0]});
-	ret.m.neon[0] = vfmaq_f64(ret.m.neon[0], m.neon[2], (float64x2_t) {b.m.c[1], b.m.c[1]});
-	ret.m.neon[0] = vfmaq_f64(ret.m.neon[0], m.neon[4], (float64x2_t) {b.m.c[2], b.m.c[2]});
-	ret.m.neon[0] = vfmaq_f64(ret.m.neon[0], m.neon[6], (float64x2_t) {b.m.c[3], b.m.c[3]});
-	//
-	ret.m.neon[1] = vmulq_f64(m.neon[1], (float64x2_t) {b.m.c[0], b.m.c[0]});
-	ret.m.neon[1] = vfmaq_f64(ret.m.neon[1], m.neon[3], (float64x2_t) {b.m.c[1], b.m.c[1]});
-	ret.m.neon[1] = vfmaq_f64(ret.m.neon[1], m.neon[5], (float64x2_t) {b.m.c[2], b.m.c[2]});
-	ret.m.neon[1] = vfmaq_f64(ret.m.neon[1], m.neon[7], (float64x2_t) {b.m.c[3], b.m.c[3]});
-	//
-	ret.m.neon[2] = vmulq_f64(m.neon[0], (float64x2_t) {b.m.c[4], b.m.c[4]});
-	ret.m.neon[2] = vfmaq_f64(ret.m.neon[2], m.neon[2], (float64x2_t) {b.m.c[5], b.m.c[5]});
-	ret.m.neon[2] = vfmaq_f64(ret.m.neon[2], m.neon[4], (float64x2_t) {b.m.c[6], b.m.c[6]});
-	ret.m.neon[2] = vfmaq_f64(ret.m.neon[2], m.neon[6], (float64x2_t) {b.m.c[7], b.m.c[7]});
+		ret.m.neon[0] = vfmaq_f64(ret.m.neon[0], m.neon[2], (float64x2_t) {b.m.c[1], b.m.c[1]});
+		ret.m.neon[0] = vfmaq_f64(ret.m.neon[0], m.neon[4], (float64x2_t) {b.m.c[2], b.m.c[2]});
+		ret.m.neon[0] = vfmaq_f64(ret.m.neon[0], m.neon[6], (float64x2_t) {b.m.c[3], b.m.c[3]});
+		//
+		ret.m.neon[1] = vmulq_f64(m.neon[1], (float64x2_t) {b.m.c[0], b.m.c[0]});
+		ret.m.neon[1] = vfmaq_f64(ret.m.neon[1], m.neon[3], (float64x2_t) {b.m.c[1], b.m.c[1]});
+		ret.m.neon[1] = vfmaq_f64(ret.m.neon[1], m.neon[5], (float64x2_t) {b.m.c[2], b.m.c[2]});
+		ret.m.neon[1] = vfmaq_f64(ret.m.neon[1], m.neon[7], (float64x2_t) {b.m.c[3], b.m.c[3]});
+		//
+		ret.m.neon[2] = vmulq_f64(m.neon[0], (float64x2_t) {b.m.c[4], b.m.c[4]});
+		ret.m.neon[2] = vfmaq_f64(ret.m.neon[2], m.neon[2], (float64x2_t) {b.m.c[5], b.m.c[5]});
+		ret.m.neon[2] = vfmaq_f64(ret.m.neon[2], m.neon[4], (float64x2_t) {b.m.c[6], b.m.c[6]});
+		ret.m.neon[2] = vfmaq_f64(ret.m.neon[2], m.neon[6], (float64x2_t) {b.m.c[7], b.m.c[7]});
 
-	//
-	ret.m.neon[3] = vmulq_f64(m.neon[1], (float64x2_t) {b.m.c[4], b.m.c[4]});
-	ret.m.neon[3] = vfmaq_f64(ret.m.neon[3], m.neon[3], (float64x2_t) {b.m.c[5], b.m.c[5]});
-	ret.m.neon[3] = vfmaq_f64(ret.m.neon[3], m.neon[5], (float64x2_t) {b.m.c[6], b.m.c[6]});
-	ret.m.neon[3] = vfmaq_f64(ret.m.neon[3], m.neon[7], (float64x2_t) {b.m.c[7], b.m.c[7]});
+		//
+		ret.m.neon[3] = vmulq_f64(m.neon[1], (float64x2_t) {b.m.c[4], b.m.c[4]});
+		ret.m.neon[3] = vfmaq_f64(ret.m.neon[3], m.neon[3], (float64x2_t) {b.m.c[5], b.m.c[5]});
+		ret.m.neon[3] = vfmaq_f64(ret.m.neon[3], m.neon[5], (float64x2_t) {b.m.c[6], b.m.c[6]});
+		ret.m.neon[3] = vfmaq_f64(ret.m.neon[3], m.neon[7], (float64x2_t) {b.m.c[7], b.m.c[7]});
 
-	//
-	ret.m.neon[4] = vmulq_f64(m.neon[0], (float64x2_t) {b.m.c[8], b.m.c[8]});
-	ret.m.neon[4] = vfmaq_f64(ret.m.neon[4], m.neon[2], (float64x2_t) {b.m.c[9], b.m.c[9]});
-	ret.m.neon[4] = vfmaq_f64(ret.m.neon[4], m.neon[4], (float64x2_t) {b.m.c[10], b.m.c[10]});
-	ret.m.neon[4] = vfmaq_f64(ret.m.neon[4], m.neon[6], (float64x2_t) {b.m.c[11], b.m.c[11]});
+		//
+		ret.m.neon[4] = vmulq_f64(m.neon[0], (float64x2_t) {b.m.c[8], b.m.c[8]});
+		ret.m.neon[4] = vfmaq_f64(ret.m.neon[4], m.neon[2], (float64x2_t) {b.m.c[9], b.m.c[9]});
+		ret.m.neon[4] = vfmaq_f64(ret.m.neon[4], m.neon[4], (float64x2_t) {b.m.c[10], b.m.c[10]});
+		ret.m.neon[4] = vfmaq_f64(ret.m.neon[4], m.neon[6], (float64x2_t) {b.m.c[11], b.m.c[11]});
 
-	//
-	ret.m.neon[5] = vmulq_f64(m.neon[1], (float64x2_t) {b.m.c[8], b.m.c[8]});
-	ret.m.neon[5] = vfmaq_f64(ret.m.neon[5], m.neon[3], (float64x2_t) {b.m.c[9], b.m.c[9]});
-	ret.m.neon[5] = vfmaq_f64(ret.m.neon[5], m.neon[5], (float64x2_t) {b.m.c[10], b.m.c[10]});
-	ret.m.neon[5] = vfmaq_f64(ret.m.neon[5], m.neon[7], (float64x2_t) {b.m.c[11], b.m.c[11]});
+		//
+		ret.m.neon[5] = vmulq_f64(m.neon[1], (float64x2_t) {b.m.c[8], b.m.c[8]});
+		ret.m.neon[5] = vfmaq_f64(ret.m.neon[5], m.neon[3], (float64x2_t) {b.m.c[9], b.m.c[9]});
+		ret.m.neon[5] = vfmaq_f64(ret.m.neon[5], m.neon[5], (float64x2_t) {b.m.c[10], b.m.c[10]});
+		ret.m.neon[5] = vfmaq_f64(ret.m.neon[5], m.neon[7], (float64x2_t) {b.m.c[11], b.m.c[11]});
 
-	//
+		//
 
-	ret.m.neon[6] = vmulq_f64(m.neon[0], (float64x2_t) {b.m.c[12], b.m.c[12]});
-	ret.m.neon[6] = vfmaq_f64(ret.m.neon[6], m.neon[2], (float64x2_t) {b.m.c[13], b.m.c[13]});
-	ret.m.neon[6] = vfmaq_f64(ret.m.neon[6], m.neon[4], (float64x2_t) {b.m.c[14], b.m.c[14]});
-	ret.m.neon[6] = vfmaq_f64(ret.m.neon[6], m.neon[6], (float64x2_t) {b.m.c[15], b.m.c[15]});
+		ret.m.neon[6] = vmulq_f64(m.neon[0], (float64x2_t) {b.m.c[12], b.m.c[12]});
+		ret.m.neon[6] = vfmaq_f64(ret.m.neon[6], m.neon[2], (float64x2_t) {b.m.c[13], b.m.c[13]});
+		ret.m.neon[6] = vfmaq_f64(ret.m.neon[6], m.neon[4], (float64x2_t) {b.m.c[14], b.m.c[14]});
+		ret.m.neon[6] = vfmaq_f64(ret.m.neon[6], m.neon[6], (float64x2_t) {b.m.c[15], b.m.c[15]});
 
-	//
-	ret.m.neon[7] = vmulq_f64(m.neon[1], (float64x2_t) {b.m.c[12], b.m.c[12]});
-	ret.m.neon[7] = vfmaq_f64(ret.m.neon[7], m.neon[3], (float64x2_t) {b.m.c[13], b.m.c[13]});
-	ret.m.neon[7] = vfmaq_f64(ret.m.neon[7], m.neon[5], (float64x2_t) {b.m.c[14], b.m.c[14]});
-	ret.m.neon[7] = vfmaq_f64(ret.m.neon[7], m.neon[7], (float64x2_t) {b.m.c[15], b.m.c[15]});
+		//
+		ret.m.neon[7] = vmulq_f64(m.neon[1], (float64x2_t) {b.m.c[12], b.m.c[12]});
+		ret.m.neon[7] = vfmaq_f64(ret.m.neon[7], m.neon[3], (float64x2_t) {b.m.c[13], b.m.c[13]});
+		ret.m.neon[7] = vfmaq_f64(ret.m.neon[7], m.neon[5], (float64x2_t) {b.m.c[14], b.m.c[14]});
+		ret.m.neon[7] = vfmaq_f64(ret.m.neon[7], m.neon[7], (float64x2_t) {b.m.c[15], b.m.c[15]});
 
 #elif defined(USE_FMA) && (AML_TYPE_ID == AML_TYPE_FLOAT) && !defined(__INTEL_COMPILER)
 		__m256 O0 = {b.m.c[0], b.m.c[0], b.m.c[0], b.m.c[0], b.m.c[4], b.m.c[4], b.m.c[4], b.m.c[4]};
@@ -847,8 +840,8 @@ public:
 		return ret;
 	}
 
-	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector4D)) operator*(const AML_PREFIX(AML_TYPE_NAME(Vector4D)) b) {
-		AML_PREFIX(AML_TYPE_NAME(Vector4D)) ret;
+	AML_FUNCTION AML_TYPE_NAME(Vector4D) operator*(const AML_TYPE_NAME(Vector4D) b) {
+		AML_TYPE_NAME(Vector4D) ret;
 		ret.v.c[0] = m.c[0] * b.v.c[0] + m.c[4] * b.v.c[1] + m.c[8] * b.v.c[2] + m.c[12] * b.v.c[3];
 		ret.v.c[1] = m.c[1] * b.v.c[0] + m.c[5] * b.v.c[1] + m.c[9] * b.v.c[2] + m.c[13] * b.v.c[3];
 		ret.v.c[2] = m.c[2] * b.v.c[0] + m.c[6] * b.v.c[1] + m.c[10] * b.v.c[2] + m.c[14] * b.v.c[3];
@@ -856,7 +849,7 @@ public:
 		return ret;
 	}
 
-	AML_CONSTEXPR AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Matrix4x4))() {
+	AML_CONSTEXPR AML_FUNCTION AML_TYPE_NAME(Matrix4x4)() {
 		m.c[0] = 0.0f;
 		m.c[1] = 0.0f;
 		m.c[2] = 0.0f;
@@ -875,7 +868,7 @@ public:
 		m.c[15] = 0.0f;
 	}
 
-	AML_CONSTEXPR AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Matrix4x4))(const AML_TYPE value) {
+	AML_CONSTEXPR AML_FUNCTION AML_TYPE_NAME(Matrix4x4)(const AML_TYPE value) {
 #if defined(__clang__) // check when compiler version changes
 		m = {};
 		m.c[0] = value;
@@ -902,10 +895,10 @@ public:
 #endif
 	}
 
-	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Matrix4x4))(const AML_PREFIX(AML_TYPE_NAME(Vector4D)) &a,
-													  const AML_PREFIX(AML_TYPE_NAME(Vector4D)) &b,
-													  const AML_PREFIX(AML_TYPE_NAME(Vector4D)) &c,
-													  const AML_PREFIX(AML_TYPE_NAME(Vector4D)) &d) {
+	AML_FUNCTION AML_TYPE_NAME(Matrix4x4)(const AML_TYPE_NAME(Vector4D) &a,
+										  const AML_TYPE_NAME(Vector4D) &b,
+										  const AML_TYPE_NAME(Vector4D) &c,
+										  const AML_TYPE_NAME(Vector4D) &d) {
 #if defined(USE_AVX) && AML_TYPE_ID == AML_TYPE_DOUBLE
 		m.avx[0] = a.v.avx;
 		m.avx[1] = b.v.avx;
@@ -931,16 +924,16 @@ public:
 #endif
 	}
 
-	AML_CONSTEXPR AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Matrix4x4))(const AML_PREFIX(AML_TYPE_NAME(Matrix4x4)) &b) {
+	AML_CONSTEXPR AML_FUNCTION AML_TYPE_NAME(Matrix4x4)(const AML_TYPE_NAME(Matrix4x4) &b) {
 		m = b.m;
 	}
 
-	AML_CONSTEXPR AML_FUNCTION void operator=(const AML_PREFIX(AML_TYPE_NAME(Matrix4x4)) &b) {
+	AML_CONSTEXPR AML_FUNCTION void operator=(const AML_TYPE_NAME(Matrix4x4) &b) {
 		m = b.m;
 	}
 };
 
-class AML_PREFIX(AML_TYPE_NAME(Vector8D)) {
+class AML_TYPE_NAME(Vector8D) {
 public:
 #if AML_TYPE_ID == AML_TYPE_DOUBLE
 	AML_PREFIX(doublevec8) v{};
@@ -952,7 +945,7 @@ public:
 		return v.c[position];
 	}
 
-	AML_FUNCTION void operator+=(const AML_PREFIX(AML_TYPE_NAME(Vector8D)) &vec2) {
+	AML_FUNCTION void operator+=(const AML_TYPE_NAME(Vector8D) &vec2) {
 #if (defined(USE_AVX512F) || defined(KNCNI)) && (AML_TYPE_ID == AML_TYPE_DOUBLE)
 		v.avx512 = _mm512_add_pd(v.avx512, vec2.v.avx512);
 #elif defined(USE_AVX) && AML_TYPE_ID == AML_TYPE_DOUBLE
@@ -960,9 +953,9 @@ public:
 		v.avx[1] = _mm256_add_pd(v.avx[1], vec2.v.avx[1]);
 #elif defined(USE_SSE) && AML_TYPE_ID == AML_TYPE_DOUBLE // SSE2
 		v.sse[0] = _mm_add_pd(v.sse[0], vec2.v.sse[0]);
-	v.sse[1] = _mm_add_pd(v.sse[1], vec2.v.sse[1]);
-	v.sse[2] = _mm_add_pd(v.sse[2], vec2.v.sse[2]);
-	v.sse[3] = _mm_add_pd(v.sse[3], vec2.v.sse[3]);
+		v.sse[1] = _mm_add_pd(v.sse[1], vec2.v.sse[1]);
+		v.sse[2] = _mm_add_pd(v.sse[2], vec2.v.sse[2]);
+		v.sse[3] = _mm_add_pd(v.sse[3], vec2.v.sse[3]);
 #else
 		v.c[0] += vec2.v.c[0];
 		v.c[1] += vec2.v.c[1];
@@ -977,9 +970,9 @@ public:
 
 	}
 
-	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector8D))(AML_TYPE a, AML_TYPE b, AML_TYPE c, AML_TYPE d, AML_TYPE e,
-													 AML_TYPE f, AML_TYPE g,
-													 AML_TYPE h) {
+	AML_FUNCTION AML_TYPE_NAME(Vector8D)(AML_TYPE a, AML_TYPE b, AML_TYPE c, AML_TYPE d, AML_TYPE e,
+										 AML_TYPE f, AML_TYPE g,
+										 AML_TYPE h) {
 		v.c[0] = a;
 		v.c[1] = b;
 		v.c[2] = c;
@@ -990,8 +983,8 @@ public:
 		v.c[7] = h;
 	}
 
-	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector8D))(const AML_PREFIX(AML_TYPE_NAME(Vector4D)) a,
-													 const AML_PREFIX(AML_TYPE_NAME(Vector4D)) b) {
+	AML_FUNCTION AML_TYPE_NAME(Vector8D)(const AML_TYPE_NAME(Vector4D) a,
+										 const AML_TYPE_NAME(Vector4D) b) {
 #if defined(USE_AVX) && AML_TYPE_ID == AML_TYPE_DOUBLE
 		v.avx[0] = a.v.avx;
 		v.avx[1] = b.v.avx;
@@ -1007,7 +1000,7 @@ public:
 #endif
 	}
 
-	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector8D))() {
+	AML_FUNCTION AML_TYPE_NAME(Vector8D)() {
 		v.c[0] = 0.0f;
 		v.c[1] = 0.0f;
 		v.c[2] = 0.0f;
@@ -1020,7 +1013,7 @@ public:
 
 #if defined(USE_AVX) && AML_TYPE_ID == AML_TYPE_DOUBLE
 
-	AML_FUNCTION explicit AML_PREFIX(AML_TYPE_NAME(Vector8D))(__m256d *values) {
+	AML_FUNCTION explicit AML_TYPE_NAME(Vector8D)(__m256d *values) {
 		v.avx[0] = values[0];
 		v.avx[1] = values[1];
 	}
@@ -1028,7 +1021,7 @@ public:
 #endif
 #if defined(USE_SSE) && AML_TYPE_ID == AML_TYPE_DOUBLE
 
-	AML_FUNCTION explicit AML_PREFIX(AML_TYPE_NAME(Vector8D))(__m128d *values) {
+	AML_FUNCTION explicit AML_TYPE_NAME(Vector8D)(__m128d *values) {
 		v.sse[0] = values[0];
 		v.sse[1] = values[1];
 		v.sse[2] = values[2];
@@ -1039,13 +1032,13 @@ public:
 
 #if defined(USE_AVX512) && AML_TYPE_ID == AML_TYPE_DOUBLE
 
-	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector8D))(__m512d value) {
-	v.avx512 = value;
-}
+	AML_FUNCTION AML_TYPE_NAME(Vector8D)(__m512d value) {
+		v.avx512 = value;
+	}
 
 #endif
 
-	AML_FUNCTION explicit AML_PREFIX(AML_TYPE_NAME(Vector8D))(const AML_TYPE *const values) {
+	AML_FUNCTION explicit AML_TYPE_NAME(Vector8D)(const AML_TYPE *const values) {
 		v.c[0] = values[0];
 		v.c[1] = values[1];
 		v.c[2] = values[2];
@@ -1056,7 +1049,7 @@ public:
 		v.c[7] = values[7];
 	}
 
-	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector8D))(const AML_TYPE value) {
+	AML_FUNCTION AML_TYPE_NAME(Vector8D)(const AML_TYPE value) {
 		v.c[0] = value;
 		v.c[1] = value;
 		v.c[2] = value;
@@ -1067,7 +1060,7 @@ public:
 		v.c[7] = value;
 	}
 
-	AML_FUNCTION AML_PREFIX(AML_TYPE_NAME(Vector8D)) *set(AML_TYPE value, AML_PREFIX(VectorU8_8D) mask) {
+	AML_FUNCTION AML_TYPE_NAME(Vector8D) *set(AML_TYPE value, AML_PREFIX(VectorU8_8D) mask) {
 		if (mask.v.c[0]) { v.c[0] = value; }
 		if (mask.v.c[1]) { v.c[1] = value; }
 		if (mask.v.c[2]) { v.c[2] = value; }

@@ -7,7 +7,8 @@
 
 #define AML_TYPE_ID 2
 #define AML_TYPE float
-#define AML_TYPE_NAME(X) X ## _32
+#define AML_TYPE_NAME(X) AML_PREFIX(X ## _32)
+
 
 #include "amlla.h"
 
@@ -16,7 +17,7 @@
 #undef AML_TYPE_ID
 #define AML_TYPE_ID 1
 #undef AML_TYPE_NAME
-#define AML_TYPE_NAME(X) X ## _64
+#define AML_TYPE_NAME(X) AML_PREFIX(X ## _64)
 
 #include "amlla.h"
 
@@ -31,14 +32,14 @@ class AML_PREFIX(Array2UInt_32) {
 public:
 	uint32_t a[2];
 
-	AML_FUNCTION Array2UInt_32() {};
+	AML_FUNCTION AML_PREFIX(Array2UInt_32)() {};
 
-	AML_FUNCTION Array2UInt_32(uint32_t *val) {
+	AML_FUNCTION AML_PREFIX(Array2UInt_32)(uint32_t *val) {
 		a[0] = val[0];
 		a[1] = val[1];
 	};
 
-	AML_FUNCTION Array2UInt_32(uint32_t v1, uint32_t v2) {
+	AML_FUNCTION AML_PREFIX(Array2UInt_32)(uint32_t v1, uint32_t v2) {
 		a[0] = v1;
 		a[1] = v2;
 	};

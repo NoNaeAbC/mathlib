@@ -9,13 +9,16 @@
 
 #include "../amathlib.h"
 
+#define var auto
+#define let const auto
+
 static void BM_Mul(benchmark::State &state) {
-	Complex64 a = 2 + 3_i;
-	Complex64 b = 4 + 2_i;
+	var a = 2 + 3_i;
+	var b = 4 + 2_i;
+	doNotOptimize(&a);
+	doNotOptimize(&b);
 	for (auto _ : state) {
-		doNotOptimize(&a);
-		doNotOptimize(&b);
-		Complex64 c = a * a + b;
+		var c = a * a + b;
 		doNotOptimize(&c);
 	}
 
@@ -23,22 +26,21 @@ static void BM_Mul(benchmark::State &state) {
 
 BENCHMARK(BM_Mul);
 
-constexpr inline Complex64 square(const Complex64 a) {
-	return Complex64(a.c.c[0] * a.c.c[0] - a.c.c[1] * a.c.c[1], a.c.c[0] * a.c.c[1] + a.c.c[0] * a.c.c[1]);
-}
 
 static void BM_MulSq(benchmark::State &state) {
-	Complex64 a = 2 + 3_i;
-	Complex64 b = 4 + 2_i;
+	var a = 2 + 3_i;
+	var b = 4 + 2_i;
 	doNotOptimize(&a);
 	doNotOptimize(&b);
+	var d = a;
 	for (auto _ : state) {
-		Complex64 c = square(a) + b;
+		var c = square(d) + b;
 		doNotOptimize(&c);
 	}
 }
 
 BENCHMARK(BM_MulSq);
+
 
 constexpr inline Complex64 fsa(const Complex64 a, const Complex64 b) {
 	return Complex64(a.c.c[0] * a.c.c[0] - a.c.c[1] * a.c.c[1] + b.c.c[0],
@@ -80,9 +82,9 @@ BENCHMARK(BM_MulFMA_Inline);
 static void BM_MulSTD(benchmark::State &state) {
 	std::complex<double> a(2, 3);
 	std::complex<double> b(4, 2);
+	doNotOptimize(&a);
+	doNotOptimize(&b);
 	for (auto _ : state) {
-		doNotOptimize(&a);
-		doNotOptimize(&b);
 		std::complex<double> c = a * a + b;
 		doNotOptimize(&c);
 	}
