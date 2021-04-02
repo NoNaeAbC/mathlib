@@ -92,7 +92,7 @@ int main() {
 			Complex64 z = c;
 			int result = accuracy;
 			for (int i = 0; i < accuracy; ++i) {
-				z = z * z + c;
+				z = square(z) + c;
 				if (z.abs_gt(2)) {
 					result = i;
 					break;
@@ -114,22 +114,22 @@ int main() {
 	begin = getTime();
 	for (int x = 0; x < height; x++) {
 		for (int y = 0; y < width / IDEAL_COMPLEX_64_SIZE; y++) {
-			IDEAL_COMPLEX_64_TYPE complex64_C;
-			IDEAL_COMPLEX_64_TYPE complex64_Z;
-			for (Complex64Ptr c_ptr : complex64_C) {
+			IDEAL_COMPLEX_64_TYPE C;
+			IDEAL_COMPLEX_64_TYPE Z;
+			for (Complex64Ptr c_ptr : C) {
 				*c_ptr = {AML::mapLinear((double) x, 0.0, (double) height, -1.5, 0.5),
 						  AML::mapLinear((double) y * IDEAL_COMPLEX_64_SIZE + c_ptr.getIndex(), 0.0, (double) width,
 										 -1.0, 1.0)};
 			}
-			complex64_Z = complex64_C;
+			Z = C;
 			IDEAL_COMPLEX_64_VECTOR_TYPE result(accuracy);
 			int i = 0;
 			IDEAL_COMPLEX_64_MASK_TYPE finished;
 			IDEAL_COMPLEX_64_MASK_TYPE nowFinished;
 			IDEAL_COMPLEX_64_MASK_TYPE alreadyFinished;
 			for (; i < accuracy; ++i) {
-				complex64_Z = (complex64_Z * complex64_Z) + complex64_C;
-				finished = complex64_Z.abs_gt(2);
+				Z = Z * Z + C;
+				finished = Z.abs_gt(2);
 				bool anyFinished = finished.anyTrue();
 				if (anyFinished) {
 					alreadyFinished = finished;
@@ -139,9 +139,9 @@ int main() {
 			}
 			if (!(finished.allTrue())) {
 				for (; i < accuracy; ++i) {
-					complex64_Z.square(!finished)->add(complex64_C, !finished);
+					Z.square(!finished)->add(C, !finished);
 					//complex64_Z = (complex64_Z * complex64_Z) + complex64_C; Identical result but slower on my machine
-					finished = complex64_Z.abs_gt(2);
+					finished = Z.abs_gt(2);
 					nowFinished = finished && !alreadyFinished;
 					if (nowFinished.anyTrue()) {
 						alreadyFinished = finished;

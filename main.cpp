@@ -12,9 +12,12 @@
 
 int main() {
 
-	auto a = 2 + 2_if;
+	auto a = 2 + 2_i;
 
-	std::cout << *a.sqrt() << std::endl;
+	std::cout << sqrt(a) << std::endl;
+
+	auto b = sqrt(a);
+
 	std::cout << a << std::endl;
 
 }
