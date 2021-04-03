@@ -12,9 +12,9 @@
 #include <chrono>
 
 /*
- * This sample shows how to implement the mandelbrot set in C++. It is implemented in two ways a fast and a slow one.
- * It is recommended to know what the mandelbrot set is, not only because it makes it easy to follow, but because it is a
- * beautiful part of mathematics. Refer to https://en.wikipedia.org/wiki/Mandelbrot_set when needed.
+ * This sample shows how to implement the Mandelbrot set in C++. It is implemented in two ways a fast and a slow one.
+ * It is recommended to know what the Mandelbrot set is, not only because it makes it easy to follow, but because not knowing what it is makes you suck.
+ * Refer to https://en.wikipedia.org/wiki/Mandelbrot_set when needed.
  *
  * To compile on x86-64 choose clang or gcc and run
  * 		clang++ -O3 -ffast-math -march=native mandelbrot.cpp -o mandelbrot
@@ -83,7 +83,7 @@ int main() {
 		std::cout << "\n";
 	}
 	end = getTime();
-	double t0 = ((double) (end - begin)) / 1000.0f;
+
 	std::cout << "Time 0 : " << ((double) (end - begin)) / 1000.0f << std::endl;
 
 	begin = getTime();
@@ -111,7 +111,7 @@ int main() {
 		std::cout << "\n";
 	}
 	end = getTime();
-	double t1 = ((double) (end - begin)) / 1000.0f;
+
 	std::cout << "Time 1 : " << ((double) (end - begin)) / 1000.0f << std::endl;
 	//
 
@@ -168,7 +168,5 @@ int main() {
 	}
 	end = getTime();
 
-	std::cout << "Time 0 : " << t0 << std::endl;
-	std::cout << "Time 1 : " << t1 << std::endl;
 	std::cout << "Time 2 : " << ((double) (end - begin)) / 1000.0f << std::endl;
 }
