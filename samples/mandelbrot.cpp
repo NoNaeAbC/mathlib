@@ -83,6 +83,7 @@ int main() {
 		std::cout << "\n";
 	}
 	end = getTime();
+	double t0 = ((double) (end - begin)) / 1000.0f;
 
 	std::cout << "Time 0 : " << ((double) (end - begin)) / 1000.0f << std::endl;
 
@@ -111,6 +112,7 @@ int main() {
 		std::cout << "\n";
 	}
 	end = getTime();
+	double t1 = ((double) (end - begin)) / 1000.0f;
 
 	std::cout << "Time 1 : " << ((double) (end - begin)) / 1000.0f << std::endl;
 	//
@@ -168,5 +170,7 @@ int main() {
 	}
 	end = getTime();
 
+	std::cout << "Time 0 : " << t0 << std::endl;
+	std::cout << "Time 1 : " << t1 << std::endl;
 	std::cout << "Time 2 : " << ((double) (end - begin)) / 1000.0f << std::endl;
 }
