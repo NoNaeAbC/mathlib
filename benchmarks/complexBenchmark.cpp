@@ -13,13 +13,15 @@
 #define let const auto
 
 static void BM_Mul(benchmark::State &state) {
-	var a = 2 + 3_i;
-	var b = 4 + 2_i;
+	var a = 2 + 3_if;
+	var b = 4 + 2_if;
 	doNotOptimize(&a);
 	doNotOptimize(&b);
 	for (auto _ : state) {
 		var c = a * a + b;
+		var e = a * a + b;
 		doNotOptimize(&c);
+		doNotOptimize(&e);
 	}
 
 }
@@ -28,65 +30,31 @@ BENCHMARK(BM_Mul);
 
 
 static void BM_MulSq(benchmark::State &state) {
-	var a = 2 + 3_i;
-	var b = 4 + 2_i;
+	var a = 2 + 3_if;
+	var b = 4 + 2_if;
 	doNotOptimize(&a);
 	doNotOptimize(&b);
 	var d = a;
 	for (auto _ : state) {
 		var c = square(d) + b;
+		var e = square(d) + b;
 		doNotOptimize(&c);
+		doNotOptimize(&e);
 	}
 }
 
 BENCHMARK(BM_MulSq);
 
-
-constexpr inline Complex64 fsa(const Complex64 a, const Complex64 b) {
-	return Complex64(a.c.c[0] * a.c.c[0] - a.c.c[1] * a.c.c[1] + b.c.c[0],
-					 a.c.c[0] * a.c.c[1] + a.c.c[0] * a.c.c[1] + b.c.c[1]);
-}
-
-static void BM_MulFMA(benchmark::State &state) {
-	Complex64 a = 2 + 3_i;
-	Complex64 b = 4 + 2_i;
-	doNotOptimize(&a);
-	doNotOptimize(&b);
-	for (auto _ : state) {
-		Complex64 c = fsa(a, b);
-		doNotOptimize(&c);
-	}
-}
-
-BENCHMARK(BM_MulFMA);
-
-static void BM_MulFMA_Inline(benchmark::State &state) {
-	Complex64 a2 = 2 + 3_i;
-	Complex64 b2 = 4 + 2_i;
-	doNotOptimize(&a2);
-	doNotOptimize(&b2);
-	//const Complex64 a = a2;
-	//const Complex64 b = b2;
-	for (auto _ : state) {
-		const Complex64 a = a2;
-		const Complex64 b = b2;
-		Complex64 c(a.c.c[0] * a.c.c[0] - a.c.c[1] * a.c.c[1] + b.c.c[0],
-					a.c.c[0] * a.c.c[1] + a.c.c[0] * a.c.c[1] + b.c.c[1]);
-		doNotOptimize(&c);
-	}
-}
-
-BENCHMARK(BM_MulFMA_Inline);
-
-
 static void BM_MulSTD(benchmark::State &state) {
-	std::complex<double> a(2, 3);
-	std::complex<double> b(4, 2);
+	std::complex<float> a(2, 3);
+	std::complex<float> b(4, 2);
 	doNotOptimize(&a);
 	doNotOptimize(&b);
 	for (auto _ : state) {
-		std::complex<double> c = a * a + b;
+		std::complex<float> c = a * a + b;
+		std::complex<float> d = b * b + a;
 		doNotOptimize(&c);
+		doNotOptimize(&d);
 	}
 }
 

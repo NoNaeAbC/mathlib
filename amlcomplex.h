@@ -536,6 +536,10 @@ public:
 		return index;
 	}
 
+	explicit AML_FUNCTION operator int() {
+		return index;
+	}
+
 	AML_FUNCTION void operator=(const AML_TYPE_NAME(Complex) newVal) {
 		c.c[0] = newVal.c.c[0];
 		c.c[1] = newVal.c.c[1];
