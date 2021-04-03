@@ -31,6 +31,7 @@ uint64_t getTime() {
 			std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
+
 int width = 250;          // example values
 int height = 80;          // example values
 int accuracy = 100000;    // example values way to high, just to get useful timing
@@ -54,6 +55,7 @@ int main() {
 		std::istringstream stream(input);
 		stream >> accuracy;
 	}
+
 	uint32_t begin;
 	uint32_t end;
 
@@ -81,18 +83,21 @@ int main() {
 		std::cout << "\n";
 	}
 	end = getTime();
+	double t0 = ((double) (end - begin)) / 1000.0f;
 
 	std::cout << "Time 0 : " << ((double) (end - begin)) / 1000.0f << std::endl;
 
 	begin = getTime();
 	for (int x = 0; x < height; x++) {
 		for (int y = 0; y < width; y++) {
-			Complex64 c = {((double) x) / ((double) height / 2.0f) - 1.5f,
-						   ((double) y) / ((double) width / 2.0f) - 1.0f};
+			const Complex64 c = {AML::mapLinear((double) x, 0.0, (double) height, -1.5, 0.5),
+								 AML::mapLinear((double) y, 0.0, (double) width, -1.0, 1.0)};
 			Complex64 z = c;
 			int result = accuracy;
 			for (int i = 0; i < accuracy; ++i) {
-				z = square(z) + c;
+				//z.square()->add(c);
+				z.multiply(z)->add(c);
+				//z = z * z + c;
 				if (z.abs_gt(2)) {
 					result = i;
 					break;
@@ -107,6 +112,7 @@ int main() {
 		std::cout << "\n";
 	}
 	end = getTime();
+	double t1 = ((double) (end - begin)) / 1000.0f;
 
 	std::cout << "Time 1 : " << ((double) (end - begin)) / 1000.0f << std::endl;
 	//
@@ -118,8 +124,8 @@ int main() {
 			IDEAL_COMPLEX_64_TYPE Z;
 			for (Complex64Ptr c_ptr : C) {
 				*c_ptr = {AML::mapLinear((double) x, 0.0, (double) height, -1.5, 0.5),
-						  AML::mapLinear((double) y * IDEAL_COMPLEX_64_SIZE + c_ptr.getIndex(), 0.0, (double) width,
-										 -1.0, 1.0)};
+						  AML::mapLinear((double) y * IDEAL_COMPLEX_64_SIZE + (int) c_ptr, 0.0, (double) width, -1.0,
+										 1.0)};
 			}
 			Z = C;
 			IDEAL_COMPLEX_64_VECTOR_TYPE result(accuracy);
@@ -164,5 +170,7 @@ int main() {
 	}
 	end = getTime();
 
+	std::cout << "Time 0 : " << t0 << std::endl;
+	std::cout << "Time 1 : " << t1 << std::endl;
 	std::cout << "Time 2 : " << ((double) (end - begin)) / 1000.0f << std::endl;
 }
