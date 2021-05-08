@@ -82,6 +82,50 @@ public:
 
 };
 
+
+class AML_TYPE_NAME(Vector3D) {
+private:
+
+public:
+#if AML_TYPE_ID == AML_TYPE_DOUBLE
+	AML_PREFIX(doublevec2) v1{};
+	AML_PREFIX(doublevec1) v2{};
+#endif
+#if AML_TYPE_ID == AML_TYPE_FLOAT
+	AML_PREFIX(floatvec2) v1{};
+	AML_PREFIX(floatvec1) v2{};
+#endif
+
+	AML_FUNCTION AML_TYPE &operator[](const uint32_t position) const {
+		return *((AML_TYPE *) this + position);
+	}
+
+	AML_FUNCTION AML_TYPE_NAME(Vector3D)(AML_TYPE a, AML_TYPE b, AML_TYPE c) {
+		v1.c[0] = a;
+		v1.c[1] = b;
+		v2.c = c;
+	}
+
+	AML_FUNCTION AML_TYPE_NAME(Vector3D)() {
+		v1.c[0] = 0;
+		v1.c[1] = 0;
+		v2.c = 0;
+	}
+
+	AML_FUNCTION explicit AML_TYPE_NAME(Vector3D)(const AML_TYPE a) {
+		v1.c[0] = a;
+		v1.c[1] = a;
+		v2.c = a;
+	}
+
+	AML_FUNCTION explicit AML_TYPE_NAME(Vector3D)(const AML_TYPE *const values) {
+		v1.c[0] = values[0];
+		v1.c[1] = values[1];
+		v2.c = values[2];
+	}
+
+};
+
 class AML_TYPE_NAME(Vector4D) {
 private:
 
