@@ -31,91 +31,80 @@ uint64_t getTime() {
 			std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
+__attribute__((noinline)) void printImage(int iterations) {
+	if (0 == iterations) {
+		std::cout << "#";
+	} else {
+		std::cout << " ";
+	}
+}
 
-int width = 250;          // example values
-int height = 80;          // example values
-int accuracy = 100000;    // example values way to high, just to get useful timing
-int main() {
-	std::cout << "width recommended 250" << std::endl;
-	std::string input;
-	std::getline(std::cin, input);
-	if (!input.empty()) {
-		std::istringstream stream(input);
-		stream >> width;
-	}
-	std::cout << "height recommended 80" << std::endl;
-	std::getline(std::cin, input);
-	if (!input.empty()) {
-		std::istringstream stream(input);
-		stream >> height;
-	}
-	std::cout << "accuracy recommended 100000" << std::endl;
-	std::getline(std::cin, input);
-	if (!input.empty()) {
-		std::istringstream stream(input);
-		stream >> accuracy;
-	}
+double stdMandelbrot(const int height, const int width, int accuracy) {
 
-	uint32_t begin;
-	uint32_t end;
+	uint64_t begin;
+	uint64_t end;
+	const double d_width = width;
+	const double d_height = height;
 
 	begin = getTime();
 	for (int x = 0; x < height; x++) {
 		for (int y = 0; y < width; y++) {
-			std::complex<double> c(((double) x) / ((double) height / 2.0f) - 1.5f,
-								   ((double) y) / ((double) width / 2.0f) - 1.0f);
+			std::complex<double> c(((double) x) / (d_height / 2.0) - 1.5,
+								   ((double) y) / (d_width / 2.0) - 1.0);
 			std::complex<double> z = c;
-			int i = 0;
-			int result = accuracy;
-			for (; i < accuracy; ++i) {
+			int iterations = accuracy;
+			while ((iterations) && (norm(z) < (4.0))) {
+				iterations--;
 				z = z * z + c;
-				if (norm(z) > 4) {
-					result = i;
-					break;
-				}
 			}
-			if (result >= accuracy) {
-				std::cout << "#";
-			} else {
-				std::cout << " ";
-			}
+			printImage(iterations);
 		}
 		std::cout << "\n";
 	}
+
 	end = getTime();
 	double t0 = ((double) (end - begin)) / 1000.0f;
 
-	std::cout << "Time 0 : " << ((double) (end - begin)) / 1000.0f << std::endl;
+	std::cout << std::endl;
+	return t0;
+}
 
+
+double amlMandelbrot(const int height, const int width, const int accuracy) {
+	uint64_t begin;
+	uint64_t end;
+	const double d_width = width;
+	const double d_height = height;
 	begin = getTime();
 	for (int x = 0; x < height; x++) {
 		for (int y = 0; y < width; y++) {
-			const Complex64 c = {AML::mapLinear((double) x, 0.0, (double) height, -1.5, 0.5),
-								 AML::mapLinear((double) y, 0.0, (double) width, -1.0, 1.0)};
+			int iterations = accuracy;
+			const Complex64 c = {AML::mapLinear((double) x, 0.0, d_height, -1.5, 0.5),
+								 AML::mapLinear((double) y, 0.0, d_width, -1.0, 1.0)};
 			Complex64 z = c;
-			int result = accuracy;
-			for (int i = 0; i < accuracy; ++i) {
-				//z.square()->add(c);
-				z.multiply(z)->add(c);
+			while ((iterations > 0) && (z.abs_lt(2))) {
+				iterations--;
+				z.square()->add(c);
+				//z.multiply(z)->add(c);
 				//z = z * z + c;
-				if (z.abs_gt(2)) {
-					result = i;
-					break;
-				}
 			}
-			if (result >= accuracy) {
-				std::cout << "#";
-			} else {
-				std::cout << " ";
-			}
+			printImage(iterations);
 		}
 		std::cout << "\n";
 	}
 	end = getTime();
 	double t1 = ((double) (end - begin)) / 1000.0f;
 
-	std::cout << "Time 1 : " << ((double) (end - begin)) / 1000.0f << std::endl;
-	//
+	std::cout << std::endl;
+	return t1;
+}
+
+
+double simdMandelbrot(const int height, const int width, const int accuracy) {
+	uint64_t begin;
+	uint64_t end;
+	const double d_width = width;
+	const double d_height = height;
 
 	begin = getTime();
 	for (int x = 0; x < height; x++) {
@@ -123,8 +112,8 @@ int main() {
 			IDEAL_COMPLEX_64_TYPE C;
 			IDEAL_COMPLEX_64_TYPE Z;
 			for (Complex64Ptr c_ptr : C) {
-				*c_ptr = {AML::mapLinear((double) x, 0.0, (double) height, -1.5, 0.5),
-						  AML::mapLinear((double) y * IDEAL_COMPLEX_64_SIZE + (int) c_ptr, 0.0, (double) width, -1.0,
+				*c_ptr = {AML::mapLinear((double) x, 0.0, d_height, -1.5, 0.5),
+						  AML::mapLinear((double) y * IDEAL_COMPLEX_64_SIZE + (int) c_ptr, 0.0, d_width, -1.0,
 										 1.0)};
 			}
 			Z = C;
@@ -170,7 +159,50 @@ int main() {
 	}
 	end = getTime();
 
+
+	return ((double) (end - begin)) / 1000.0f;
+
+}
+
+int width = 250;          // example values
+int height = 80;          // example values
+int accuracy = 1000000;    // example values way to high, just to get useful timing
+int main(int argc, const char **argv) {
+	if (argc <= 1) {
+		std::cout << "width recommended 250" << std::endl;
+		std::string input;
+		std::getline(std::cin, input);
+		if (!input.empty()) {
+			std::istringstream stream(input);
+			stream >> width;
+		}
+		std::cout << "height recommended 80" << std::endl;
+		std::getline(std::cin, input);
+		if (!input.empty()) {
+			std::istringstream stream(input);
+			stream >> height;
+		}
+		std::cout << "accuracy recommended 100000" << std::endl;
+		std::getline(std::cin, input);
+		if (!input.empty()) {
+			std::istringstream stream(input);
+			stream >> accuracy;
+		}
+	}
+
+
+	double t0 = 0.0;//stdMandelbrot(height, width, accuracy);
+
+
+	//
+
+	double t1 = 0.0;//amlMandelbrot(height, width, accuracy);
+
+
+	double t2 = simdMandelbrot(height, width, accuracy);
+
+
 	std::cout << "Time 0 : " << t0 << std::endl;
 	std::cout << "Time 1 : " << t1 << std::endl;
-	std::cout << "Time 2 : " << ((double) (end - begin)) / 1000.0f << std::endl;
+	std::cout << "Time 2 : " << t2 << std::endl;
 }
